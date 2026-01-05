@@ -3,6 +3,7 @@ import style from "./dashboard.module.css";
 import { useState } from "react";
 
 const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
+const TABS = ["Team", "Schedule", "Submissions"];
 const TEAM_LIMIT = 5;
 
 export default function RebelHackPage() {
@@ -31,7 +32,6 @@ export default function RebelHackPage() {
   };
 
   const addMember = (name: string) => {
-    if (currentTeam.length >= TEAM_LIMIT) return setError("Team is full.");
     setCurrentTeam([...currentTeam, { name }]); 
     setAvailableMembers(availableMembers.filter(member => member !== name)); 
   };
@@ -51,9 +51,9 @@ export default function RebelHackPage() {
       {error && (
         <div className={style.modalBackdrop}>
           <div className={style.card}>
-            <h2 className={style.secondaryTitle}>Attention</h2>
+            <h2 className={style.secondaryTitle}>Attention!</h2>
             <p className="mb-6">{error}</p>
-            <button onClick={() => setError(null)} className={style.primaryButton}>OK</button>
+            <button onClick={() => setError(null)} className={style.primaryButton}>Got it</button>
           </div>
         </div>
       )}
@@ -62,10 +62,10 @@ export default function RebelHackPage() {
         <div className={style.modalBackdrop}>
           <div className={style.card}>
             <h2 className={style.secondaryTitle}>Disband Team?</h2>
-            <p className="mb-6">Are you sure? This action cannot be undone.</p>
+            <p className="mb-6">Are you sure you want to disband <span className={"text-[var(--primary)] font-bold"}>"{teamName}"</span>? This action cannot be undone.</p>
             <div className="flex gap-5">
               <button onClick={() => setShowDisbandModal(false)} className={style.secondaryButton}>Cancel</button>
-              <button onClick={confirmDisband} className={style.warnButton}>Disband</button>
+              <button onClick={confirmDisband} className={style.warnButton}>Disband Now</button>
             </div>
           </div>
         </div>
@@ -73,9 +73,9 @@ export default function RebelHackPage() {
 
       <div className="flex min-h-screen">
         <aside className={style.sidebar}>
-          <div className="mb-10 text-2xl text-[var(--primary)]">☰</div>
+          <div className="mb-10 text-2xl text-[var(--primary)] cursor-pointer">☰</div>
           <nav>
-            {["Team", "Schedule", "Submissions"].map((option) => (
+            {TABS.map((option) => (
               <div key={option} onClick={() => setActiveTab(option)} className={`${style.option} ${activeTab === option ? style.active : ""}`}>
                 {option}
               </div>
@@ -86,7 +86,7 @@ export default function RebelHackPage() {
         <main className="flex-1 p-10">
           <header className="flex justify-between items-center mb-10">
             <h1 className="text-2xl font-bold tracking-widest text-[var(--primary)]">REBEL HACKS</h1>
-            <div>User</div>
+            <div className="flex items-center gap-2"><div className={style.memberAvatar}>👤</div>User</div>
           </header>
 
           <div className="max-w-5xl mx-auto space-y-8">
