@@ -1,0 +1,132 @@
+:root {
+  --primary: #FEA70A;
+  --primary-translucent: rgba(254, 167, 10, 0.25);
+  --primary-light-border: color-mix(in srgb, var(--primary), transparent 80%);
+  --background: #111435;
+  --background-dark: #0a0c20;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+}
+
+.primaryScroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--border-subtle);
+}
+
+.pageContainer {
+  background-color: var(--background);
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 16rem;
+  background-color: var(--background-dark);
+  padding: 1.5rem;
+  border-right: 1px solid color-mix(in srgb, var(--primary), transparent 75%);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.card {
+  background-color: var(--background-dark);
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid var(--primary);
+}
+
+.primaryTitle { 
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.5rem; 
+  color: var(--primary); 
+}
+
+.secondaryTitle { 
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.25rem; 
+  color: white; 
+}
+
+.list {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.option {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.option:hover {
+  background: var(--primary-translucent);
+  color: white;
+}
+
+.active {
+  background: color-mix(in srgb, var(--primary), transparent 85%);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.inputContainer {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 10px;
+  border-radius: 0.5rem;
+  border: 1px solid var(--primary-translucent);
+  outline: none;
+  background: transparent;
+  color: white;
+}
+
+.primaryButton {
+  padding: 0.25rem 1rem; 
+  cursor: pointer; 
+  border: 2px solid var(--primary); 
+  border-radius: 0.75rem;
+}
+
+.primaryButton:hover {
+  background-color: var(--primary-translucent);
+}
+
+.secondaryButton {
+  padding: 0.25rem; 
+  cursor: pointer; 
+  border: 1px solid #7a7a7a; 
+  color: #7a7a7a;
+  border-radius: 0.25rem;
+}
+
+.warnButton {
+  padding: 0.25rem; 
+  cursor: pointer;
+  border: 1px solid #e41b00; 
+  color: #e41b00;
+  border-radius: 0.25rem;
+}
+
+.memberAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
