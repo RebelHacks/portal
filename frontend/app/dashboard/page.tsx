@@ -32,8 +32,9 @@ export default function RebelHackPage() {
   };
 
   const addMember = (name: string) => {
-    setCurrentTeam([...currentTeam, { name }]); 
-    setAvailableMembers(availableMembers.filter(member => member !== name)); 
+    if (currentTeam.length >= TEAM_LIMIT) return setError(`Maximum capacity reached! A team can only have ${TEAM_LIMIT} members.`);
+    setCurrentTeam([...currentTeam, { name }]); // Add new member as an object
+    setAvailableMembers(availableMembers.filter(member => member !== name)); // Remove from available members
   };
 
   const removeMember = (name: string) => {
