@@ -1,7 +1,16 @@
-/* contact.module.css */
+/* login.module.css */
 
 .container {
-  position: relative;
+  position: fixed; /* Changed from relative */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Prevent scrolling */
+  
   background-color: #050d1e;
   background-image: radial-gradient(circle at center, rgba(0,255,255,0.1), #050d1e 60%);
 }
@@ -9,7 +18,8 @@
 .container::before {
   content: '';
   position: absolute;
-  inset: 50%;
+  top: 50%;
+  left: 50%;
   width: 400px;
   height: 400px;
   transform: translate(-50%, -50%);
@@ -19,26 +29,28 @@
   pointer-events: none;
 }
 
-.title {
-  position: relative;
+.portalCard {
+  position: relative; /* Ensure card is above the ::before background */
   z-index: 1;
-  color: #cc5500;
-  text-shadow:
-    0 0 2px #ff7f50,
-    0 0 5px #ff7f50,
-    0 0 10px #ff7f50,
-    0 0 20px #ff7f50;
-}
+  width: clamp(280px, 90vw, 420px);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border-radius: 1rem;
+  margin: 0; /* Remove margin since container centers it */
 
-.label {
-  color: #008b8b;
-  text-shadow:
-    0 0 2px #00ffff,
-    0 0 5px #00ffff,
-    0 0 10px #00ffff;
+  background-color: #0f2c44;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .input, .textarea {
+  width: 100%;
+  padding: clamp(0.6rem, 2vw, 0.875rem);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  box-sizing: border-box; /* Prevent overflow */
+  
   border: 2px solid #00ffff;
   background-color: #0d1b2a;
   color: #fff;
@@ -48,22 +60,23 @@
 }
 
 .input:focus, .textarea:focus {
+  outline: none;
   border-color: #ff7f50;
   box-shadow: 0 0 5px #ff7f50, 0 0 10px #ff7f50;
 }
 
-.textarea {
-  min-height: 120px;
-  resize: none;
-}
-
 .button {
+  width: 100%;
+  padding: clamp(0.8rem, 2vw, 1rem);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  
   border: 2px solid #ff7f50;
   color: #ff7f50;
   background: transparent;
   border-radius: 8px;
-  text-shadow: 0 0 5px #ff7f50, 0 0 10px #ff7f50;
+  /* text-shadow: 0 0 5px #ff7f50, 0 0 10px #ff7f50; took this off for now to show log in without glow*/
   transition: 0.3s;
+  cursor: pointer;
 }
 
 .button:hover {
@@ -72,22 +85,11 @@
   box-shadow: 0 0 10px #ff7f50, 0 0 20px #ff7f50;
 }
 
-/* 
-   Responsive adjustments
-    */
-
-/* Tablet screens: max-width 768px */
-@media (max-width: 768px) {
-  .title { font-size: 2.5rem; } /* Smaller heading */
-  .label { font-size: 1.1rem; } /* Smaller labels */
-  .input, .textarea { padding: 0.7rem; font-size: 0.95rem; } /* Smaller inputs */
-  .button { padding: 0.9rem 1.8rem; font-size: 1.1rem; } /* Smaller button */
-}
-
-/* Mobile screens: max-width 480px */
+/* Mobile optimizations */
 @media (max-width: 480px) {
-  .title { font-size: 2rem; } /* Even smaller heading */
-  .label { font-size: 1rem; } /* Smaller labels */
-  .input, .textarea { padding: 0.6rem; font-size: 0.9rem; } /* Adjust inputs for small screens */
-  .button { padding: 0.8rem 1.5rem; font-size: 1rem; } /* Compact button */
+  .portalCard {
+    width: calc(100vw - 2rem);
+    max-width: 420px;
+    padding: 1.75rem 1.5rem;
+  }
 }

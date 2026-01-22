@@ -8,8 +8,7 @@ export default function LoginPage() {
 
   return (
     <div className={`${styles.container} min-h-screen flex items-center justify-center`}>
-      <div className="w-full max-w-sm p-8 rounded-xl bg-[#0f2c44] shadow-lg flex flex-col items-center">
-        
+<div className={styles.portalCard}>        
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold">
