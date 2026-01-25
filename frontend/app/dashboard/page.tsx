@@ -1,6 +1,8 @@
 "use client";
 import style from "./dashboard.module.css";
 import { useState } from "react";
+import { redirect } from "next/navigation";
+
 
 const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
 const TABS = ["Team", "Schedule", "Submissions"];
@@ -45,6 +47,8 @@ export default function RebelHackPage() {
   };
 
   const filteredMembers = availableMembers.filter(member => member.toLowerCase().includes(search.toLowerCase()));
+
+  redirect('/redirect');
 
   return (
     <div className={`${style.pageContainer} min-h-screen flex flex-col relative`}>
