@@ -2,6 +2,7 @@
 import style from "./dashboard.module.css";
 import { useState } from "react";
 import { redirect } from "next/navigation";
+import { Submissions } from "../components/dashboard/Submissions";
 
 const debug = true;
 const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
@@ -242,10 +243,11 @@ export default function RebelHackPage() {
           )}
 
           {activeTab === "Submissions" && (
-            <div className={style.card}>
-              <h2 className={style.primaryTitle}>Project Submission</h2>
-              <p className="text-gray-400 mt-4">Submission stuff goes here...</p>
-            </div>
+            // <div className={style.card}>
+            //   <h2 className={style.primaryTitle}>Project Submission</h2>
+            //   <p className="text-gray-400 mt-4">Submission stuff goes here...</p>
+            // </div>
+            <Submissions />
           )}
 
         </div>
