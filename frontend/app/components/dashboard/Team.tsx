@@ -1,52 +1,60 @@
 import style from "../../dashboard/dashboard.module.css";
 import { useState } from "react";
 
-const debug = true;
-const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
-const TABS = ["Team", "Schedule", "Submissions"];
-const TEAM_LIMIT = 5;
+export interface TeamData {
+  teamName: string;
+  isTeamCreated: boolean;
+  currentTeam: { name: string }[];
+  availableMembers: string[];
+  teamLimit: number;
+}
 
-export function Team() {
+interface TeamProps {
+  teamData: TeamData;
+  setTeam: (updater: (prev: TeamData) => TeamData) => void;
+}
 
-  const [activeTab, setActiveTab] = useState("Team");
-  const [teamName, setTeamName] = useState("");
-  const [isTeamCreated, setIsTeamCreated] = useState(false);
-  const [currentTeam, setCurrentTeam] = useState([{ name: "User" }]); 
-  const [availableMembers, setAvailableMembers] = useState(INITIAL_MEMBERS);
+export function Team({ teamData, setTeam }: TeamProps) {
+  const { teamName, isTeamCreated, currentTeam, availableMembers, teamLimit } = teamData;
   const [search, setSearch] = useState("");
   const [showDisbandModal, setShowDisbandModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // State for the Drawer
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleCreateTeam = () => {
     if (!teamName.trim()) return setError("Please enter a team name.");
-    setIsTeamCreated(true);
+    setTeam(prev => ({ ...prev, isTeamCreated: true }));
   };
 
   const confirmDisband = () => {
     const membersToReturn = currentTeam.filter(member => member.name !== "User").map(member => member.name);
-    setAvailableMembers([...availableMembers, ...membersToReturn]); 
-    setCurrentTeam([{ name: "User" }]); 
-    setIsTeamCreated(false);
+    setTeam(prev => ({
+      ...prev,
+      availableMembers: [...prev.availableMembers, ...membersToReturn],
+      currentTeam: [{ name: "User" }],
+      isTeamCreated: false
+    }));
     setShowDisbandModal(false);
   };
 
   const addMember = (name: string) => {
-    if (currentTeam.length >= TEAM_LIMIT) return setError(`Maximum capacity reached! A team can only have ${TEAM_LIMIT} members.`);
-    setCurrentTeam([...currentTeam, { name }]); 
-    setAvailableMembers(availableMembers.filter(member => member !== name)); 
+    if (currentTeam.length >= teamLimit) return setError(`Maximum capacity reached! A team can only have ${teamLimit} members.`);
+    setTeam(prev => ({
+      ...prev,
+      currentTeam: [...prev.currentTeam, { name }],
+      availableMembers: prev.availableMembers.filter(member => member !== name)
+    }));
   };
 
   const removeMember = (name: string) => {
-    if (name === "User") return; 
-    setCurrentTeam(currentTeam.filter(member => member.name !== name)); 
-    setAvailableMembers([...availableMembers, name]); 
+    if (name === "User") return;  // Prevent removing the team leader
+    setTeam(prev => ({
+      ...prev,
+      currentTeam: prev.currentTeam.filter(member => member.name !== name),
+      availableMembers: [...prev.availableMembers, name]
+    }));
   };
 
   const filteredMembers = availableMembers.filter(member => member.toLowerCase().includes(search.toLowerCase()));
-
 
   return (
     <>  
@@ -84,7 +92,8 @@ export function Team() {
                   <input
                     type="text"
                     className={style.inputContainer}
-                    value={teamName} onChange={(e) => setTeamName(e.target.value)}
+                    value={teamName}
+                    onChange={(e) => setTeam(prev => ({ ...prev, teamName: e.target.value }))}
                     placeholder="Enter team name..."
                   />
                 </div>
@@ -94,7 +103,7 @@ export function Team() {
             <div className="flex-1 pt-10 border-t md:border-t-0 md:border-l border-[var(--primary-light-border)] md:pl-10">
               <h4 className={style.secondaryTitle}>Team Guidelines</h4>
               <ul className={`${style.list} space-y-2`}>
-                <li>Maximum of 5 members per team.</li>
+                <li>Maximum of {teamLimit} members per team.</li>
                 <li>Names must be professional.</li>
               </ul>
             </div>
@@ -109,7 +118,7 @@ export function Team() {
           <div className="flex flex-col md:flex-row justify-between items-start border-b border-[var(--primary-light-border)] pb-4 gap-4">
             <h1 className={style.primaryTitle}>{teamName}</h1>
             <div className="text-left md:text-right w-full md:w-auto">
-              <div className="text-sm text-gray-400 mb-2">{currentTeam.length} / {TEAM_LIMIT} Members</div>
+              <div className="text-sm text-gray-400 mb-2">{currentTeam.length} / {teamLimit} Members</div>
               <button onClick={() => setShowDisbandModal(true)} className={`${style.warnButton} text-xs w-full md:w-auto`}>DISBAND TEAM</button>
             </div>
           </div>
