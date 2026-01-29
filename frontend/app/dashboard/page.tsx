@@ -8,6 +8,7 @@ import { Team, TeamData} from "../components/dashboard/Team";
 import { Header } from "../components/dashboard/Header";
 import { Drawer } from "../components/dashboard/Drawer";
 
+// !! If you want to test the dashboard before the event, set debug = true !!
 const debug = false;
 const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
 const TEAM_LIMIT = 5;
@@ -15,11 +16,11 @@ const TEAM_LIMIT = 5;
 export default function RebelHackPage() {
   // !! IMPORTANT !!
   // Anything before this date will redirect to /redirect
-  // If you want to test the dashboard comment the code below
+  // If you want to test the dashboard before the event, set debug = true
   const now = new Date();
-  // if (now < new Date("2026-02-02T12:00:00-08:00") && !debug) {
-  //   redirect('/redirect');
-  // }
+  if (now < new Date("2026-02-02T12:00:00-08:00") && !debug) {
+    redirect('/redirect');
+  }
   const [activeTab, setActiveTab] = useState("Team");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [team, setTeam] = useState<TeamData>({

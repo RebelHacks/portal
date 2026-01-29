@@ -1,9 +1,11 @@
-import style from "../../dashboard/dashboard.module.css";
 import { TeamViewDash } from "./TeamViewDash";
 import { TeamCreationDash } from "./TeamCreationDash";
 import { TeamModals } from "./TeamModals";
+import { TeamInvitationsDash } from "./TeamInvitationDash";
 import { useState } from "react";
 
+const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
+const TEAM_LIMIT = 5;
 export interface TeamData {
   teamName: string;
   isTeamCreated: boolean;
@@ -57,14 +59,23 @@ export function Team({ teamData, setTeam }: TeamProps) {
       availableMembers: [...prev.availableMembers, name]
     }));
   };
-
-  const filteredMembers = availableMembers.filter(member => member.toLowerCase().includes(search.toLowerCase()));
-  const handleTeamAction = (type: "add" | "remove" | "disband", payload?: string) => {
+  
+  const handleTeamAction = ( type: "add" | "remove" | "disband" | "leave", payload?: string) => {
     if (type === "disband") {
       setShowDisbandModal(true);
-    } else if (type === "add" && payload) {
+    } 
+    else if (type === "leave") {
+      setTeam(prev => ({
+        ...prev,
+        isTeamCreated: false,
+        currentTeam: [{ name: "User" }],
+        teamName: ""
+      }));
+    }
+    else if (type === "add" && payload) {
       addMember(payload);
-    } else if (type === "remove" && payload) {
+    } 
+    else if (type === "remove" && payload) {
       removeMember(payload);
     }
   };
@@ -83,6 +94,42 @@ export function Team({ teamData, setTeam }: TeamProps) {
     if (action === "cancelDisband") setShowDisbandModal(false);
     if (action === "confirmDisband") confirmDisband();
   };
+  const [invitations, setInvitations] = useState<TeamData[]>([
+    {
+      teamName: "Code Warriors",
+      isTeamCreated: true,
+      currentTeam: [{ name: "Alex" }, { name: "Sam" }],
+      availableMembers: INITIAL_MEMBERS,
+      teamLimit: TEAM_LIMIT
+    },
+    {
+      teamName: "Debuggers United",
+      isTeamCreated: true,
+      currentTeam: [{ name: "Lily" }, { name: "Mark" }, { name: "Nina" }],
+      availableMembers: INITIAL_MEMBERS,
+      teamLimit: TEAM_LIMIT
+    },
+    {
+      teamName: "Script Kiddies",
+      isTeamCreated: true,
+      currentTeam: [{ name: "Eva" }],
+      availableMembers: INITIAL_MEMBERS,
+      teamLimit: TEAM_LIMIT
+    }
+  ]);
+
+  const handleInviteAction = (action: "accept" | "decline", team: TeamData) => {
+    if (action === "accept") {
+      const teamWithUser: TeamData = {
+        ...team,
+        currentTeam: [...team.currentTeam, { name: "User" }]
+      };
+      setTeam(() => teamWithUser);
+      setInvitations((prev) => prev.filter((t) => t.teamName !== team.teamName));
+    } else {
+      setInvitations((prev) => prev.filter((t) => t.teamName !== team.teamName));
+    }
+  };
   
   return (
     <>  
@@ -94,10 +141,7 @@ export function Team({ teamData, setTeam }: TeamProps) {
         <>
           <TeamCreationDash teamData={teamData} onAction={handleCreationAction} />
 
-          <div className={style.card}>
-            <h2 className={style.primaryTitle}>Invitations</h2>
-            <p>You have no invitations at this time.</p>
-          </div>
+          <TeamInvitationsDash invitations={invitations} onAction={handleInviteAction} />
         </>
       )}
     </>
