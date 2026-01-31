@@ -27,9 +27,9 @@ export default function RebelHackPage() {
   // Anything before this date will redirect to /redirect
   // If you want to test the dashboard before the event, set debug = true
   const now = new Date();
-  if (now < new Date("2026-02-02T12:00:00-08:00") && !debug) {
-    redirect("/redirect");
-  }
+  // if (now < new Date("2026-02-02T12:00:00-08:00") && !debug) {
+  //   redirect('/redirect');
+  // }
   const [activeTab, setActiveTab] = useState("Team");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [team, setTeam] = useState<TeamData>({

@@ -13,9 +13,15 @@
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",
+        "symfony/form": "7.2.*",
         "symfony/framework-bundle": "7.2.*",
+        "symfony/mailer": "7.2.*",
         "symfony/runtime": "7.2.*",
-        "symfony/yaml": "7.2.*"
+        "symfony/security-bundle": "7.2.*",
+        "symfony/twig-bundle": "7.2.*",
+        "symfony/validator": "7.2.*",
+        "symfony/yaml": "7.2.*",
+        "symfonycasts/verify-email-bundle": "^1.18"
     },
     "config": {
         "allow-plugins": {
@@ -68,6 +74,8 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.65"
+        "symfony/maker-bundle": "^1.65",
+        "symfony/stopwatch": "7.2.*",
+        "symfony/web-profiler-bundle": "7.2.*"
     }
 }
