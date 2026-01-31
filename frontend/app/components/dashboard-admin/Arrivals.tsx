@@ -14,16 +14,7 @@ type Person = {
 };
 
 export default function Arrivals() {
-  // const [people, setPeople ]
-  // Means:
-  // const people = result[0]
-  // const setPeople = result[1]
-
-  // useState()
-  // Age: State Variable
-  // setAge: Function to update variable
-  // const [age, setAge] = useState(42)
-
+  //  Mock person
   const [people, setPeople] = useState<Person[]>([
     {
       id: "p1",
@@ -39,7 +30,7 @@ export default function Arrivals() {
       email: "mateo.rivera@unlv.edu",
       team: "Circuit Cowboys",
       track: "Hardware",
-      state: "Arrived",
+      state: "Not Arrived",
     },
     {
       id: "p3",
@@ -47,22 +38,70 @@ export default function Arrivals() {
       email: "sofia.patel@unlv.edu",
       team: "Desert Debuggers",
       track: "Software",
-      state: "Checked In",
+      state: "Not Arrived",
     },
     {
       id: "p4",
       name: "Jordan Lee",
       email: "jordan.lee@csn.edu",
-      team: "Neon Ninjas",
+      team: "Robo Rebels",
+      track: "Hardware",
+      state: "Not Arrived",
+    },
+    {
+      id: "p5",
+      name: "Liam Chen",
+      email: "liam.chen@unlv.edu",
+      team: "Pixel Pioneers",
       track: "Software",
-      state: "Arrived",
+      state: "Not Arrived",
+    },
+    {
+      id: "p6",
+      name: "Maria Gonzalez",
+      email: "maria.gonzalez@csn.edu",
+      team: "Signal Squad",
+      track: "Hardware",
+      state: "Not Arrived",
+    },
+    {
+      id: "p7",
+      name: "Noah Brooks",
+      email: "noah.brooks@unlv.edu",
+      team: "Byte Benders",
+      track: "Software",
+      state: "Not Arrived",
+    },
+    {
+      id: "p8",
+      name: "Aaliyah Johnson",
+      email: "aaliyah.johnson@unlv.edu",
+      team: "Desert Coders",
+      track: "Software",
+      state: "Not Arrived",
+    },
+    {
+      id: "p9",
+      name: "Ethan Park",
+      email: "ethan.park@csn.edu",
+      team: "Hardware Heroes",
+      track: "Hardware",
+      state: "Not Arrived",
+    },
+    {
+      id: "p10",
+      name: "Priya Shah",
+      email: "priya.shah@unlv.edu",
+      team: "Quantum Quokkas",
+      track: "Software",
+      state: "Not Arrived",
     },
   ]);
 
   const [arrivalSearch, setArrivalSearch] = useState("");
-  const [arrivalFilter, setArrivalFilter] = useState<
-    "All" | ArrivalState | "Needs Check-In"
-  >("All");
+  const [arrivalFilter, setArrivalFilter] = useState<"All" | ArrivalState>(
+    "All",
+  );
 
   const arrivalsStats = useMemo(() => {
     const totalPeople = people.length;
@@ -86,64 +125,21 @@ export default function Arrivals() {
       })
       .filter((p) => {
         if (arrivalFilter === "All") return true;
-        if (arrivalFilter === "Needs Check-In") return p.state === "Arrived";
+
         return p.state === arrivalFilter;
       });
   }, [people, arrivalSearch, arrivalFilter]);
 
-  function markArrived(personId: string) {
+  function updatePersonState(personId: string, newState: ArrivalState) {
     setPeople((prev) =>
-      prev.map((p) =>
-        p.id === personId && p.state === "Not Arrived"
-          ? { ...p, state: "Arrived" }
-          : p,
-      ),
-    );
-  }
-
-  function checkIn(personId: string) {
-    setPeople((prev) =>
-      prev.map((p) => (p.id === personId ? { ...p, state: "Checked In" } : p)),
-    );
-  }
-
-  function undoCheckIn(personId: string) {
-    setPeople((prev) =>
-      prev.map((p) => (p.id === personId ? { ...p, state: "Arrived" } : p)),
+      prev.map((p) => (p.id === personId ? { ...p, state: newState } : p)),
     );
   }
 
   return (
     <>
-      {/* Dashboard Stats (top section)
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border p-5">
-          <div className="text-sm opacity-70">Total People</div>
-          <div className="mt-2 text-3xl font-semibold">
-            {arrivalsStats.totalPeople}
-          </div>
-          <div className="mt-1 text-xs opacity-60">Arrivals list</div>
-        </div>
-
-        <div className="rounded-2xl border p-5">
-          <div className="text-sm opacity-70">Arrived</div>
-          <div className="mt-2 text-3xl font-semibold">
-            {arrivalsStats.arrived}
-          </div>
-          <div className="mt-1 text-xs opacity-60">Needs check-in</div>
-        </div>
-
-        <div className="rounded-2xl border p-5">
-          <div className="text-sm opacity-70">Checked In</div>
-          <div className="mt-2 text-3xl font-semibold">
-            {arrivalsStats.checkedIn}
-          </div>
-          <div className="mt-1 text-xs opacity-60">Completed</div>
-        </div>
-      </section> */}
-
       {/* Arrivals List */}
-      <h2 className="text-lg font-semibold">Arrivals</h2>
+      <h2 className={styles.primaryTitle}>Arrivals</h2>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className={styles.card}>
           <div className="text-sm opacity-70">Not Arrived</div>
@@ -152,7 +148,7 @@ export default function Arrivals() {
           </div>
         </div>
         <div className={styles.card}>
-          <div className="text-sm opacity-70">Arrived (Needs Check-In)</div>
+          <div className="text-sm opacity-70">Arrived</div>
           <div className="mt-1 text-2xl font-semibold">
             {arrivalsStats.arrived}
           </div>
@@ -169,19 +165,19 @@ export default function Arrivals() {
           <input
             value={arrivalSearch}
             onChange={(e) => setArrivalSearch(e.target.value)}
-            className="rounded-xl border bg-transparent px-3 py-2 text-sm"
+            className="rounded-xl bg-[#111435] border border-[#FEA70A] px-3 py-2 text-sm"
             placeholder="Search name, email, team"
           />
 
+          {/* Filter People */}
           <select
             value={arrivalFilter}
             onChange={(e) =>
               setArrivalFilter(e.target.value as typeof arrivalFilter)
             }
-            className="rounded-xl border bg-transparent px-3 py-2 text-sm"
+            className="rounded-xl bg-[#111435] border border-[#FEA70A] px-3 py-2 text-sm"
           >
             <option value="All">All</option>
-            <option value="Needs Check-In">Needs Check-In</option>
             <option value="Not Arrived">Not Arrived</option>
             <option value="Arrived">Arrived</option>
             <option value="Checked In">Checked In</option>
@@ -189,7 +185,7 @@ export default function Arrivals() {
         </div>
 
         {/* People list/table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto h-100">
           <table className="w-full text-sm">
             <thead className="opacity-70">
               <tr className="border-b">
@@ -205,10 +201,10 @@ export default function Arrivals() {
               {filteredPeople.map((p) => {
                 const pill =
                   p.state === "Checked In"
-                    ? "opacity-90"
+                    ? "border-green-400/30 bg-green-500/10 text-green-300"
                     : p.state === "Arrived"
-                      ? "opacity-80"
-                      : "opacity-70";
+                      ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-300"
+                      : "border-white/10 bg-white/5 text-white/70";
 
                 return (
                   <tr key={p.id} className="border-b last:border-b-0">
@@ -220,7 +216,7 @@ export default function Arrivals() {
                     <td className="py-3">{p.track}</td>
                     <td className="py-3">
                       <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${pill}`}
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${pill}`}
                       >
                         {p.state}
                       </span>
@@ -228,34 +224,23 @@ export default function Arrivals() {
 
                     <td className="py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        {/* {p.state === "Not Arrived" && (
-                          <button
-                            onClick={() => markArrived(p.id)}
-                            className="rounded-lg border px-3 py-1.5 text-xs hover:opacity-80"
-                          >
-                            Mark Arrived
-                          </button>
-                        )}
+                        {/* Set state */}
+                        <select
+                          value={p.state}
+                          onChange={(e) =>
+                            updatePersonState(
+                              p.id,
+                              e.target.value as ArrivalState,
+                            )
+                          }
+                          className="rounded-lg bg-[#111435] border border-[#FEA70A]  px-2 py-1 text-xs"
+                        >
+                          <option value="Not Arrived">Not Arrived</option>
+                          <option value="Arrived">Arrived</option>
+                          <option value="Checked In">Checked In</option>
+                        </select>
 
-                        {p.state === "Arrived" && (
-                          <button
-                            onClick={() => checkIn(p.id)}
-                            className="rounded-lg border px-3 py-1.5 text-xs hover:opacity-80"
-                          >
-                            Check In
-                          </button>
-                        )}
-
-                        {p.state === "Checked In" && (
-                          <button
-                            onClick={() => undoCheckIn(p.id)}
-                            className="rounded-lg border px-3 py-1.5 text-xs hover:opacity-80"
-                          >
-                            Undo
-                          </button>
-                        )} */}
-
-                        <button className="rounded-lg border px-3 py-1.5 text-xs hover:opacity-80">
+                        <button className="rounded-lg border border-[#FEA70A] bg-[#111435] px-3 py-1.5 text-xs hover:opacity-80">
                           View
                         </button>
                       </div>
