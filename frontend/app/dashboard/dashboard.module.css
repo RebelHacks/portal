@@ -208,3 +208,55 @@
   top: 0;
   backdrop-filter: blur(12px);
 }
+
+
+/* New styles to complement your existing CSS */
+
+.descriptionInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 10px;
+  border-radius: 0.5rem;
+  border: 1px solid var(--primary-translucent);
+  outline: none;
+  background: transparent;
+  color: white;
+}
+
+/* ... existing css ... */
+
+/* 1. Main Layout Wrapper */
+.splitPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* 2. The Right Column (Handles the border logic) */
+.splitRight {
+  flex: 1;
+  border-top: 1px solid var(--primary-light-border);
+  padding-top: 2.5rem;
+}
+
+/* 3. The Feedback Box Container */
+.feedbackBox {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--primary);
+  padding: 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-top: 0.5rem;
+}
+
+/* Desktop Adjustment */
+@media (min-width: 768px) {
+  .splitPanel {
+    flex-direction: row;
+  }
+  .splitRight {
+    border-top: none;
+    border-left: 1px solid var(--primary-light-border);
+    padding-top: 0;
+    padding-left: 2.5rem;
+  }
+}
