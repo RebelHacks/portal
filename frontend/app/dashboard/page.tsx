@@ -10,16 +10,7 @@ import { Drawer } from "../components/dashboard/Drawer";
 
 // !! If you want to test the dashboard before the event, set debug = true !!
 const debug = true;
-const INITIAL_MEMBERS = [
-  "Sally",
-  "Alice",
-  "Bob",
-  "Kate",
-  "Fred",
-  "Alex",
-  "Noah",
-  "Billy",
-];
+const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
 const TEAM_LIMIT = 5;
 
 export default function RebelHackPage() {

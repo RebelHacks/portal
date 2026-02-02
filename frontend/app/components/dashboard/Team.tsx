@@ -2,6 +2,7 @@ import { TeamViewDash } from "./TeamViewDash";
 import { TeamCreationDash } from "./TeamCreationDash";
 import { TeamModals } from "./TeamModals";
 import { TeamInvitationsDash } from "./TeamInvitationDash";
+import { TeamProjectDash } from "./TeamProjectDash";
 import { useState } from "react";
 
 const INITIAL_MEMBERS = ["Sally", "Alice", "Bob", "Kate", "Fred", "Alex", "Noah", "Billy"];
@@ -136,7 +137,11 @@ export function Team({ teamData, setTeam }: TeamProps) {
       <TeamModals state={{ error, showDisband: showDisbandModal, teamName: teamData.teamName }} onAction={handleModalAction} />
       
       {isTeamCreated ? (
-        <TeamViewDash teamData={teamData} onAction={handleTeamAction} />
+        <>
+          <TeamViewDash teamData={teamData} onAction={handleTeamAction} />
+          
+          <TeamProjectDash teamData={teamData} />
+        </>
       ) : (
         <>
           <TeamCreationDash teamData={teamData} onAction={handleCreationAction} />
