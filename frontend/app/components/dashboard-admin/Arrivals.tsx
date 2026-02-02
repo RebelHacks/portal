@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import styles from "../../dashboard-admin/admin.module.css";
+import useApi from "@/hooks/useApi";
+
 type ArrivalState = "Not Arrived" | "Arrived" | "Checked In";
 
 type Person = {
@@ -12,6 +14,13 @@ type Person = {
   track: "Software" | "Hardware";
   state: ArrivalState;
 };
+
+// CRUD - Create, Read, Update, Delete
+
+// (Create) GET    - Gets information (Make a get request to an endpoint )
+// (Read)   POST   - Modify the state of underlying data, (create a new resource)
+// (Update) PUT    - Update the existing data (Used for arrival state)
+// (Delete) DELETE - Removes information 
 
 export default function Arrivals() {
   //  Mock person
