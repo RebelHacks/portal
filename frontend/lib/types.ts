@@ -33,12 +33,44 @@ export interface ErrorResponse {
 }
 
 export type ArrivalState = "Pending" | "Checked In";
+export type Track = "Software" | "Hardware";
 
 export interface User {
   id: number;
   name: string;
   email: string;
   team: string;
-  track: "Software" | "Hardware";
+  track: Track;
   state: ArrivalState;
+}
+
+export type TeamStatus = "Verified" | "Unverified";
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  email: string;
+  track: Track | "";
+  state: ArrivalState;
+}
+
+export interface TeamProject {
+  name: string;
+  details: string;
+}
+
+export interface Team {
+  id: number;
+  teamName: string;
+  status: TeamStatus;
+  track: Track;
+  project: TeamProject;
+  assignments: Record<string, number[]>;
+  members?: TeamMember[];
+}
+
+export interface Judge {
+  id: number;
+  name: string;
+  email: string;
 }

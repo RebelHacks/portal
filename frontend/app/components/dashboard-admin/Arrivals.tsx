@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import styles from "../../dashboard-admin/admin.module.css";
-import { useApi, useMutation } from "@/hooks/useApi";
+import { useApi } from "@/hooks/useApi";
+import api from "@/lib/api";
 import type { ArrivalState, User } from "@/lib/types";
 
 export default function Arrivals() {
-  const { data } = useApi<User[]>("/users");
-  const [userData, setUserData] = useState<User[]>([]);
+  const { data, refetch } = useApi<User[]>("/users");
+  const userData = useMemo(() => data ?? [], [data]);
 
   // Update the state when searching and filtering
   const [arrivalSearch, setArrivalSearch] = useState("");
@@ -15,30 +16,14 @@ export default function Arrivals() {
     "All",
   );
 
-  const { mutate: updateArrivalState } = useMutation<{ state: string }, ArrivalState>(
-    "patch",
-    "/users/{id}",
-  );
-
-  // Load users when API data arrives
-  useEffect(() => {
-    if (data) {
-      setUserData(data);
-    }
-  }, [data]);
-
   // Handle arrival state change
   const handleSetArrivalState = async (
     userId: number,
     newState: ArrivalState,
   ) => {
     try {
-      await updateArrivalState( {state: newState} );
-
-      // Update local state optimistically
-      setUserData((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, state: newState } : u)),
-      );
+      await api.patch(`/users/${userId}`, { state: newState });
+      await refetch();
     } catch (error) {
       console.error("Error updating arrival state:", error);
     }
@@ -158,10 +143,6 @@ export default function Arrivals() {
                           <option value="Pending">Pending</option>
                           <option value="Checked In">Checked In</option>
                         </select>
-
-                        <button className="rounded-lg border border-[#FEA70A] bg-[#111435] px-3 py-1.5 text-xs hover:opacity-80">
-                          View
-                        </button>
                       </div>
                     </td>
                   </tr>

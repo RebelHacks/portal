@@ -6,6 +6,7 @@ import { Drawer } from "../components/dashboard-admin/Drawer-admin";
 import { useState } from "react";
 import Teams from "../components/dashboard-admin/Teams";
 import Arrivals from "../components/dashboard-admin/Arrivals";
+import Judges from "../components/dashboard-admin/Judges";
 
 
 export default function AdminPage() {
@@ -28,6 +29,7 @@ export default function AdminPage() {
         <div className="max-w-5xl mx-auto space-y-8">
           {activeTab === "Arrivals" && <Arrivals />}
           {activeTab === "Teams" && <Teams />}
+          {activeTab === "Judges" && <Judges />}
 
         </div>
       </main>

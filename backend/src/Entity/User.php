@@ -147,7 +147,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->team;
     }
 
-    public function setTeam(string $team): static
+    public function setTeam(?string $team): static
     {
         $this->team = $team;
 
