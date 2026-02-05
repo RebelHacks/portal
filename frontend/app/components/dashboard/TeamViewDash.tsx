@@ -21,7 +21,7 @@ export function TeamViewDash({ teamData, onAction }: TeamViewDashProps) {
 
   return (
     <div className={`${style.card} space-y-8`}>
-      <div className="flex flex-col md:flex-row justify-between items-start border-b border-[var(--primary-light-border)] pb-4 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start border-b border-(--primary-light-border) pb-4 gap-4">
         <h1 className={style.primaryTitle}>{teamName}</h1>
         <div className="text-left md:text-right w-full md:w-auto">
           <div className="text-sm text-gray-400 mb-2">

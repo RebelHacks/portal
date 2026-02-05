@@ -36,6 +36,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
+    #[ORM\Column(length: 128, nullable: true)]
+    private ?string $name = null;
+
+    #[ORM\Column(length: 128, nullable: true)]
+    private ?string $team = null;
+
+    #[ORM\Column(length: 128, nullable: true)]
+    private ?string $track = null;
+
+    #[ORM\Column(length: 128, nullable: true)]
+    private ?string $state = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -114,6 +126,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getTeam(): ?string
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?string $team): static
+    {
+        $this->team = $team;
+
+        return $this;
+    }
+
+    public function getTrack(): ?string
+    {
+        return $this->track;
+    }
+
+    public function setTrack(string $track): static
+    {
+        $this->track = $track;
+
+        return $this;
+    }
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): static
+    {
+        $this->state = $state;
 
         return $this;
     }
