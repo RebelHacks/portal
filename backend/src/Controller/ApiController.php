@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Invitation;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Entity\File;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +28,14 @@ class ApiController extends AbstractController
     #[Route('/register', name: 'register', methods: ['POST'])]
     public function register(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher)
     {
-        $data = json_decode($request->getContent(), true);
+        $content = $request->getContent();
+        $data = json_decode($content, true);
+
+        if ($data === null) {
+            // Handle FormData
+            $data = $request->request->all();
+            $data['transcript'] = $request->files->get('transcript');
+        }
 
         // Validate email
         if (!isset($data['email']) || empty($data['email'])) {
@@ -42,35 +50,113 @@ class ApiController extends AbstractController
             return $this->json(['message' => 'Invalid email format'], 400);
         }
 
+        // Check if it's judge application or student registration
+        $isJudge = isset($data['isJudge']) ? filter_var($data['isJudge'], FILTER_VALIDATE_BOOLEAN) : false;
 
-        // Validate password
-        if (!isset($data['password']) || empty($data['password'])) {
-            return $this->json(['message' => 'Password is required'], 400);
+        if ($isJudge) {
+            // Judge application
+            $user = (new User());
+            $user->setEmail($data['email'])
+                ->setRoles(['ROLE_JUDGE'])
+                ->setState('Pending');
+
+            $em->persist($user);
+            $em->flush();
+
+            return $this->json([
+                'message' => 'Judge application submitted successfully',
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail()
+                ]
+            ], 201);
+        } else {
+            // Student registration
+            // Validate password
+            if (!isset($data['password']) || empty($data['password'])) {
+                return $this->json(['message' => 'Password is required'], 400);
+            }
+
+            if (strlen($data['password']) < 8 || strlen($data['password']) > 4096) {
+                return $this->json(['message' => 'Password must be between 8 and 4096 characters long'], 400);
+            }
+
+            if ($data['password'] && preg_match('/\s/', $data['password'])) {
+                return $this->json(['message' => 'Password cannot contain whitespace characters'], 400);
+            }
+
+            if ($data['password'] !== ($data['confirmPassword'] ?? '')) {
+                return $this->json(['message' => 'Passwords do not match'], 400);
+            }
+
+            // Password Policy Rules
+            if ($data['password'] && !preg_match('/[A-Z]/', $data['password'])) {
+                return $this->json(['message' => 'Password must contain at least one uppercase letter'], 400);
+            }
+
+            if ($data['password'] && !preg_match('/[a-z]/', $data['password'])) {
+                return $this->json(['message' => 'Password must contain at least one lowercase letter'], 400);
+            }
+
+            if ($data['password'] && !preg_match('/[0-9]/', $data['password'])) {
+                return $this->json(['message' => 'Password must contain at least one number'], 400);
+            }
+
+            if ($data['password'] && !preg_match('/[\W_]/', $data['password'])) {
+                return $this->json(['message' => 'Password must contain at least one special character'], 400);
+            }
+
+            // Validate username
+            if (!isset($data['username']) || empty($data['username'])) {
+                return $this->json(['message' => 'Username is required'], 400);
+            }
+
+            if (strlen($data['username']) < 3 || strlen($data['username']) > 50) {
+                return $this->json(['message' => 'Username must be between 3 and 50 characters long'], 400);
+            }
+
+            if ($data['username'] && preg_match('/\s/', $data['username'])) {
+                return $this->json(['message' => 'Username cannot contain whitespace characters'], 400);
+            }
+
+            $user = (new User());
+            $user->setEmail($data['email'])
+                ->setPassword($passwordHasher->hashPassword($user, $data['password']))
+                ->setName($data['username'])
+                ->setRoles(['ROLE_USER'])
+                ->setState('Pending');
+
+            if (isset($data['track'])) {
+                $user->setTrack($data['track']);
+            }
+
+            if (isset($data['major'])) {
+                $user->setMajor($data['major']);
+            }
+
+            // Handle transcript upload
+            if (isset($data['transcript']) && $data['transcript'] instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                $file = $data['transcript'];
+                if ($file->getMimeType() !== 'application/pdf') {
+                    return $this->json(['message' => 'Transcript must be a PDF file'], 400);
+                }
+                // Save file or store path
+                $fileName = uniqid() . '.' . $file->guessExtension();
+                $file->move($this->getParameter('kernel.project_dir') . '/var/uploads', $fileName);
+                // Perhaps store path in user or separate table
+            }
+
+            $em->persist($user);
+            $em->flush();
+
+            return $this->json([
+                'message' => 'User created successfully',
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail()
+                ]
+            ], 201);
         }
-
-        if (strlen($data['password']) < 6 || strlen($data['password']) > 4096) {
-            return $this->json(['message' => 'Password must be between 6 and 4096 characters long'], 400);
-        }
-
-        if ($data['password'] && preg_match('/\s/', $data['password'])) {
-            return $this->json(['message' => 'Password cannot contain whitespace characters'], 400);
-        }
-
-
-        $user = (new User());
-        $user->setEmail($data['email'])
-            ->setPassword($passwordHasher->hashPassword($user, $data['password']));
-
-        $em->persist($user);
-        $em->flush();
-
-        return $this->json([
-            'message' => 'User created successfully',
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail()
-            ]
-        ], 201);
     }
 
     // Get user json object
@@ -88,6 +174,7 @@ class ApiController extends AbstractController
             'email' => $u->getEmail(),
             'team' => $u->getTeam() ?? '',
             'track' => $u->getTrack() ?? '',
+            'major' => $u->getMajor() ?? '',
             'state' => $u->getState() ?? 'Pending',
 
         ], $users);
@@ -112,6 +199,99 @@ class ApiController extends AbstractController
         return $this->json($jsonData);
     }
 
+    #[Route('/users/profile', name: 'update_profile', methods: ['PATCH'])]
+    public function updateProfile(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['track'])) {
+            $user->setTrack($data['track']);
+        }
+
+        if (isset($data['major'])) {
+            $user->setMajor($data['major']);
+        }
+
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'id' => $user->getId(),
+                'track' => $user->getTrack(),
+                'major' => $user->getMajor(),
+            ]
+        ]);
+    }
+
+#[Route('/users/upload-file', name: 'upload_file', methods: ['POST'])]
+public function uploadFile(
+    Request $request,
+    EntityManagerInterface $em
+): JsonResponse {
+    /** @var User $user */
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->json(['message' => 'Unauthorized'], 401);
+    }
+
+    $file = $request->files->get('file');
+    $type = $request->request->get('type'); // e.g., 'transcript', 'form', 'resume'
+
+    if (!$file || !$type) {
+        return $this->json(['message' => 'File and type are required'], 400);
+    }
+
+    // --- LOGIC FOR UNIQUENESS ---
+    // Define which types should only have ONE file per user
+    $uniqueTypes = ['transcript'];
+
+    if (in_array($type, $uniqueTypes)) {
+        $oldFile = $em->getRepository(File::class)->findOneBy([
+            'user' => $user,
+            'type' => $type
+        ]);
+
+        if ($oldFile) {
+            $oldPath = $this->getParameter('kernel.project_dir') . $oldFile->getFilepath();
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+            $em->remove($oldFile);
+            // We don't flush yet, we'll flush at the end
+        }
+    }
+    // If the type is 'form', the logic above is skipped, and a new record is added.
+
+    // --- FILE SAVING ---
+    $fileName = sprintf('%s_%d_%s.%s', $type, $user->getId(), uniqid(), $file->guessExtension());
+    $uploadDir = $this->getParameter('kernel.project_dir') . '/public/files';
+    
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
+    $file->move($uploadDir, $fileName);
+
+    $fileEntity = new File();
+    $fileEntity->setUser($user);
+    $fileEntity->setFilepath('/public/files/' . $fileName);
+    $fileEntity->setType($type);
+
+    $em->persist($fileEntity);
+    $em->flush();
+
+    return $this->json([
+        'message' => 'File uploaded successfully',
+        'fileId' => $fileEntity->getId(),
+        'filepath' => $fileEntity->getFilepath()
+    ], 200);
+}
 
 
     #[Route('/users/{id}', methods: ['PATCH'])]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./login.module.css";
 import api from "@/lib/api";
@@ -8,9 +8,12 @@ import type {ErrorResponse, LoginRequest, LoginResponse} from "@/lib/types";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [isJudge, setIsJudge] = useState<boolean | null>(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const confirmRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -57,6 +60,8 @@ export default function LoginPage() {
       const registerData = {
         email: email.trim(),
         password: password,
+        confirmPassword: confirmPassword,
+        username: username,
         agreeTerms: true
       };
 
@@ -86,6 +91,37 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
+    if (mode === "register") {
+      // Password complexity: min 8 chars, lower, upper, number, special
+      const complexRx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+      if (!complexRx.test(password)) {
+        if (passwordRef.current) {
+          passwordRef.current.setCustomValidity('Password must be at least 8 characters and include lowercase, uppercase, number, and special character');
+          passwordRef.current.reportValidity();
+        } else {
+          setError('Password must be at least 8 characters and include lowercase, uppercase, number, and special character');
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        // show native validation popup on the confirm password input when available
+        if (confirmRef.current) {
+          confirmRef.current.setCustomValidity('Passwords do not match');
+          confirmRef.current.reportValidity();
+        } else {
+          setError('Passwords do not match');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // clear any previous custom validity
+      if (confirmRef.current) confirmRef.current.setCustomValidity('');
+      if (passwordRef.current) passwordRef.current.setCustomValidity('');
+    }
+
     try {
       if (mode === "login") {
         await handleLogin();
@@ -96,6 +132,8 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  const confirmPasswordsMatch = mode === "register" && password !== confirmPassword && confirmPassword.length > 0;
 
   return (
     <div className={`${styles.container} min-h-screen flex items-center justify-center`}>
@@ -122,87 +160,101 @@ export default function LoginPage() {
         {/* Form */}
         
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-          <label className="flex flex-col text-md">
-            Email
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
-              placeholder="Email"
-            />
-          </label>
-
-          <label className="flex flex-col text-md">
-            Password
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
-              placeholder="Password"
-            />
-          </label>
-{/*           
+          {mode === "login" && (
+            <>
+              <label className="flex flex-col text-md">
+                Email
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  placeholder="Email"
+                />
+              </label>
+              
+              <label className="flex flex-col text-md">
+                Password
+                <input
+                  ref={passwordRef}
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordRef.current) passwordRef.current.setCustomValidity('');
+                  }}
+                  disabled={loading}
+                  className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  placeholder="Password"
+                />
+              </label>
+          </>
+          )}
+          
           {mode === "register" && (
-            <div>
-            <div className="flex flex-col gap-3">
-                <span className="text-md font-medium">Are you a judge?</span>
-                <div className="flex gap-4">
-                  {['Yes', 'No'].map((option) => (
-                    <label key={option} className="flex items-center gap-2 cursor-pointer group">
-                      <input 
-                        type="radio" 
-                        name="isJudge"
-                        value={option}
-                        checked={isJudge === (option === 'Yes')}
-                        onChange={() => setIsJudge(option === 'Yes')}
-                        className="w-4 h-4 accent-cyan-400"
-                      />
-                      <span className="group-hover:text-cyan-400 transition-colors">{option}</span>
-                    </label>
-                  ))}
-                </div>
-              
-              {!isJudge && (
-                <div>
-                  <div className="flex flex-col text-md mb-4">
-                    <label className="mb-2">What is your major?</label>
-                    <input
-                      type="text"
-                      required
-                      className={`${styles.input} w-full px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400`}
-                      placeholder="Major"
-                    />
-                  </div>
-              
-                  <div className="flex flex-col text-md">
-                    <div className="flex items-center gap-2 mb-2">
-                      <label>Upload your unofficial transcript</label>
-              
-                      <div className="group relative">
-                        <span className="cursor-help text-cyan-400 text-xs border border-cyan-400 rounded-full px-1.5">?</span>
-                        <div className="absolute bottom-full left-0 mb-2 w-64 p-2 bg-slate-800 text-xs text-white rounded hidden group-hover:block z-50 shadow-lg border border-slate-700">
-                          Used to verify UNLV/CSN enrollment and placement in either advanced or beginner track.
-                        </div>
-                      </div>
-                    </div>
-              
-                    <input 
-                      type="file" 
-                      accept=".pdf"
-                      className={`${styles.input} pt-1 w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-white hover:file:bg-cyan-600 cursor-pointer`} 
-                    />
-                  </div>
-                </div>
-              )}
+            <div className="w-full flex flex-col gap-4">
+              <label className="flex flex-col text-md">
+                User Name
+                <input
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={loading}
+                  className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  placeholder="User Name"
+                />
+              </label>
+              <label className="flex flex-col text-md">
+                Email
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  placeholder="Email"
+                />
+              </label>
+              <label className="flex flex-col text-md">
+                Password
+                <input
+                  ref={passwordRef}
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordRef.current) passwordRef.current.setCustomValidity('');
+                  }}
+                  disabled={loading}
+                  className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  placeholder="Password"
+                />
+              </label>
+              <label className="flex flex-col text-md">
+                Confirm Password
+                <input
+                  ref={confirmRef}
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    // clear native custom validity as user types
+                    if (confirmRef.current) confirmRef.current.setCustomValidity('');
+                  }}
+                  disabled={loading}
+                  className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  placeholder="Confirm Password"
+                />
+              </label>
             </div>
-          </div>          
-        )} */}
+            )}
 
           <button
             type="submit"
