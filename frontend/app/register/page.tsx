@@ -21,6 +21,7 @@ export default function RegisterPage() {
       if (!isJudge) {
         // 1. Update Profile
         await api.patch('/users/profile', { major, track });
+        if (transcript) {
           const fileData = new FormData();
           fileData.append("file", transcript);
           fileData.append("type", "transcript");
@@ -28,6 +29,7 @@ export default function RegisterPage() {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials: true,
           });
+        }
       }
 
       router.push("/dashboard");
