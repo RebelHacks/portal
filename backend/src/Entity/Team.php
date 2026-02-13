@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TeamRepository::class)]
 #[ORM\Table(name: '`team`')]
-#[ORM\UniqueConstraint(name: 'UNIQ_TEAM_NAME', fields: ['teamName'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_TEAM_NAME', fields: ['name'])]
 class Team
 {
     #[ORM\Id]
@@ -17,7 +17,7 @@ class Team
     private ?int $id = null;
 
     #[ORM\Column(length: 128)]
-    private ?string $teamName = null;
+    private ?string $name = null;
 
     #[ORM\Column(length: 32, options: ['default' => 'Unverified'])]
     private ?string $status = 'Unverified';
@@ -26,13 +26,13 @@ class Team
     private ?string $track = 'Software';
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $projectName = null;
+    private ?string $project_name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $projectDetails = null;
+    private ?string $project_details = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $judgeAssignments = [];
+    private ?array $judge_assignments = [];
 
     public function getId(): ?int
     {
@@ -42,12 +42,12 @@ class Team
 
     public function getTeamName(): ?string
     {
-        return $this->teamName;
+        return $this->name;
     }
 
-    public function setTeamName(string $teamName): static
+    public function setTeamName(string $name): static
     {
-        $this->teamName = $teamName;
+        $this->name = $name;
 
         return $this;
     }
@@ -78,36 +78,36 @@ class Team
 
     public function getProjectName(): ?string
     {
-        return $this->projectName;
+        return $this->project_name;
     }
 
-    public function setProjectName(?string $projectName): static
+    public function setProjectName(?string $project_name): static
     {
-        $this->projectName = $projectName;
+        $this->project_name = $project_name;
 
         return $this;
     }
 
     public function getProjectDetails(): ?string
     {
-        return $this->projectDetails;
+        return $this->project_details;
     }
 
-    public function setProjectDetails(?string $projectDetails): static
+    public function setProjectDetails(?string $project_details): static
     {
-        $this->projectDetails = $projectDetails;
+        $this->project_details = $project_details;
 
         return $this;
     }
 
     public function getJudgeAssignments(): ?array
     {
-        return $this->judgeAssignments ?? [];
+        return $this->judge_assignments ?? [];
     }
 
-    public function setJudgeAssignments(?array $judgeAssignments): static
+    public function setJudgeAssignments(?array $judge_assignments): static
     {
-        $this->judgeAssignments = $judgeAssignments ?? [];
+        $this->judge_assignments = $judge_assignments ?? [];
 
         return $this;
     }
