@@ -1,20 +1,52 @@
 import style from "../../dashboard/dashboard.module.css";
-import { useState } from "react";
-import type { TeamData } from "./Team";
+import { useState, useEffect, useCallback } from "react";
+import api from "@/lib/api";
+import { useTeamContext } from "./TeamContext";
+import type { Team } from "@/lib/types";
 
-interface TeamProjectDashProps {
-  teamData: TeamData;
-}
-
-export function TeamProjectDash({ teamData }: TeamProjectDashProps) {
-  // 1. Determine Identity
-  const isLeader = teamData.currentTeam.length > 0 && teamData.currentTeam[0].name === "User";
-
-  // 2. Project State
+export function TeamProjectDash() {
+  const { teamId, currentUserId, isLeader } = useTeamContext();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [isCreated, setIsCreated] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProject = useCallback(async () => {
+    try {
+      const teams = await api.get<Team[]>('/teams');
+      const team = teams.find(t => t.id === teamId);
+      if (!team) return;
+
+      setName(team.project.name);
+      setDesc(team.project.details);
+      setIsCreated(!!team.project.name);
+    } catch (err) {
+      console.error('Failed to fetch project:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [teamId, currentUserId]);
+
+  useEffect(() => { fetchProject(); }, [fetchProject]);
+
+  const handleSave = async () => {
+    if (!name || !desc) return;
+    setSaving(true);
+    try {
+      await api.patch(`/teams/${teamId}`, { projectName: name, projectDetails: desc });
+      setIsCreated(true);
+      setIsEditing(false);
+      await fetchProject();
+    } catch (err: any) {
+      console.error('Failed to save project:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return null;
 
   // Mock Data
   const rounds = [
@@ -42,18 +74,6 @@ export function TeamProjectDash({ teamData }: TeamProjectDashProps) {
                 <h2 className={`${style.primaryTitle} mb-0`}>
                   Pending Creation
                 </h2>
-          
-                {/* Debug button placed where the EDIT button usually sits */}
-                <button 
-                  onClick={() => {
-                    setName("Project Alpha (Debug)");
-                    setDesc("This is a simulated project description to verify the Member View layout.");
-                    setIsCreated(true);
-                  }}
-                  className={`${style.warnButton} text-[10px] px-3 py-1 border-dashed opacity-50 hover:opacity-100 transition-opacity`}
-                >
-                  [DEBUG] SIMULATE
-                </button>
               </div>
                 
               {/* Content Section: Aligned to the left under the header */}
@@ -114,15 +134,11 @@ export function TeamProjectDash({ teamData }: TeamProjectDashProps) {
               </div>
 
               <button 
-                onClick={() => {
-                  if (name && desc) {
-                    setIsCreated(true);
-                    setIsEditing(false);
-                  }
-                }}
+                onClick={handleSave}
                 className={style.primaryButton}
+                disabled={saving}
               >
-                {isCreated ? "Save Changes" : "Create Project"}
+                {saving ? 'Saving...' : isCreated ? "Save Changes" : "Create Project"}
               </button>
             </div>
           )}

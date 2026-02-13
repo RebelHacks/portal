@@ -48,6 +48,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 128, nullable: true)]
     private ?string $state = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $major = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -174,6 +177,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setState(string $state): static
     {
         $this->state = $state;
+
+        return $this;
+    }
+
+    public function getMajor(): ?string
+    {
+        return $this->major;
+    }
+
+    public function setMajor(?string $major): static
+    {
+        $this->major = $major;
 
         return $this;
     }

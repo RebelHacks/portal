@@ -5,6 +5,8 @@
 /backend/.env.local
 /frontend/.env
 /frontend/.env.local
+/backend/public/files
+/backend/migrations
 
 backend/config/secrets/prod/prod.decrypt.private.php
 backend/public/bundles/

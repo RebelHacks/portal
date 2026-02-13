@@ -1,12 +1,13 @@
 /* dashboard.module.css */
 
 :root {
-  --primary: #fea70a;
-  --primary-translucent: rgba(254, 167, 10, 0.25);
-  --primary-light-border: color-mix(in srgb, var(--primary), transparent 80%);
-  --background: #111435;
-  --background-dark: #0a0c20;
-  --border-subtle: rgba(255, 255, 255, 0.1);
+  --primary: #fea70a; /* orange */
+  --primary-translucent: rgba(254, 167, 10, 0.12);
+  --primary-light-border: rgba(254, 167, 10, 0.12);
+  --background: #050d1e; /* match redirect/login background */
+  --background-dark: #0f2c44; /* card background */
+  --input-border: #00ffff; /* cyan */
+  --border-subtle: rgba(255, 255, 255, 0.06);
 }
 
 .primaryScroll {
@@ -17,6 +18,8 @@
 .pageContainer {
   background-color: var(--background);
   min-height: 100vh;
+  background-color: #050d1e;
+  background-image: radial-gradient(circle at center, rgba(0,255,255,0.1), #050d1e 60%);
 }
 
 .modalBackdrop {
@@ -32,10 +35,13 @@
 }
 
 .card {
+  position: relative;
+  z-index: 1;
   background-color: var(--background-dark);
-  padding: 2rem;
+  padding: clamp(1rem, 2.5vw, 2rem);
   border-radius: 1rem;
-  border: 1px solid var(--primary);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.03);
 }
 
 
@@ -79,24 +85,59 @@
 
 .inputContainer {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: clamp(0.6rem, 2vw, 0.875rem);
+  font-size: clamp(0.9rem, 2vw, 1rem);
   margin-bottom: 10px;
-  border-radius: 0.5rem;
-  border: 1px solid var(--primary-translucent);
+  border-radius: 8px;
+  border: 2px solid var(--input-border);
+  background-color: #0d1b2a;
+  color: #fff;
   outline: none;
-  background: transparent;
+  box-sizing: border-box;
+  transition: 0.2s;
+}
+
+.inputContainer:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px rgba(254,167,10,0.08);
+}
+
+.dropdown {
+  width: 100%;
+  padding: clamp(0.6rem, 2vw, 0.875rem);
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 2px solid var(--input-border);
+  background-color: #0d1b2a;
+  color: #fff;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2300ffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.2em 1.2em;
+  padding-right: 2.5rem;
+}
+
+.dropdown option {
+  background-color: var(--background-dark);
   color: white;
+  padding: 0.5rem;
 }
 
 .primaryButton {
-  padding: 0.25rem 1rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
   border: 2px solid var(--primary);
-  border-radius: 0.75rem;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .primaryButton:hover {
   background-color: var(--primary-translucent);
+  color: #0f2c44;
 }
 
 .secondaryButton {
@@ -108,17 +149,18 @@
 }
 
 .warnButton {
-  padding: 0.25rem;
+  padding: 0.5rem 0.75rem;
   cursor: pointer;
   border: 1px solid #e41b00;
   color: #e41b00;
-  border-radius: 0.25rem;
+  border-radius: 6px;
 }
 
 .memberAvatar {
   width: 2.5rem;
   height: 2.5rem;
-  background-color: #333;
+  background-color: #0d1b2a;
+  border: 2px solid var(--input-border);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -207,6 +249,10 @@
   border-bottom: 1px solid var(--primary-translucent);
   position: sticky;
   top: 0;
+  width: 100%;
+  height: 72px;
+  z-index: 100;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 

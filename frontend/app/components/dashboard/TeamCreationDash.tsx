@@ -1,13 +1,47 @@
+import { useState } from 'react';
 import style from "../../dashboard/dashboard.module.css";
-import type { TeamData } from "./Team";
+import api from "@/lib/api";
+import { useTeamContext } from "./TeamContext";
+import type {ErrorResponse, CreateTeamRequest, Track, Team} from "@/lib/types";
 
-interface TeamCreationDashProps {
-  teamData: TeamData;
-  onAction: (action: "updateName" | "create", value?: string) => void;
-}
+export function TeamCreationDash() {
+  const { refresh } = useTeamContext();
+  const [teamName, setTeamName] = useState('');
+  const [track, setTrack] = useState<Track>('Software');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [createdTeam, setCreatedTeam] = useState<Team | null>(null);
 
-export function TeamCreationDash({ teamData, onAction }: TeamCreationDashProps) {
-  const { teamName, teamLimit } = teamData;
+  const createTeam = async () => {
+    if (!teamName.trim()) {
+      setError('Team name is required');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+    setCreatedTeam(null);
+
+    const requestData: CreateTeamRequest = {
+      teamName: teamName.trim(),
+      track
+    };
+
+    try {
+      const response = await api.post<Team>('/teams', requestData);
+      setCreatedTeam(response);
+      setSuccess(true);
+      setTeamName('');
+      setTrack('Software');
+      await refresh();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to create team');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -21,15 +55,39 @@ export function TeamCreationDash({ teamData, onAction }: TeamCreationDashProps) 
                 type="text"
                 className={style.inputContainer}
                 value={teamName}
-                onChange={(e) => onAction("updateName", e.target.value)}
+                onChange={(e) => setTeamName(e.target.value)}
                 placeholder="Enter team name..."
+                disabled={loading}
               />
             </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs text-gray-500 tracking-wider">TRACK</label>
+              <select
+                className={style.dropdown}
+                value={track}
+                onChange={(e) => setTrack(e.target.value as Track)}
+                disabled={loading}
+              >
+                <option value="Software">Software</option>
+                <option value="Hardware">Hardware</option>
+              </select>
+            </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {success && createdTeam && (
+              <div className="mt-4 p-4 bg-green-900/20 border border-green-500 rounded">
+                <p className="text-green-500 text-sm font-semibold">Team created successfully!</p>
+                <p className="text-white text-sm mt-2">
+                  <strong>{createdTeam.teamName}</strong> - {createdTeam.track} Track
+                </p>
+                <p className="text-gray-400 text-xs">Status: {createdTeam.status}</p>
+              </div>
+            )}
             <button 
-              onClick={() => onAction("create")} 
+              onClick={createTeam}
+              disabled={loading}
               className={style.primaryButton}
             >
-              Create Team
+              {loading ? 'Creating...' : 'Create Team'}
             </button>
           </div>
         </div>
@@ -37,8 +95,10 @@ export function TeamCreationDash({ teamData, onAction }: TeamCreationDashProps) 
         <div className="flex-1 pt-10 border-t md:border-t-0 md:border-l border-[var(--primary-light-border)] md:pl-10">
           <h4 className={style.secondaryTitle}>Team Guidelines</h4>
           <ul className={`${style.list} space-y-2`}>
-            <li>Maximum of {teamLimit} members per team.</li>
             <li>Names must be professional.</li>
+            <li>Teams are limited to 5 members.</li>
+            <li>Tracks must be either Software or Hardware.</li>
+            <li>After creation, make a project.</li>
           </ul>
         </div>
       </div>

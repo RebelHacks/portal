@@ -27,6 +27,11 @@ export interface RegisterRequest {
   agreeTerms?: boolean;
 }
 
+export interface CreateTeamRequest {
+  teamName: string;
+  track: Track;
+}
+
 export interface ErrorResponse {
   message: string;
   error?: string;
@@ -66,6 +71,7 @@ export interface Team {
   track: Track;
   project: TeamProject;
   assignments: Record<string, number[]>;
+  leaderId: number | null;
   members?: TeamMember[];
 }
 
@@ -73,4 +79,16 @@ export interface Judge {
   id: number;
   name: string;
   email: string;
+}
+
+export interface Invitation {
+  id: number;
+  teamId: number;
+  teamName: string;
+  status: string;
+  invitee?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
