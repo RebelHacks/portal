@@ -36,7 +36,7 @@
   padding: clamp(1.5rem, 5vw, 2.5rem);
   border-radius: 1rem;
   margin: 0; /* Remove margin since container centers it */
-
+  color: var(--foreground);
   background-color: #0f2c44;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 
