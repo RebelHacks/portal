@@ -17,8 +17,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [isJudge, setIsJudge] = useState<boolean>(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [major, setMajor] = useState("");
+  const [track, setTrack] = useState("Software");
+  const [transcript, setTranscript] = useState<File | null>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = async (redirect = true) => {
     try {
       const loginData: LoginRequest = {
         email: email.trim(),
@@ -33,9 +38,8 @@ export default function LoginPage() {
         if (response.refresh_token) {
           localStorage.setItem('refreshToken', response.refresh_token);
         }
-
-        // Redirect to dashboard
-        router.push('/dashboard');
+        // Redirect to dashboard if requested
+        if (redirect) router.push('/dashboard');
       } else {
         setError('Login failed: No token received');
       }
@@ -67,9 +71,25 @@ export default function LoginPage() {
 
       // First register the user
       await api.post('/register', registerData);
-      
-      // After successful registration, automatically log in
-      await handleLogin();
+      // After registration, log in first so subsequent profile/file endpoints are authenticated
+      await handleLogin(false);
+
+      // If this is a non-judge user, update their profile and upload transcript
+      if (!isJudge) {
+        await api.patch('/users/profile', { major, track });
+        if (transcript) {
+          const fileData = new FormData();
+          fileData.append('file', transcript);
+          fileData.append('type', 'transcript');
+          await api.post('/users/upload-file', fileData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true,
+          });
+        }
+      }
+
+      // Finally, redirect to dashboard
+      router.push('/dashboard');
 } catch (err: any) {
   console.error('Registration error:', err);
   
@@ -120,6 +140,14 @@ export default function LoginPage() {
       // clear any previous custom validity
       if (confirmRef.current) confirmRef.current.setCustomValidity('');
       if (passwordRef.current) passwordRef.current.setCustomValidity('');
+      // Ensure profile fields for non-judge registrations
+      if (!isJudge) {
+        if (!major || track === 'Choose' || !transcript) {
+          setError('Please provide your major, select a track, and upload your transcript (unless you are a judge).');
+          setLoading(false);
+          return;
+        }
+      }
     }
 
     try {
@@ -197,7 +225,7 @@ export default function LoginPage() {
           {mode === "register" && (
             <div className="w-full flex flex-col gap-4">
               <label className="flex flex-col text-md">
-                User Name
+                Name
                 <input
                   type="text"
                   required
@@ -205,7 +233,7 @@ export default function LoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={loading}
                   className={`${styles.input} w-full mt-2 px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed`}
-                  placeholder="User Name"
+                  placeholder="John Doe"
                 />
               </label>
               <label className="flex flex-col text-md">
@@ -245,7 +273,6 @@ export default function LoginPage() {
                   value={confirmPassword}
                   onChange={(e) => {
                     setConfirmPassword(e.target.value);
-                    // clear native custom validity as user types
                     if (confirmRef.current) confirmRef.current.setCustomValidity('');
                   }}
                   disabled={loading}
@@ -253,6 +280,88 @@ export default function LoginPage() {
                   placeholder="Confirm Password"
                 />
               </label>
+              <div className="flex flex-col gap-3">
+                <span className="text-md font-medium">Are you a judge?</span>
+                <div className="flex flex-row gap-4">
+                  {['Yes', 'No'].map((option) => (
+                    <label key={option} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="isJudge"
+                        value={option}
+                        checked={isJudge === (option === 'Yes')}
+                        onChange={() => setIsJudge(option === 'Yes')}
+                        className="w-4 h-4 accent-cyan-400"
+                      />
+                      <span className="group-hover:text-cyan-400 transition-colors">{option}</span>
+                    </label>
+                  ))}
+                </div>
+
+                {isJudge ? (
+                  <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-600 mb-4">
+                    <h3 className="text-lg font-semibold text-cyan-400 mb-3">Judge Registration Process</h3>
+                    <ul className="text-base text-gray-200 space-y-3">
+                      <li className="flex items-start gap-3">
+                        <span className="text-cyan-400 text-lg mt-0.5">•</span>
+                        <span>Click the register button below to submit your judge application.</span>
+                      </li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col text-md">
+                      <label className="mb-2">What is your major?</label>
+                      <select
+                        required={!isJudge}
+                        value={track}
+                        onChange={(e) => setTrack(e.target.value)}
+                        disabled={loading}
+                        className={`${styles.input} w-full px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50`}
+                      >
+                        <option value="Choose">Choose</option>
+                        <option value="Computer Science ">Computer Science</option>
+                        <option value="Computer Engineering">Computer Engineering</option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="Cybersecurity">Cybersecurity</option> 
+                        <option value="Civil Engineering">Civil Engineering</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                        <option value="Entertainment Engineering">Entertainment Engineering</option>
+                        <option value="Information Systems">Information Systems</option>
+                        <option value="Data Analytics">Data Analytics</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Economics">Economics</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col text-md">
+                      <label className="mb-2">Double major?</label>
+                      <select
+                        required={!isJudge}
+                        value={track}
+                        onChange={(e) => setTrack(e.target.value)}
+                        disabled={loading}
+                        className={`${styles.input} w-full px-3 py-2 rounded-md bg-[#0a2a4a] border border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50`}
+                      >
+                        <option value="Choose">Choose</option>
+                        <option value="Choose">N/A</option>
+                        <option value="Computer Science ">Computer Science</option>
+                        <option value="Computer Engineering">Computer Engineering</option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="Cybersecurity">Cybersecurity</option> 
+                        <option value="Civil Engineering">Civil Engineering</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                        <option value="Entertainment Engineering">Entertainment Engineering</option>
+                        <option value="Information Systems">Information Systems</option>
+                        <option value="Data Analytics">Data Analytics</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Economics">Economics</option>
+                      </select>
+                    </div>
+
+                  </div>
+                )}
+              </div>
             </div>
             )}
 

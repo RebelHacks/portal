@@ -73,7 +73,7 @@ export function TeamCreationDash() {
               </select>
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            {success && createdTeam && (
+            {/* {success && createdTeam && (
               <div className="mt-4 p-4 bg-green-900/20 border border-green-500 rounded">
                 <p className="text-green-500 text-sm font-semibold">Team created successfully!</p>
                 <p className="text-white text-sm mt-2">
@@ -81,7 +81,7 @@ export function TeamCreationDash() {
                 </p>
                 <p className="text-gray-400 text-xs">Status: {createdTeam.status}</p>
               </div>
-            )}
+            )} */}
             <button 
               onClick={createTeam}
               disabled={loading}

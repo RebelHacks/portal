@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 
 #[Route('/api', name: 'api_')]
@@ -229,69 +231,69 @@ class ApiController extends AbstractController
         ]);
     }
 
-#[Route('/users/upload-file', name: 'upload_file', methods: ['POST'])]
-public function uploadFile(
-    Request $request,
-    EntityManagerInterface $em
-): JsonResponse {
-    /** @var User $user */
-    $user = $this->getUser();
-    if (!$user) {
-        return $this->json(['message' => 'Unauthorized'], 401);
-    }
-
-    $file = $request->files->get('file');
-    $type = $request->request->get('type'); // e.g., 'transcript', 'form', 'resume'
-
-    if (!$file || !$type) {
-        return $this->json(['message' => 'File and type are required'], 400);
-    }
-
-    // --- LOGIC FOR UNIQUENESS ---
-    // Define which types should only have ONE file per user
-    $uniqueTypes = ['transcript'];
-
-    if (in_array($type, $uniqueTypes)) {
-        $oldFile = $em->getRepository(File::class)->findOneBy([
-            'user' => $user,
-            'type' => $type
-        ]);
-
-        if ($oldFile) {
-            $oldPath = $this->getParameter('kernel.project_dir') . $oldFile->getFilepath();
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
-            }
-            $em->remove($oldFile);
-            // We don't flush yet, we'll flush at the end
+    #[Route('/users/upload-file', name: 'upload_file', methods: ['POST'])]
+    public function uploadFile(
+        Request $request,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Unauthorized'], 401);
         }
+
+        $file = $request->files->get('file');
+        $type = $request->request->get('type'); // e.g., 'transcript', 'form', 'resume'
+
+        if (!$file || !$type) {
+            return $this->json(['message' => 'File and type are required'], 400);
+        }
+
+        // --- LOGIC FOR UNIQUENESS ---
+        // Define which types should only have ONE file per user
+        $uniqueTypes = ['transcript'];
+
+        if (in_array($type, $uniqueTypes)) {
+            $oldFile = $em->getRepository(File::class)->findOneBy([
+                'user' => $user,
+                'type' => $type
+            ]);
+
+            if ($oldFile) {
+                $oldPath = $this->getParameter('kernel.project_dir') . $oldFile->getFilepath();
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+                $em->remove($oldFile);
+                // We don't flush yet, we'll flush at the end
+            }
+        }
+        // If the type is 'form', the logic above is skipped, and a new record is added.
+
+        // --- FILE SAVING ---
+        $fileName = sprintf('%s_%d_%s.%s', $type, $user->getId(), uniqid(), $file->guessExtension());
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/files';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $file->move($uploadDir, $fileName);
+
+        $fileEntity = new File();
+        $fileEntity->setUser($user);
+        $fileEntity->setFilepath('/public/files/' . $fileName);
+        $fileEntity->setType($type);
+
+        $em->persist($fileEntity);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'File uploaded successfully',
+            'fileId' => $fileEntity->getId(),
+            'filepath' => $fileEntity->getFilepath()
+        ], 200);
     }
-    // If the type is 'form', the logic above is skipped, and a new record is added.
-
-    // --- FILE SAVING ---
-    $fileName = sprintf('%s_%d_%s.%s', $type, $user->getId(), uniqid(), $file->guessExtension());
-    $uploadDir = $this->getParameter('kernel.project_dir') . '/public/files';
-    
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-
-    $file->move($uploadDir, $fileName);
-
-    $fileEntity = new File();
-    $fileEntity->setUser($user);
-    $fileEntity->setFilepath('/public/files/' . $fileName);
-    $fileEntity->setType($type);
-
-    $em->persist($fileEntity);
-    $em->flush();
-
-    return $this->json([
-        'message' => 'File uploaded successfully',
-        'fileId' => $fileEntity->getId(),
-        'filepath' => $fileEntity->getFilepath()
-    ], 200);
-}
 
 
     #[Route('/users/{id}', methods: ['PATCH'])]
@@ -320,32 +322,38 @@ public function uploadFile(
         /** @var User $user */
         $user = $this->getUser(); // Get current logged-in user
         
-        if (!$user) {
+        // For one liners just remove curly braces
+        if (!$user) 
             return $this->json(['message' => 'Auth required'], 401);
-        }
+        
 
-        if ($user->getTeam()) {
+        if ($user->getTeam()) 
             return $this->json(['message' => 'User is already in a team'], 400);
-        }
+        
     
         $data = json_decode($request->getContent(), true);
         $teamName = trim((string)($data['teamName'] ?? ''));
     
         // 1. Validation
-        if ($teamName === '') {
+        if ($teamName === '') 
             return $this->json(['message' => 'Team name is required'], 400);
-        }
+        
     
         $existing = $em->getRepository(Team::class)->findOneBy(['teamName' => $teamName]);
-        if ($existing) {
+
+        if ($existing) 
             return $this->json(['message' => 'Team name already exists'], 409);
-        }
+        
     
         // 2. Create the Team Entity
-        $team = new Team();
-        $team->setTeamName($teamName);
-        $team->setStatus('Unverified');
-        $team->setTrack($data['track'] ?? 'Software');
+
+        // Better way to do method chanining
+        $team = (new Team())
+            ->setTeamName($teamName)
+            ->setStatus(Team::UNVERIFIED)
+            ->setTrack($data['track'] ?? Team::TRACK_SOFTWARE)
+        ;
+  
         
         $em->persist($team);
     
@@ -436,9 +444,9 @@ public function uploadFile(
                 }
 
                 $members = $em->getRepository(User::class)->findBy(['team' => $currentName]);
-                foreach ($members as $member) {
+                foreach ($members as $member)
                     $member->setTeam($newTeamName);
-                }
+                
 
                 $team->setTeamName($newTeamName);
                 $currentName = $newTeamName;
@@ -447,7 +455,7 @@ public function uploadFile(
 
         if (array_key_exists('status', $data)) {
             $status = (string) $data['status'];
-            if (!in_array($status, ['Verified', 'Unverified'], true)) {
+            if (!in_array($status, Team::STATUS, true)) {
                 return $this->json(['message' => 'Status must be Verified or Unverified'], 400);
             }
 
@@ -456,7 +464,7 @@ public function uploadFile(
 
         if (array_key_exists('track', $data)) {
             $track = (string) $data['track'];
-            if (!in_array($track, ['Software', 'Hardware'], true)) {
+            if (!in_array($track, Team::TRACKS, true)) {
                 return $this->json(['message' => 'Track must be Software or Hardware'], 400);
             }
 
@@ -926,5 +934,105 @@ public function uploadFile(
             'leaderId' => $leaderId,
             'members' => $members,
         ];
+    }
+
+    /**
+     * Contact form email endpoint
+     */
+    #[Route('/contact-email', name: 'contact_email', methods: ['POST'])]
+    public function contactEmail(Request $request, MailerInterface $mailer): JsonResponse
+    {
+        $content = json_decode($request->getContent(), true);
+
+        // Validate required fields
+        if (!isset($content['name']) || !isset($content['email']) || !isset($content['message'])) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Missing required fields: name, email, message',
+            ], 400);
+        }
+
+        // Validate email format
+        if (!filter_var($content['email'], FILTER_VALIDATE_EMAIL)) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Invalid email address',
+            ], 400);
+        }
+
+        // Validate that all fields are not empty
+        if (empty(trim($content['name'])) || empty(trim($content['email'])) || empty(trim($content['message']))) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Name, email, and message cannot be empty',
+            ], 400);
+        }
+
+        // Validate maximum length
+        if (strlen($content['name']) > 50 || strlen($content['email']) > 50 || strlen($content['message']) > 250) {
+            return $this->json([
+                'success' => false,
+                'message' => 'One or more fields exceed maximum length',
+            ], 400);
+        }
+
+        try {
+            // Create the email
+            $email = (new Email())
+                ->from($_ENV['MAILER_FROM'])
+                ->to($_ENV['CONTACT_EMAIL'])
+                ->subject('New Contact Form Submission from ' . $content['name'])
+                ->text($this->formatEmailText($content))
+                ->html($this->formatEmailHtml($content));
+
+            // Send the email
+            $mailer->send($email);
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Email sent successfully. We will contact you soon!',
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Email sent unsuccessfully',
+            ], 500);
+        }
+    }
+
+    /**
+     * Format email as plain text
+     */
+    private function formatEmailText(array $data): string
+    {
+        return sprintf(
+            "New contact form submission:\n\n" .
+            "Name: %s\n" .
+            "Email: %s\n" .
+            "Message:\n%s",
+            $data['name'],
+            $data['email'],
+            $data['message']
+        );
+    }
+
+    /**
+     * Format email as HTML
+     */
+    private function formatEmailHtml(array $data): string
+    {
+        return sprintf(
+            '<html><body>' .
+            '<h2>New Contact Form Submission</h2>' .
+            '<p><strong>Name:</strong> %s</p>' .
+            '<p><strong>Email:</strong> %s</p>' .
+            '<p><strong>Message:</strong></p>' .
+            '<p>%s</p>' .
+            '</body></html>',
+            htmlspecialchars($data['name']),
+            htmlspecialchars($data['email']),
+            nl2br(htmlspecialchars($data['message']))
+        );
     }
 }
