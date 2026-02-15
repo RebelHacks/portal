@@ -377,7 +377,13 @@ export default function LoginPage() {
         {/* Actions */}
         <div className="mt-4 flex flex-col items-center gap-2 text-sm">
           {mode === "login" && (
-            <button className={`${styles.mutedText} hover:underline`}>
+            <button
+              onClick={() => {
+                const backendOrigin = (process.env.NEXT_PUBLIC_BACKEND_URL as string) ?? `${window.location.protocol}//${window.location.hostname}:8000`;
+                window.location.assign(`${backendOrigin}/reset-password`);
+              }}
+              className={`${styles.mutedText} hover:underline`}
+            >
               Forgot password?
             </button>
           )}
