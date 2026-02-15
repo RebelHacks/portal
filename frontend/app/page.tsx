@@ -379,8 +379,7 @@ export default function LoginPage() {
           {mode === "login" && (
             <button
               onClick={() => {
-                const backendOrigin = (process.env.NEXT_PUBLIC_BACKEND_URL as string) ?? `${window.location.protocol}//${window.location.hostname}:8000`;
-                window.location.assign(`${backendOrigin}/reset-password`);
+                window.location.assign(`http://localhost:8000/reset-password`);
               }}
               className={`${styles.mutedText} hover:underline`}
             >
