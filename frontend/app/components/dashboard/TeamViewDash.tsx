@@ -145,13 +145,15 @@ export function TeamViewDash() {
     member.name.toLowerCase().includes(search.toLowerCase()) ||
     member.email.toLowerCase().includes(search.toLowerCase())
   );
+  const activeMemberCount = members.filter((m) => m.status === 'Active').length;
+  const isSoloTeam = activeMemberCount === 1;
 
   if (loading) return null;
 
   return (
     <>
       <TeamModals
-        state={{ error, showDisband: showDisbandModal, teamName }}
+        state={{ error, showDisband: showDisbandModal, teamName, isSoloLeader: isSoloTeam }}
         onAction={handleModalAction}
       />
 
@@ -160,7 +162,7 @@ export function TeamViewDash() {
           <h1 className={style.primaryTitle}>{teamName}</h1>
           <div className="text-left md:text-right w-full md:w-auto">
             <div className="text-sm text-gray-400 mb-2">
-              {members.filter(m => m.status === 'Active').length} / {TEAM_LIMIT} Members
+              {activeMemberCount} / {TEAM_LIMIT} Members
               {members.filter(m => m.status === 'Pending').length > 0 && (
                 <span className="ml-2 text-yellow-400">
                   (+{members.filter(m => m.status === 'Pending').length} pending)
@@ -168,7 +170,14 @@ export function TeamViewDash() {
               )}
             </div>
             
-            {isLeader ? (
+            {isSoloTeam ? (
+              <button 
+                onClick={() => setShowDisbandModal(true)} 
+                className={`${style.warnButton} text-xs w-full md:w-auto`}
+              >
+                LEAVE TEAM
+              </button>
+            ) : isLeader ? (
               <button 
                 onClick={() => setShowDisbandModal(true)} 
                 className={`${style.warnButton} text-xs w-full md:w-auto`}

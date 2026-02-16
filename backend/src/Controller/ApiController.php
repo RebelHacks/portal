@@ -654,19 +654,49 @@ public function uploadFile(
     }
 
     #[Route('/teams/{id}', name: 'delete_team', methods: ['DELETE'])]
-    public function deleteTeam(EntityManagerInterface $em, int $id): JsonResponse
+    #[Route('/admin/teams/{id}', name: 'admin_delete_team', methods: ['DELETE'])]
+    public function deleteTeam(Request $request, EntityManagerInterface $em, int $id): JsonResponse
     {
+        if ($this->isAdminRoute($request)) {
+            $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        }
+
         $team = $em->getRepository(Team::class)->find($id);
         if (!$team) {
             return $this->json(['message' => 'Team not found'], 404);
         }
 
         $teamName = $team->getTeamName();
+        if ($teamName === null) {
+            return $this->json(['message' => 'Team has no name'], 400);
+        }
+
+        if (!$this->isAdminRoute($request)) {
+            /** @var User|null $user */
+            $user = $this->getUser();
+            if (!$user instanceof User) {
+                return $this->json(['message' => 'Unauthorized'], 401);
+            }
+
+            if ($user->getTeam() !== $teamName) {
+                return $this->json(['message' => 'Only team members can disband this team'], 403);
+            }
+
+            $members = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+            $isLeader = in_array('ROLE_TEAM_LEADER', $user->getRoles(), true);
+            $isSoloMember = count($members) === 1 && $members[0]->getId() === $user->getId();
+
+            if (!$isLeader && !$isSoloMember) {
+                return $this->json(['message' => 'Only the team leader can disband the team'], 403);
+            }
+        }
+
         $members = $em->getRepository(User::class)->findBy(['team' => $teamName]);
         foreach ($members as $member) {
             $member->setTeam(null);
             $currentRoles = array_diff($member->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_MEMBER']);
-            $member->setRoles($currentRoles);
+            $currentRoles[] = 'ROLE_USER';
+            $member->setRoles(array_values(array_unique($currentRoles)));
         }
 
         // Decline all pending invitations for this team
