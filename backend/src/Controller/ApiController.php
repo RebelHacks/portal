@@ -163,8 +163,6 @@ class ApiController extends AbstractController
     #[Route('/users', name: 'users', methods: ['GET'])]
     public function retrieveUsers(EntityManagerInterface $em)
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $users = array_values(array_filter(
             $em->getRepository(User::class)->findAll(),
             fn(User $u) => !in_array('ROLE_JUDGE', $u->getRoles(), true)
@@ -187,8 +185,6 @@ class ApiController extends AbstractController
     #[Route('/judges', name: 'judges', methods: ['GET'])]
     public function retrieveJudges(EntityManagerInterface $em): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $judges = array_values(array_filter(
             $em->getRepository(User::class)->findAll(),
             fn(User $u) => in_array('ROLE_JUDGE', $u->getRoles(), true)
@@ -305,8 +301,6 @@ public function uploadFile(
         EntityManagerInterface $em,
         int $id
     ): JsonResponse {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $data = json_decode($request->getContent(), true);
         $user = $em->getRepository(User::class)->find($id);
 
@@ -383,8 +377,6 @@ public function uploadFile(
     #[Route('/teams', name: 'teams', methods: ['GET'])]
     public function retrieveTeams(EntityManagerInterface $em)
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $teams = $em->getRepository(Team::class)->findAll();
         $users = $em->getRepository(User::class)->findAll();
 
@@ -421,8 +413,6 @@ public function uploadFile(
     #[Route('/teams/{id}', name: 'teams_update', methods: ['PATCH'])]
     public function updateTeam(Request $request, EntityManagerInterface $em, int $id): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $team = $em->getRepository(Team::class)->find($id);
         if (!$team) {
             return $this->json(['message' => 'Team not found'], 404);
@@ -537,8 +527,6 @@ public function uploadFile(
     #[Route('/teams/{id}/members', name: 'teams_members_update', methods: ['PATCH'])]
     public function updateTeamMembers(Request $request, EntityManagerInterface $em, int $id): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $team = $em->getRepository(Team::class)->find($id);
         if (!$team) {
             return $this->json(['message' => 'Team not found'], 404);
