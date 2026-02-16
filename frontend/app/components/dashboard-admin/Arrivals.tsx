@@ -113,7 +113,7 @@ export default function Arrivals() {
                     : "border-white/10 bg-white/5 text-white/70";
 
                 return (
-                  <tr key={u.id} className="border-b last:border-b-0">
+                  <tr key={u.id} className="border-b last:border-b-0 text-(--sub-text)">
                     <td className="py-3">
                       <div className="font-medium">{u.name}</div>
                       <div className="text-xs opacity-60">{u.email}</div>

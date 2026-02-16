@@ -357,10 +357,10 @@ export default function TeamsAdminPage() {
   }
 
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} text-(--sub-text)`}>
       <div className="mb-4">
         <h2 className={styles.primaryTitle}>Teams</h2>
-        <p className="mt-1 text-sm text-white/70">
+        <p className="mt-1 text-sm text-(--sub-text)">
           Edit team info, projects, members, and judge assignments.
         </p>
       </div>
@@ -408,7 +408,7 @@ export default function TeamsAdminPage() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-(--sub-text)">
           {error}
         </div>
       )}
@@ -439,8 +439,8 @@ export default function TeamsAdminPage() {
                       <span
                         className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                           team.status === "Verified"
-                            ? "border-green-400/30 bg-green-500/10 text-green-300"
-                            : "border-white/10 bg-white/5 text-white/70"
+                            ? "border-green-400/30 bg-green-500/10 text-(--sub-text)"
+                            : "border-white/10 bg-white/5 text-(--sub-text)"
                         }`}
                       >
                         {team.status}
@@ -461,7 +461,7 @@ export default function TeamsAdminPage() {
 
               {loading && (
                 <tr>
-                  <td className="py-8 text-center text-white/70" colSpan={6}>
+                  <td className="py-8 text-center text-(--sub-text)" colSpan={6}>
                     Loading teams...
                   </td>
                 </tr>
@@ -469,7 +469,7 @@ export default function TeamsAdminPage() {
 
               {!loading && filteredTeams.length === 0 && (
                 <tr>
-                  <td className="py-8 text-center text-white/70" colSpan={6}>
+                  <td className="py-8 text-center text-(--sub-text)" colSpan={6}>
                     No matching teams.
                   </td>
                 </tr>
@@ -491,7 +491,7 @@ export default function TeamsAdminPage() {
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <div className="text-lg font-semibold">Edit Team</div>
-                <div className="mt-1 text-sm text-white/70">{activeTeam.teamName}</div>
+                <div className="mt-1 text-sm text-(--sub-text)">{activeTeam.teamName}</div>
               </div>
               <button
                 onClick={closeEditor}
@@ -502,8 +502,8 @@ export default function TeamsAdminPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="mb-3 text-sm font-semibold text-white/90">Team Info</div>
-              <label className="text-xs text-white/70">Team Name</label>
+              <div className="mb-3 text-sm font-semibold text-(--sub-text)">Team Info</div>
+              <label className="text-xs text-(--sub-text)">Team Name</label>
               <input
                 value={draftTeamName}
                 onChange={(event) => setDraftTeamName(event.target.value)}
@@ -512,22 +512,22 @@ export default function TeamsAdminPage() {
               />
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-xs text-white/70">Track</label>
+                  <label className="text-xs text-(--sub-text)">Track</label>
                   <select
                     value={draftTrack}
                     onChange={(event) => setDraftTrack(event.target.value as Track)}
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-white outline-none"
+                    className="mt-1 w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                   >
                     <option value="Software">Software</option>
                     <option value="Hardware">Hardware</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-white/70">Status</label>
+                  <label className="text-xs text-(--sub-text)">Status</label>
                   <select
                     value={draftStatus}
                     onChange={(event) => setDraftStatus(event.target.value as TeamStatus)}
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-white outline-none"
+                    className="mt-1 w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                   >
                     <option value="Unverified">Unverified</option>
                     <option value="Verified">Verified</option>
@@ -546,15 +546,15 @@ export default function TeamsAdminPage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="mb-3 text-sm font-semibold text-white/90">Project</div>
-              <label className="text-xs text-white/70">Project Name</label>
+              <div className="mb-3 text-sm font-semibold text-(--sub-text)">Project</div>
+              <label className="text-xs text-(--sub-text)">Project Name</label>
               <input
                 value={draftProjectName}
                 onChange={(event) => setDraftProjectName(event.target.value)}
                 className={`${styles.inputContainer} mt-1 mb-0 w-full`}
                 placeholder="Project name"
               />
-              <label className="mt-3 block text-xs text-white/70">Project Details</label>
+              <label className="mt-3 block text-xs text-(--sub-text)">Project Details</label>
               <textarea
                 value={draftProjectDetails}
                 onChange={(event) => setDraftProjectDetails(event.target.value)}
@@ -575,8 +575,8 @@ export default function TeamsAdminPage() {
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <div className="text-sm font-semibold text-white/90">Members</div>
-                <div className="text-xs text-white/60">{selectedMemberIds.length}/5 selected</div>
+                <div className="text-sm font-semibold text-(--sub-text)">Members</div>
+                <div className="text-xs text-(--sub-text)">{selectedMemberIds.length}/5 selected</div>
               </div>
 
               <div className="mb-3 flex gap-2">
@@ -611,7 +611,7 @@ export default function TeamsAdminPage() {
 
               <div className="space-y-2">
                 {memberView === "all" && !norm(memberSearch) && filteredAllUsers.length > 3 && (
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/60">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-(--sub-text)">
                     Showing first 3 members. Search by name to find more.
                   </div>
                 )}
@@ -623,7 +623,7 @@ export default function TeamsAdminPage() {
                   >
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold">{user.name}</div>
-                      <div className="truncate text-xs text-white/60">
+                      <div className="truncate text-xs text-(--sub-text)">
                         {user.email} • {user.track} • Team:{" "}
                         {memberTeamByUserId.get(user.id) ?? "Unassigned"}
                       </div>
@@ -642,7 +642,7 @@ export default function TeamsAdminPage() {
                 ))}
 
                 {visibleMemberUsers.length === 0 && (
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/70">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-(--sub-text)">
                     {memberView === "team"
                       ? "No members in team for this search."
                       : "No users match your search."}
@@ -661,12 +661,12 @@ export default function TeamsAdminPage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="mb-2 text-sm font-semibold text-white/90">Judge Assignments</div>
+              <div className="mb-2 text-sm font-semibold text-(--sub-text)">Judge Assignments</div>
               <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-3">
                 <select
                   value={assignmentRound}
                   onChange={(event) => setAssignmentRound(event.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-white outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                 >
                   {displayRounds.map((round) => (
                     <option key={round.id} value={round.id}>
@@ -677,7 +677,7 @@ export default function TeamsAdminPage() {
                 <input
                   value={assignmentJudgeText}
                   onChange={(event) => setAssignmentJudgeText(event.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-white outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                   placeholder="Type judge name or email..."
                 />
                 <button
@@ -694,7 +694,7 @@ export default function TeamsAdminPage() {
                     <details key={round.id} className="rounded-xl border border-white/10 bg-white/5">
                       <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm font-semibold hover:bg-white/10">
                         <span>{round.name}</span>
-                        <span className="text-xs font-normal text-white/70">
+                        <span className="text-xs font-normal text-(--sub-text)">
                           {selected.length === 0
                             ? "No judge"
                             : selected.length === 1
@@ -717,7 +717,7 @@ export default function TeamsAdminPage() {
                               />
                               <span className="truncate font-medium">
                                 {judge.name}
-                                <span className="ml-1 font-normal text-white/60">
+                                <span className="ml-1 font-normal text-(--sub-text)">
                                   ({judge.email})
                                 </span>
                               </span>
