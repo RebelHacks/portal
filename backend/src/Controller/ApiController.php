@@ -551,7 +551,8 @@ public function uploadFile(
     #[Route('/admin/teams/{id}/members', name: 'admin_teams_members_update', methods: ['PATCH'])]
     public function updateTeamMembers(Request $request, EntityManagerInterface $em, int $id): JsonResponse
     {
-        if ($this->isAdminRoute($request)) {
+        $isAdminRoute = $this->isAdminRoute($request);
+        if ($isAdminRoute) {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
         }
 
@@ -594,11 +595,27 @@ public function uploadFile(
                 break;
             }
         }
-        if (!$leader) {
-            return $this->json(['message' => 'Team has no leader'], 400);
-        }
-        if (!in_array($leader->getId(), $memberIds)) {
-            return $this->json(['message' => 'Cannot remove team leader from team'], 400);
+        if ($isAdminRoute) {
+            // Admin can re-shape team membership; if leader is removed/missing, promote first selected member.
+            if (!$leader || !in_array($leader->getId(), $memberIds, true)) {
+                $leader = null;
+                if ($memberIds !== []) {
+                    $fallbackLeaderId = $memberIds[0];
+                    foreach ($selectedUsers as $selectedUser) {
+                        if ($selectedUser->getId() === $fallbackLeaderId) {
+                            $leader = $selectedUser;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (!$leader) {
+                return $this->json(['message' => 'Team has no leader'], 400);
+            }
+            if (!in_array($leader->getId(), $memberIds, true)) {
+                return $this->json(['message' => 'Cannot remove team leader from team'], 400);
+            }
         }
 
         // Check if selected users are not in another team
@@ -625,8 +642,8 @@ public function uploadFile(
 
         // Set roles
         foreach ($selectedUsers as $member) {
-            $currentRoles = array_diff($member->getRoles(), ['ROLE_USER']);
-            if ($member->getId() === $leader->getId()) {
+            $currentRoles = array_diff($member->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_MEMBER']);
+            if ($leader && $member->getId() === $leader->getId()) {
                 if (!in_array('ROLE_TEAM_LEADER', $currentRoles)) {
                     $currentRoles[] = 'ROLE_TEAM_LEADER';
                 }

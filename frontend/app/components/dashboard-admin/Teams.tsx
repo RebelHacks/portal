@@ -7,7 +7,6 @@ import styles from "../../dashboard-admin/admin.module.css";
 
 type TeamStatusFilter = "All" | TeamStatus;
 type TrackFilter = "All" | Track;
-type MemberView = "all" | "team";
 
 type Round = {
   id: string;
@@ -59,12 +58,13 @@ export default function TeamsAdminPage() {
   const [draftTrack, setDraftTrack] = useState<Track>("Software");
   const [draftProjectName, setDraftProjectName] = useState("");
   const [draftProjectDetails, setDraftProjectDetails] = useState("");
-  const [draftAssignments, setDraftAssignments] = useState<Record<string, number[]>>({});
+  const [draftAssignments, setDraftAssignments] = useState<
+    Record<string, number[]>
+  >({});
   const [assignmentRound, setAssignmentRound] = useState<string>(ROUNDS[0].id);
   const [assignmentJudgeText, setAssignmentJudgeText] = useState<string>("");
   const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
-  const [memberView, setMemberView] = useState<MemberView>("all");
 
   const activeTeam = useMemo(
     () => teams.find((team) => team.id === activeTeamId) ?? null,
@@ -84,12 +84,17 @@ export default function TeamsAdminPage() {
           norm(team.project.details).includes(query);
         const inMembers = (team.members ?? []).some(
           (member) =>
-            norm(member.name).includes(query) || norm(member.email).includes(query),
+            norm(member.name).includes(query) ||
+            norm(member.email).includes(query),
         );
         return inTeam || inTrack || inProject || inMembers;
       })
-      .filter((team) => (statusFilter === "All" ? true : team.status === statusFilter))
-      .filter((team) => (trackFilter === "All" ? true : team.track === trackFilter));
+      .filter((team) =>
+        statusFilter === "All" ? true : team.status === statusFilter,
+      )
+      .filter((team) =>
+        trackFilter === "All" ? true : team.track === trackFilter,
+      );
   }, [teams, search, statusFilter, trackFilter]);
 
   const memberTeamByUserId = useMemo(() => {
@@ -119,18 +124,24 @@ export default function TeamsAdminPage() {
   }, [availableUsers, memberSearch, memberTeamByUserId]);
 
   const filteredTeamUsers = useMemo(
-    () => filteredAllUsers.filter((user) => selectedMemberIds.includes(user.id)),
+    () =>
+      filteredAllUsers.filter((user) => selectedMemberIds.includes(user.id)),
     [filteredAllUsers, selectedMemberIds],
   );
 
-  const visibleMemberUsers = useMemo(() => {
-    const baseUsers = memberView === "team" ? filteredTeamUsers : filteredAllUsers;
-    if (memberView === "all" && !norm(memberSearch)) {
-      return baseUsers.slice(0, 3);
-    }
+  const activeLeader = useMemo(() => {
+    if (!activeTeam?.leaderId) return null;
+    return (
+      (activeTeam.members ?? []).find((member) => member.id === activeTeam.leaderId) ??
+      null
+    );
+  }, [activeTeam]);
 
-    return baseUsers;
-  }, [filteredAllUsers, filteredTeamUsers, memberSearch, memberView]);
+  const filteredNonTeamUsers = useMemo(
+    () =>
+      filteredAllUsers.filter((user) => !memberTeamByUserId.has(user.id)),
+    [filteredAllUsers, memberTeamByUserId],
+  );
 
   const displayRounds = useMemo(() => {
     const rounds = [...ROUNDS];
@@ -194,7 +205,6 @@ export default function TeamsAdminPage() {
     setAssignmentJudgeText("");
     setSelectedMemberIds([]);
     setMemberSearch("");
-    setMemberView("all");
   }
 
   function applyUpdatedTeam(updated: Team) {
@@ -256,28 +266,9 @@ export default function TeamsAdminPage() {
     }
   }
 
-  function toggleMember(userId: number) {
-    const isAlreadySelected = selectedMemberIds.includes(userId);
-
-    if (!isAlreadySelected && selectedMemberIds.length >= 5) {
-      setError("A team can only have up to 5 members.");
-      return;
-    }
-
-    if (!isAlreadySelected) {
-      setMemberView("team");
-    }
-
-    setSelectedMemberIds((current) =>
-      current.includes(userId)
-        ? current.filter((id) => id !== userId)
-        : [...current, userId],
-    );
-  }
-
-  async function saveMembers() {
+  async function updateMembers(memberIds: number[]) {
     if (!activeTeam) return;
-    if (selectedMemberIds.length > 5) {
+    if (memberIds.length > 5) {
       setError("A team can only have up to 5 members.");
       return;
     }
@@ -285,16 +276,34 @@ export default function TeamsAdminPage() {
     setSavingMembers(true);
     setError(null);
     try {
-      const updated = await api.patch<Team>(`/admin/teams/${activeTeam.id}/members`, {
-        memberIds: selectedMemberIds,
-      });
+      const updated = await api.patch<Team>(
+        `/admin/teams/${activeTeam.id}/members`,
+        {
+          memberIds,
+        },
+      );
       applyUpdatedTeam(updated);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setError("Could not save team members.");
+      const apiMessage =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response
+              ?.data?.message
+          : null;
+      setError(apiMessage ?? "Could not update team members.");
     } finally {
       setSavingMembers(false);
     }
+  }
+
+  function onAddMember(userId: number) {
+    if (savingMembers || selectedMemberIds.includes(userId)) return;
+    void updateMembers([...selectedMemberIds, userId]);
+  }
+
+  function onRemoveMember(userId: number) {
+    if (savingMembers || !selectedMemberIds.includes(userId)) return;
+    void updateMembers(selectedMemberIds.filter((id) => id !== userId));
   }
 
   function toggleJudge(roundId: string, judgeId: number) {
@@ -388,7 +397,9 @@ export default function TeamsAdminPage() {
 
           <select
             value={trackFilter}
-            onChange={(event) => setTrackFilter(event.target.value as TrackFilter)}
+            onChange={(event) =>
+              setTrackFilter(event.target.value as TrackFilter)
+            }
             className="rounded-xl border border-[#FEA70A]/60 bg-[#111435] px-3 py-2 text-sm outline-none"
           >
             <option value="All">All Tracks</option>
@@ -402,8 +413,6 @@ export default function TeamsAdminPage() {
           >
             Refresh
           </button>
-
-         
         </div>
       </div>
 
@@ -430,7 +439,10 @@ export default function TeamsAdminPage() {
             <tbody>
               {!loading &&
                 filteredTeams.map((team) => (
-                  <tr key={team.id} className="border-b border-white/10 last:border-b-0">
+                  <tr
+                    key={team.id}
+                    className="border-b border-white/10 last:border-b-0"
+                  >
                     <td className="py-3">
                       <div className="font-medium">{team.teamName}</div>
                     </td>
@@ -461,7 +473,10 @@ export default function TeamsAdminPage() {
 
               {loading && (
                 <tr>
-                  <td className="py-8 text-center text-(--sub-text)" colSpan={6}>
+                  <td
+                    className="py-8 text-center text-(--sub-text)"
+                    colSpan={6}
+                  >
                     Loading teams...
                   </td>
                 </tr>
@@ -469,7 +484,10 @@ export default function TeamsAdminPage() {
 
               {!loading && filteredTeams.length === 0 && (
                 <tr>
-                  <td className="py-8 text-center text-(--sub-text)" colSpan={6}>
+                  <td
+                    className="py-8 text-center text-(--sub-text)"
+                    colSpan={6}
+                  >
                     No matching teams.
                   </td>
                 </tr>
@@ -491,7 +509,9 @@ export default function TeamsAdminPage() {
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <div className="text-lg font-semibold">Edit Team</div>
-                <div className="mt-1 text-sm text-(--sub-text)">{activeTeam.teamName}</div>
+                <div className="mt-1 text-sm text-(--sub-text)">
+                  {activeTeam.teamName}
+                </div>
               </div>
               <button
                 onClick={closeEditor}
@@ -502,7 +522,9 @@ export default function TeamsAdminPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="mb-3 text-sm font-semibold text-(--sub-text)">Team Info</div>
+              <div className="mb-3 text-sm font-semibold text-(--sub-text)">
+                Team Info
+              </div>
               <label className="text-xs text-(--sub-text)">Team Name</label>
               <input
                 value={draftTeamName}
@@ -515,7 +537,9 @@ export default function TeamsAdminPage() {
                   <label className="text-xs text-(--sub-text)">Track</label>
                   <select
                     value={draftTrack}
-                    onChange={(event) => setDraftTrack(event.target.value as Track)}
+                    onChange={(event) =>
+                      setDraftTrack(event.target.value as Track)
+                    }
                     className="mt-1 w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                   >
                     <option value="Software">Software</option>
@@ -526,7 +550,9 @@ export default function TeamsAdminPage() {
                   <label className="text-xs text-(--sub-text)">Status</label>
                   <select
                     value={draftStatus}
-                    onChange={(event) => setDraftStatus(event.target.value as TeamStatus)}
+                    onChange={(event) =>
+                      setDraftStatus(event.target.value as TeamStatus)
+                    }
                     className="mt-1 w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                   >
                     <option value="Unverified">Unverified</option>
@@ -546,7 +572,9 @@ export default function TeamsAdminPage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="mb-3 text-sm font-semibold text-(--sub-text)">Project</div>
+              <div className="mb-3 text-sm font-semibold text-(--sub-text)">
+                Project
+              </div>
               <label className="text-xs text-(--sub-text)">Project Name</label>
               <input
                 value={draftProjectName}
@@ -554,7 +582,9 @@ export default function TeamsAdminPage() {
                 className={`${styles.inputContainer} mt-1 mb-0 w-full`}
                 placeholder="Project name"
               />
-              <label className="mt-3 block text-xs text-(--sub-text)">Project Details</label>
+              <label className="mt-3 block text-xs text-(--sub-text)">
+                Project Details
+              </label>
               <textarea
                 value={draftProjectDetails}
                 onChange={(event) => setDraftProjectDetails(event.target.value)}
@@ -575,31 +605,17 @@ export default function TeamsAdminPage() {
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <div className="text-sm font-semibold text-(--sub-text)">Members</div>
-                <div className="text-xs text-(--sub-text)">{selectedMemberIds.length}/5 selected</div>
+                <div className="text-sm font-semibold text-(--sub-text)">
+                  Members
+                </div>
+                <div className="text-xs text-(--sub-text)">
+                  {selectedMemberIds.length}/5 in team
+                  {savingMembers ? " • Updating..." : ""}
+                </div>
               </div>
 
-              <div className="mb-3 flex gap-2">
-                <button
-                  onClick={() => setMemberView("all")}
-                  className={`text-xs ${styles.primaryButton} ${
-                    memberView === "all"
-                      ? "bg-(--primary-translucent)"
-                      : "opacity-70"
-                  }`}
-                >
-                  All Members ({filteredAllUsers.length})
-                </button>
-                <button
-                  onClick={() => setMemberView("team")}
-                  className={`text-xs ${styles.primaryButton} ${
-                    memberView === "team"
-                      ? "bg-(--primary-translucent)"
-                      : "opacity-70"
-                  }`}
-                >
-                  Team Members ({filteredTeamUsers.length})
-                </button>
+              <div className="mb-3 text-xs text-(--sub-text)">
+                Leader: {activeLeader ? activeLeader.name || activeLeader.email : "None"}
               </div>
 
               <input
@@ -609,59 +625,107 @@ export default function TeamsAdminPage() {
                 placeholder="Search member by name, email, or team..."
               />
 
-              <div className="space-y-2">
-                {memberView === "all" && !norm(memberSearch) && filteredAllUsers.length > 3 && (
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-(--sub-text)">
-                    Showing first 3 members. Search by name to find more.
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div className="mb-2 text-xs font-semibold text-(--sub-text)">
+                    All Members ({filteredNonTeamUsers.length})
                   </div>
-                )}
+                  <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                    {filteredNonTeamUsers.map((user) => {
+                      const currentTeam = memberTeamByUserId.get(user.id);
+                      const canAdd =
+                        !currentTeam ||
+                        (activeTeam != null &&
+                          currentTeam === activeTeam.teamName);
 
-                {visibleMemberUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:bg-white/10"
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold">{user.name}</div>
-                      <div className="truncate text-xs text-(--sub-text)">
-                        {user.email} • {user.track} • Team:{" "}
-                        {memberTeamByUserId.get(user.id) ?? "Unassigned"}
+                      return (
+                        <div
+                          key={`all-${user.id}`}
+                          className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-black/10 p-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold">
+                              {user.name}
+                            </div>
+                            <div className="truncate text-xs text-(--sub-text)">
+                              {user.email} • {user.track} • Team:{" "}
+                              {currentTeam ?? "Unassigned"}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onAddMember(user.id)}
+                            disabled={
+                              savingMembers ||
+                              selectedMemberIds.length >= 5 ||
+                              !canAdd
+                            }
+                            className={`${styles.primaryButton} text-xs disabled:cursor-not-allowed disabled:opacity-60`}
+                          >
+                            {canAdd ? "Add" : "On Another Team"}
+                          </button>
+                        </div>
+                      );
+                    })}
+
+                    {filteredNonTeamUsers.length === 0 && (
+                      <div className="rounded-xl border border-white/10 bg-black/10 p-3 text-sm text-(--sub-text)">
+                        No users match your search.
                       </div>
-                    </div>
-                    <button
-                      onClick={() => toggleMember(user.id)}
-                      className={`text-xs ${
-                        selectedMemberIds.includes(user.id)
-                          ? styles.warnButton
-                          : styles.primaryButton
-                      }`}
-                    >
-                      {selectedMemberIds.includes(user.id) ? "Remove" : "Add"}
-                    </button>
+                    )}
                   </div>
-                ))}
+                </div>
 
-                {visibleMemberUsers.length === 0 && (
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-(--sub-text)">
-                    {memberView === "team"
-                      ? "No members in team for this search."
-                      : "No users match your search."}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div className="mb-2 text-xs font-semibold text-(--sub-text)">
+                    Team Members ({filteredTeamUsers.length})
                   </div>
-                )}
-              </div>
-              <div className="mt-3 flex justify-end">
-                <button
-                  onClick={() => void saveMembers()}
-                  disabled={savingMembers}
-                  className={`${styles.primaryButton} text-xs disabled:cursor-not-allowed disabled:opacity-60`}
-                >
-                  {savingMembers ? "Saving..." : "Save Members"}
-                </button>
+                  <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                    {filteredTeamUsers.map((user) => (
+                      <div
+                        key={`team-${user.id}`}
+                        className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-black/10 p-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="truncate text-sm font-semibold">
+                              {user.name}
+                            </div>
+                            {activeTeam?.leaderId === user.id && (
+                              <span className="rounded-full border border-[#FEA70A]/40 bg-[#FEA70A]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-(--sub-text)">
+                                Leader
+                              </span>
+                            )}
+                          </div>
+                          <div className="truncate text-xs text-(--sub-text)">
+                            {user.email} • {user.track}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className={`${styles.warnButton} text-xs`}
+                          onClick={() => onRemoveMember(user.id)}
+                          disabled={savingMembers}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+
+                    {filteredTeamUsers.length === 0 && (
+                      <div className="rounded-xl border border-white/10 bg-black/10 p-3 text-sm text-(--sub-text)">
+                        No team members for this search.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
-              <div className="mb-2 text-sm font-semibold text-(--sub-text)">Judge Assignments</div>
+              <div className="mb-2 text-sm font-semibold text-(--sub-text)">
+                Judge Assignments
+              </div>
               <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-3">
                 <select
                   value={assignmentRound}
@@ -676,7 +740,9 @@ export default function TeamsAdminPage() {
                 </select>
                 <input
                   value={assignmentJudgeText}
-                  onChange={(event) => setAssignmentJudgeText(event.target.value)}
+                  onChange={(event) =>
+                    setAssignmentJudgeText(event.target.value)
+                  }
                   className="w-full rounded-xl border border-white/10 bg-[#111435] px-3 py-2 text-sm text-(--sub-text) outline-none"
                   placeholder="Type judge name or email..."
                 />
@@ -691,7 +757,10 @@ export default function TeamsAdminPage() {
                 {displayRounds.map((round) => {
                   const selected = draftAssignments[round.id] ?? [];
                   return (
-                    <details key={round.id} className="rounded-xl border border-white/10 bg-white/5">
+                    <details
+                      key={round.id}
+                      className="rounded-xl border border-white/10 bg-white/5"
+                    >
                       <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm font-semibold hover:bg-white/10">
                         <span>{round.name}</span>
                         <span className="text-xs font-normal text-(--sub-text)">
