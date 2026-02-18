@@ -224,7 +224,7 @@ export default function TeamsAdminPage() {
     setError(null);
     try {
       const updated = await api.patch<Team>(`/teams/${activeTeam.id}`, {
-        teamName,
+        name: teamName,
         status: draftStatus,
         track: draftTrack,
       });
@@ -345,7 +345,7 @@ export default function TeamsAdminPage() {
     setError(null);
     try {
       const updated = await api.patch<Team>(`/teams/${activeTeam.id}`, {
-        assignments: draftAssignments,
+        judgeAssignments: draftAssignments,
       });
       applyUpdatedTeam(updated);
     } catch (err) {
@@ -584,7 +584,7 @@ export default function TeamsAdminPage() {
                   onClick={() => setMemberView("all")}
                   className={`text-xs ${styles.primaryButton} ${
                     memberView === "all"
-                      ? "bg-[var(--primary-translucent)]"
+                      ? "bg-(--primary-translucent)"
                       : "opacity-70"
                   }`}
                 >
@@ -594,7 +594,7 @@ export default function TeamsAdminPage() {
                   onClick={() => setMemberView("team")}
                   className={`text-xs ${styles.primaryButton} ${
                     memberView === "team"
-                      ? "bg-[var(--primary-translucent)]"
+                      ? "bg-(--primary-translucent)"
                       : "opacity-70"
                   }`}
                 >

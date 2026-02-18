@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  scroll-behavior: smooth;
+
+  --foreground: #ffffff;
+  --background: #111435;
+  --primary: #fea70a;
+  --sub-header: #00d0f3;
+  --sub-text: #cfcfcf;
+  --card-header: #f5f5f5;
+
+  /* Utopia scale */
+
+  --step--2: clamp(0.95rem, 0.88rem + 0.3vw, 1.05rem);
+  --step--1: clamp(1.1rem, 1.02rem + 0.45vw, 1.35rem);
+  --step-0: clamp(1.25rem, 1.15rem + 0.6vw, 1.6rem); /* body */
+  --step-1: clamp(1.55rem, 1.35rem + 0.9vw, 2.1rem);
+  --step-2: clamp(1.95rem, 1.65rem + 1.3vw, 2.8rem);
+  --step-3: clamp(2.45rem, 2rem + 1.9vw, 3.8rem);
+  --step-4: clamp(3.1rem, 2.5rem + 2.8vw, 5.2rem);
+  --step-5: clamp(3.9rem, 3.1rem + 4vw, 7.5rem); /* hero */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #080808;
+  background-image:
+    radial-gradient(
+      circle at 60% 0%,
+      rgba(17, 20, 53, 0.85) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(0, 208, 243, 0.1) 0%,
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(254, 167, 10, 0.08) 0%,
+      transparent 38%
+    );
+
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }

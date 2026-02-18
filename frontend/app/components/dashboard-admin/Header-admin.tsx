@@ -11,7 +11,7 @@ export function Header({ setIsDrawerOpen }: { setIsDrawerOpen: (isOpen: boolean)
             <span className="text-xl leading-none">☰</span>
           </button>
           
-          <h1 className="text-lg md:text-xl font-bold tracking-widest text-[var(--primary)] ml-2">
+          <h1 className="text-lg md:text-xl font-bold tracking-widest text-(--primary) ml-2">
             REBEL HACKS
           </h1>
         </div>

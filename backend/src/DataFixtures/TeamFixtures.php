@@ -15,29 +15,29 @@ class TeamFixtures extends Fixture
                 'name' => 'Neon Ninjas',
                 'status' => 'Verified',
                 'track' => 'Software',
-                'projectName' => 'GlowFlow',
-                'projectDetails' => 'Realtime queue tracker for event operations.',
+                'project_name' => 'GlowFlow',
+                'project_details' => 'Realtime queue tracker for event operations.',
             ],
             [
                 'name' => 'Circuit Cowboys',
                 'status' => 'Unverified',
                 'track' => 'Hardware',
-                'projectName' => 'VoltVault',
-                'projectDetails' => 'Battery health dashboard and alerting.',
+                'project_name' => 'VoltVault',
+                'project_details' => 'Battery health dashboard and alerting.',
             ],
             [
                 'name' => 'Desert Debuggers',
                 'status' => 'Verified',
                 'track' => 'Software',
-                'projectName' => 'Dune Deploy',
-                'projectDetails' => 'Deploy monitor for student hackathon projects.',
+                'project_name' => 'Dune Deploy',
+                'project_details' => 'Deploy monitor for student hackathon projects.',
             ],
             [
                 'name' => 'Byte Bandits',
                 'status' => 'Unverified',
                 'track' => 'Hardware',
-                'projectName' => null,
-                'projectDetails' => null,
+                'project_name' => null,
+                'project_details' => null,
             ],
         ];
 
@@ -46,8 +46,8 @@ class TeamFixtures extends Fixture
                 ->setTeamName($item['name'])
                 ->setStatus($item['status'])
                 ->setTrack($item['track'])
-                ->setProjectName($item['projectName'])
-                ->setProjectDetails($item['projectDetails'])
+                ->setProjectName($item['project_name'])
+                ->setprojectDetails($item['project_details'])
                 ->setJudgeAssignments([
                     'r1' => [],
                     'r2' => [],

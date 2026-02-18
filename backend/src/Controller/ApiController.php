@@ -426,19 +426,19 @@ class ApiController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true) ?? [];
-        $currentName = $team->getTeamName();
+        $currentName = $team->getName();
         if (!$currentName) {
             return $this->json(['message' => 'Team has no current name'], 400);
         }
 
-        if (array_key_exists('teamName', $data)) {
-            $newTeamName = trim((string) $data['teamName']);
+        if (array_key_exists('name', $data)) {
+            $newTeamName = trim((string) $data['name']);
             if ($newTeamName === '') {
                 return $this->json(['message' => 'Team name cannot be empty'], 400);
             }
 
             if ($newTeamName !== $currentName) {
-                $existing = $em->getRepository(Team::class)->findOneBy(['teamName' => $newTeamName]);
+                $existing = $em->getRepository(Team::class)->findOneBy(['name' => $newTeamName]);
                 if ($existing && $existing->getId() !== $team->getId()) {
                     return $this->json(['message' => 'Team name already exists'], 409);
                 }
@@ -448,7 +448,7 @@ class ApiController extends AbstractController
                     $member->setTeam($newTeamName);
                 
 
-                $team->setTeamName($newTeamName);
+                $team->setName($newTeamName);
                 $currentName = $newTeamName;
             }
         }
@@ -481,14 +481,15 @@ class ApiController extends AbstractController
             $team->setProjectDetails($projectDetails !== '' ? $projectDetails : null);
         }
 
-        if (array_key_exists('assignments', $data)) {
-            if (!is_array($data['assignments'])) {
-                return $this->json(['message' => 'Assignments must be an object keyed by round id'], 400);
+        $judgeAssignments = $data['judgeAssignments'] ?? $data['assignments'] ?? null;
+        if ($judgeAssignments !== null) {
+            if (!is_array($judgeAssignments)) {
+                return $this->json(['message' => 'judgeAssignments must be an object keyed by round id'], 400);
             }
 
             $normalizedAssignments = [];
             $allJudgeIds = [];
-            foreach ($data['assignments'] as $roundId => $judgeIds) {
+            foreach ($judgeAssignments as $roundId => $judgeIds) {
                 if (!is_array($judgeIds)) {
                     return $this->json(['message' => 'Each round must map to an array of judge ids'], 400);
                 }
@@ -558,7 +559,7 @@ class ApiController extends AbstractController
             }
         }
 
-        $teamName = $team->getTeamName();
+        $teamName = $team->getName();
         if (!$teamName) {
             return $this->json(['message' => 'Team has no name and cannot be assigned'], 400);
         }
@@ -923,7 +924,7 @@ class ApiController extends AbstractController
     {
         return [
             'id' => $team->getId(),
-            'teamName' => $team->getTeamName(),
+            'teamName' => $team->getName(),
             'status' => $team->getStatus() ?? 'Unverified',
             'track' => $team->getTrack() ?? 'Software',
             'project' => [
