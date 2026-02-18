@@ -11,6 +11,46 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'UNIQ_TEAM_NAME', fields: ['name'])]
 class Team
 {
+
+    public const USER_ROLE_LEADER = 'ROLE_TEAM_LEADER';
+    public const USER_ROLE_MEMBER = 'ROLE_TEAM_MEMBER';
+
+    // Remove hardcoded strings
+    // Make any options/constants here for the team entity, such as track options, status options, etc.
+
+    // for majors
+    public const MAJOR_CS = 'Computer Science';
+
+    // Might need this for multiple.
+    // public const array MAJORS = [
+    //     self::MAJOR_CS,
+    //     'Computer Engineering',
+    //     'Electrical Engineering',
+    //     'Other',
+    // ];
+
+
+
+        public const STATUS_UNVERIFIED = 'Unverified';
+    public const STATUS_VERIFIED = 'Verified';
+
+    public const STATUS = [
+        self::STATUS_UNVERIFIED,
+        self::STATUS_VERIFIED
+    ];
+
+    public const TRACK_SOFTWARE = 'Software';
+    public const TRACK_HARDWARE = 'Hardware';
+    public const UNVERIFIED = 'Unverified';
+    public const VERIFIED = 'Verified';
+
+
+    public const TRACKS = [
+        self::TRACK_SOFTWARE,
+        self::TRACK_HARDWARE,
+    ];
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -20,10 +60,10 @@ class Team
     private ?string $name = null;
 
     #[ORM\Column(length: 32, options: ['default' => 'Unverified'])]
-    private ?string $status = 'Unverified';
+    private ?string $status = UNVERIFIED;
 
     #[ORM\Column(length: 32, options: ['default' => 'Software'])]
-    private ?string $track = 'Software';
+    private ?string $track = TRACK_SOFTWARE;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $project_name = null;

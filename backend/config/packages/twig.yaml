@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        DEFAULT_URI: '%app.default_uri%'
 
 when@test:
     twig:
