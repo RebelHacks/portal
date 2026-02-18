@@ -17,12 +17,12 @@ class UserFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $people = [
-            ['Ava Nguyen', 'ava@demo.com', 'Neon Ninjas', 'Software', 'Pending', ['ROLE_USER']],
-            ['Liam Chen', 'liam@demo.com', 'Neon Ninjas', 'Software', 'Checked In', ['ROLE_USER']],
-            ['Mateo Rivera', 'mateo@demo.com', 'Circuit Cowboys', 'Hardware', 'Checked In', ['ROLE_USER']],
-            ['Jordan Lee', 'jordan@demo.com', 'Circuit Cowboys', 'Hardware', 'Pending', ['ROLE_USER']],
-            ['Sofia Patel', 'sofia@demo.com', 'Desert Debuggers', 'Software', 'Pending', ['ROLE_USER']],
-            ['Noah Brooks', 'noah@demo.com', 'Desert Debuggers', 'Software', 'Checked In', ['ROLE_USER']],
+            ['Ava Nguyen', 'ava@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Liam Chen', 'liam@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Mateo Rivera', 'mateo@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
+            ['Jordan Lee', 'jordan@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
+            ['Sofia Patel', 'sofia@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Noah Brooks', 'noah@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
             ['Eva Flores', 'eva@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
             ['Alex Kim', 'alex@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
             ['Judge One', 'judge1@demo.com', null, 'Software', 'Pending', ['ROLE_JUDGE']],

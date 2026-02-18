@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 #[Route('/api', name: 'api_')]
 class ApiController extends AbstractController
 {
-    private const TEAM_MEMBER_LIMIT = 5;
+    private const TEAM_user_LIMIT = 5;
     private const TEAM_NAME_MAX_LENGTH = 48;
     private const PROJECT_NAME_MAX_LENGTH = 100;
     private const PROJECT_DETAILS_MAX_LENGTH = 250;
@@ -182,7 +182,7 @@ class ApiController extends AbstractController
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
             'email' => $u->getEmail(),
-            'team' => $u->getTeam() ?? '',
+            'team' => $u->getTeam()?->getName() ?? '',
             'track' => $u->getTrack() ?? '',
             'major' => $u->getMajor() ?? '',
             'state' => $u->getState() ?? 'Pending',
@@ -371,9 +371,9 @@ public function uploadFile(
         
         $em->persist($team);
     
-        // 3. Assign User to Team (This marks them as a member/leader)
+        // 3. Assign User to Team (This marks them as a user/leader)
         // Based on your schema screenshot: user.team is a varchar(128)
-        $user->setTeam($teamName); 
+        $user->setTeam($team); 
         
         // Add team leader role
         $currentRoles = array_diff($user->getRoles(), ['ROLE_USER']);
@@ -382,17 +382,17 @@ public function uploadFile(
     
         $em->flush();
     
-        // Return the created team with member data
-        $members = $em->getRepository(User::class)->findBy(['team' => $teamName]);
-        $memberData = array_map(fn(User $u) => [
+        // Return the created team with user data
+        $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $userData = array_map(fn(User $u) => [
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
             'email' => $u->getEmail(),
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
-        ], $members);
+        ], $users);
         
-        return $this->json($this->serializeTeam($team, $memberData, $user->getId()), 201);
+        return $this->json($this->serializeTeam($team, $userData, $user->getId()), 201);
     }
 
     #[Route('/teams', name: 'teams', methods: ['GET'])]
@@ -406,15 +406,15 @@ public function uploadFile(
         $teams = $em->getRepository(Team::class)->findAll();
         $users = $em->getRepository(User::class)->findAll();
 
-        $membersByTeam = [];
+        $usersByTeam = [];
         $leaderByTeam = [];
         foreach ($users as $user) {
-            $userTeam = $user->getTeam();
-            if (!$userTeam) {
+            $userTeamName = $user->getTeam()?->getName();
+            if (!$userTeamName) {
                 continue;
             }
 
-            $membersByTeam[$userTeam][] = [
+            $usersByTeam[$userTeamName][] = [
                 'id' => $user->getId(),
                 'name' => $user->getName() ?? '',
                 'email' => $user->getEmail(),
@@ -423,13 +423,13 @@ public function uploadFile(
             ];
 
             if (in_array('ROLE_TEAM_LEADER', $user->getRoles(), true)) {
-                $leaderByTeam[$userTeam] = $user->getId();
+                $leaderByTeam[$userTeamName] = $user->getId();
             }
         }
 
         $json_data = array_map(fn(Team $t) => $this->serializeTeam(
             $t,
-            $membersByTeam[$t->getName() ?? ''] ?? [],
+            $usersByTeam[$t->getName() ?? ''] ?? [],
             $leaderByTeam[$t->getName() ?? ''] ?? null
         ), $teams);
 
@@ -468,11 +468,6 @@ public function uploadFile(
                 $existing = $em->getRepository(Team::class)->findOneBy(['name' => $newTeamName]);
                 if ($existing && $existing->getId() !== $team->getId()) {
                     return $this->json(['message' => 'Team name already exists'], 409);
-                }
-
-                $members = $em->getRepository(User::class)->findBy(['team' => $currentName]);
-                foreach ($members as $member) {
-                    $member->setTeam($newTeamName);
                 }
 
                 $team->setName($newTeamName);
@@ -551,22 +546,22 @@ public function uploadFile(
 
         $em->flush();
 
-        $updatedMembers = $em->getRepository(User::class)->findBy(['team' => $currentName]);
-        $jsonMembers = array_map(fn(User $u) => [
+        $updatedusers = $em->getRepository(User::class)->findBy(['team' => $currentName]);
+        $jsonusers = array_map(fn(User $u) => [
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
             'email' => $u->getEmail(),
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
-        ], $updatedMembers);
+        ], $updatedusers);
 
         $leaderId = $this->findTeamLeaderId($em, $currentName);
-        return $this->json($this->serializeTeam($team, $jsonMembers, $leaderId));
+        return $this->json($this->serializeTeam($team, $jsonusers, $leaderId));
     }
 
-    #[Route('/teams/{id}/members', name: 'teams_members_update', methods: ['PATCH'])]
-    #[Route('/admin/teams/{id}/members', name: 'admin_teams_members_update', methods: ['PATCH'])]
-    public function updateTeamMembers(Request $request, EntityManagerInterface $em, int $id): JsonResponse
+    #[Route('/teams/{id}/users', name: 'teams_users_update', methods: ['PATCH'])]
+    #[Route('/admin/teams/{id}/users', name: 'admin_teams_users_update', methods: ['PATCH'])]
+    public function updateTeamusers(Request $request, EntityManagerInterface $em, int $id): JsonResponse
     {
         $isAdminRoute = $this->isAdminRoute($request);
         if ($isAdminRoute) {
@@ -579,21 +574,21 @@ public function uploadFile(
         }
 
         $data = json_decode($request->getContent(), true);
-        $memberIds = $data['memberIds'] ?? null;
+        $userIds = $data['userIds'] ?? null;
 
-        if (!is_array($memberIds)) {
-            return $this->json(['message' => 'memberIds must be an array of user ids'], 400);
+        if (!is_array($userIds)) {
+            return $this->json(['message' => 'userIds must be an array of user ids'], 400);
         }
 
-        $memberIds = array_values(array_unique(array_map('intval', $memberIds)));
-        if (count($memberIds) > self::TEAM_MEMBER_LIMIT) {
-            return $this->json(['message' => 'A team can only have up to ' . self::TEAM_MEMBER_LIMIT . ' members'], 400);
+        $userIds = array_values(array_unique(array_map('intval', $userIds)));
+        if (count($userIds) > self::TEAM_user_LIMIT) {
+            return $this->json(['message' => 'A team can only have up to ' . self::TEAM_user_LIMIT . ' users'], 400);
         }
 
         $selectedUsers = [];
-        if ($memberIds !== []) {
-            $selectedUsers = $em->getRepository(User::class)->findBy(['id' => $memberIds]);
-            if (count($selectedUsers) !== count($memberIds)) {
+        if ($userIds !== []) {
+            $selectedUsers = $em->getRepository(User::class)->findBy(['id' => $userIds]);
+            if (count($selectedUsers) !== count($userIds)) {
                 return $this->json(['message' => 'One or more users were not found'], 404);
             }
         }
@@ -607,17 +602,17 @@ public function uploadFile(
         $allUsers = $em->getRepository(User::class)->findAll();
         $leader = null;
         foreach ($allUsers as $u) {
-            if ($u->getTeam() === $teamName && in_array('ROLE_TEAM_LEADER', $u->getRoles())) {
+            if ($u->getTeam()?->getName() === $teamName && in_array('ROLE_TEAM_LEADER', $u->getRoles())) {
                 $leader = $u;
                 break;
             }
         }
         if ($isAdminRoute) {
-            // Admin can re-shape team membership; if leader is removed/missing, promote first selected member.
-            if (!$leader || !in_array($leader->getId(), $memberIds, true)) {
+            // Admin can re-shape team usership; if leader is removed/missing, promote first selected user.
+            if (!$leader || !in_array($leader->getId(), $userIds, true)) {
                 $leader = null;
-                if ($memberIds !== []) {
-                    $fallbackLeaderId = $memberIds[0];
+                if ($userIds !== []) {
+                    $fallbackLeaderId = $userIds[0];
                     foreach ($selectedUsers as $selectedUser) {
                         if ($selectedUser->getId() === $fallbackLeaderId) {
                             $leader = $selectedUser;
@@ -630,61 +625,61 @@ public function uploadFile(
             if (!$leader) {
                 return $this->json(['message' => 'Team has no leader'], 400);
             }
-            if (!in_array($leader->getId(), $memberIds, true)) {
+            if (!in_array($leader->getId(), $userIds, true)) {
                 return $this->json(['message' => 'Cannot remove team leader from team'], 400);
             }
         }
 
         // Check if selected users are not in another team
-        foreach ($selectedUsers as $member) {
-            if ($member->getTeam() && $member->getTeam() !== $teamName) {
-                return $this->json(['message' => 'User ' . $member->getId() . ' is already in another team'], 400);
+        foreach ($selectedUsers as $user) {
+            if ($user->getTeam() && $user->getTeam() !== $teamName) {
+                return $this->json(['message' => 'User ' . $user->getId() . ' is already in another team'], 400);
             }
         }
 
-        $currentMembers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
-        $selectedIdsLookup = array_fill_keys($memberIds, true);
+        $currentusers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $selectedIdsLookup = array_fill_keys($userIds, true);
 
-        foreach ($currentMembers as $member) {
-            if (!isset($selectedIdsLookup[$member->getId()])) {
-                $member->setTeam(null);
-                $currentRoles = array_diff($member->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_MEMBER']);
-                $member->setRoles($currentRoles);
+        foreach ($currentusers as $user) {
+            if (!isset($selectedIdsLookup[$user->getId()])) {
+                $user->setTeam(null);
+                $currentRoles = array_diff($user->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_user']);
+                $user->setRoles($currentRoles);
             }
         }
 
-        foreach ($selectedUsers as $member) {
-            $member->setTeam($teamName);
+        foreach ($selectedUsers as $user) {
+            $user->setTeam($team);
         }
 
         // Set roles
-        foreach ($selectedUsers as $member) {
-            $currentRoles = array_diff($member->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_MEMBER']);
-            if ($leader && $member->getId() === $leader->getId()) {
+        foreach ($selectedUsers as $user) {
+            $currentRoles = array_diff($user->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_user']);
+            if ($leader && $user->getId() === $leader->getId()) {
                 if (!in_array('ROLE_TEAM_LEADER', $currentRoles)) {
                     $currentRoles[] = 'ROLE_TEAM_LEADER';
                 }
             } else {
-                if (!in_array('ROLE_MEMBER', $currentRoles)) {
-                    $currentRoles[] = 'ROLE_MEMBER';
+                if (!in_array('ROLE_user', $currentRoles)) {
+                    $currentRoles[] = 'ROLE_user';
                 }
             }
-            $member->setRoles($currentRoles);
+            $user->setRoles($currentRoles);
         }
 
         $em->flush();
 
-        $updatedMembers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
-        $jsonMembers = array_map(fn(User $u) => [
+        $updatedusers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $jsonusers = array_map(fn(User $u) => [
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
             'email' => $u->getEmail(),
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
-        ], $updatedMembers);
+        ], $updatedusers);
 
         $leaderId = $this->findTeamLeaderId($em, $teamName);
-        return $this->json($this->serializeTeam($team, $jsonMembers, $leaderId));
+        return $this->json($this->serializeTeam($team, $jsonusers, $leaderId));
     }
 
     #[Route('/teams/{id}', name: 'delete_team', methods: ['DELETE'])]
@@ -713,24 +708,24 @@ public function uploadFile(
             }
 
             if ($user->getTeam() !== $teamName) {
-                return $this->json(['message' => 'Only team members can disband this team'], 403);
+                return $this->json(['message' => 'Only team users can disband this team'], 403);
             }
 
-            $members = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+            $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
             $isLeader = in_array('ROLE_TEAM_LEADER', $user->getRoles(), true);
-            $isSoloMember = count($members) === 1 && $members[0]->getId() === $user->getId();
+            $isSolouser = count($users) === 1 && $users[0]->getId() === $user->getId();
 
-            if (!$isLeader && !$isSoloMember) {
+            if (!$isLeader && !$isSolouser) {
                 return $this->json(['message' => 'Only the team leader can disband the team'], 403);
             }
         }
 
-        $members = $em->getRepository(User::class)->findBy(['team' => $teamName]);
-        foreach ($members as $member) {
-            $member->setTeam(null);
-            $currentRoles = array_diff($member->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_MEMBER']);
+        $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        foreach ($users as $user) {
+            $user->setTeam(null);
+            $currentRoles = array_diff($user->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_user']);
             $currentRoles[] = 'ROLE_USER';
-            $member->setRoles(array_values(array_unique($currentRoles)));
+            $user->setRoles(array_values(array_unique($currentRoles)));
         }
 
         // Decline all pending invitations for this team
@@ -768,12 +763,12 @@ public function uploadFile(
 
         // Sender must be a team leader
         if (!in_array('ROLE_TEAM_LEADER', $user->getRoles(), true)) {
-            // Find team by user membership and leaderId
+            // Find team by user usership and leaderId
             $teams = $em->getRepository(Team::class)->findAll();
             $userTeam = null;
             foreach ($teams as $t) {
-                $members = $em->getRepository(User::class)->findBy(['team' => $t->getName()]);
-                foreach ($members as $m) {
+                $users = $em->getRepository(User::class)->findBy(['team' => $t->getName()]);
+                foreach ($users as $m) {
                     if ($m->getId() === $user->getId()) {
                         $userTeam = $t;
                         break 2;
@@ -800,9 +795,9 @@ public function uploadFile(
         }
 
         // Check team capacity
-        $currentMembers = $em->getRepository(User::class)->findBy(['team' => $userTeamName]);
+        $currentusers = $em->getRepository(User::class)->findBy(['team' => $userTeamName]);
         $pendingInvites = $em->getRepository(Invitation::class)->findBy(['team' => $team, 'status' => 'pending']);
-        if (count($currentMembers) + count($pendingInvites) >= self::TEAM_MEMBER_LIMIT) {
+        if (count($currentusers) + count($pendingInvites) >= self::TEAM_user_LIMIT) {
             return $this->json(['message' => 'Team is at capacity (including pending invitations)'], 400);
         }
 
@@ -869,7 +864,7 @@ public function uploadFile(
             return $this->json(['message' => 'Team not found'], 404);
         }
 
-        // Check if user is a member of this team
+        // Check if user is a user of this team
         if ($user->getTeam() !== $team->getName()) {
             return $this->json(['message' => 'Access denied'], 403);
         }
@@ -910,16 +905,16 @@ public function uploadFile(
         $teamName = $team->getName();
 
         // Check team capacity
-        $currentMembers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
-        if (count($currentMembers) >= self::TEAM_MEMBER_LIMIT) {
+        $currentusers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        if (count($currentusers) >= self::TEAM_user_LIMIT) {
             return $this->json(['message' => 'Team is already at maximum capacity'], 400);
         }
 
         // Add user to team
-        $user->setTeam($teamName);
+        $user->setTeam($team);
         $currentRoles = array_diff($user->getRoles(), ['ROLE_USER']);
-        if (!in_array('ROLE_MEMBER', $currentRoles)) {
-            $currentRoles[] = 'ROLE_MEMBER';
+        if (!in_array('ROLE_user', $currentRoles)) {
+            $currentRoles[] = 'ROLE_user';
         }
         $user->setRoles($currentRoles);
 
@@ -996,10 +991,10 @@ public function uploadFile(
 
     private function findTeamLeaderId(EntityManagerInterface $em, string $teamName): ?int
     {
-        $members = $em->getRepository(User::class)->findBy(['team' => $teamName]);
-        foreach ($members as $member) {
-            if (in_array('ROLE_TEAM_LEADER', $member->getRoles(), true)) {
-                return $member->getId();
+        $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        foreach ($users as $user) {
+            if (in_array('ROLE_TEAM_LEADER', $user->getRoles(), true)) {
+                return $user->getId();
             }
         }
         return null;
@@ -1010,7 +1005,7 @@ public function uploadFile(
         return str_starts_with($request->getPathInfo(), '/api/admin/');
     }
 
-    private function serializeTeam(Team $team, array $members, ?int $leaderId = null): array
+    private function serializeTeam(Team $team, array $users, ?int $leaderId = null): array
     {
         return [
             'id' => $team->getId(),
@@ -1023,7 +1018,7 @@ public function uploadFile(
             ],
             'assignments' => $team->getJudgeAssignments() ?? [],
             'leaderId' => $leaderId,
-            'members' => $members,
+            'users' => $users,
         ];
     }
 }
