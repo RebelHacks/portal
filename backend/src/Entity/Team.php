@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TeamRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,8 +33,19 @@ class Team
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $project_details = null;
 
-    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[ORM\Column(type: Types::JSON, nullable: true)] // dont do this 
     private ?array $judge_assignments = [];
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'team')]
+    private Collection $users;
+
+    public function __construct()
+    {
+        $this->users = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -108,6 +121,36 @@ class Team
     public function setJudgeAssignments(?array $judge_assignments): static
     {
         $this->judge_assignments = $judge_assignments ?? [];
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->setTeam($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        if ($this->users->removeElement($user)) {
+            // set the owning side to null (unless already changed)
+            if ($user->getTeam() === $this) {
+                $user->setTeam(null);
+            }
+        }
 
         return $this;
     }

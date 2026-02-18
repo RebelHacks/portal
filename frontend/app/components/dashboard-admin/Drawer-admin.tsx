@@ -1,6 +1,6 @@
 import style from "../../dashboard/dashboard.module.css";
 
-const TABS = ["Arrivals", "Teams", "Judges"];
+const TABS = ["Arrivals", "Teams"];
 
 export function Drawer({
   isDrawerOpen,
@@ -17,20 +17,12 @@ export function Drawer({
     <>
       {isDrawerOpen && (
         <>
-          <div
-            className={style.drawerBackdrop}
-            onClick={() => setIsDrawerOpen(false)}
-          />
+          <div className={style.drawerBackdrop} onClick={() => setIsDrawerOpen(false)} />
 
           <aside className={style.drawerPanel}>
             <div className={style.drawerHeader}>
-              <div className="text-xl font-bold tracking-widest text-(--primary)">
-                MENU
-              </div>
-              <button
-                onClick={() => setIsDrawerOpen(false)}
-                className={style.closeButton}
-              >
+              <div className="text-xl font-bold tracking-widest text-(--primary)">MENU</div>
+              <button onClick={() => setIsDrawerOpen(false)} className={style.closeButton}>
                 ✕
               </button>
             </div>
@@ -43,8 +35,7 @@ export function Drawer({
                     setActiveTab(option);
                     setIsDrawerOpen(false);
                   }}
-                  className={`${style.option} ${activeTab === option ? style.active : ""} px-4 py-3 rounded text-lg`}
-                >
+                  className={`${style.option} ${activeTab === option ? style.active : ""} px-4 py-3 rounded text-lg`}>
                   {option}
                 </div>
               ))}

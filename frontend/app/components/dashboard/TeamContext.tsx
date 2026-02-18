@@ -45,7 +45,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       if (me) setCurrentUserId(me.id);
 
       const myTeam = teams.find(t =>
-        t.members?.some(m => m.email === email)
+        t.users?.some(m => m.email === email)
       ) ?? null;
       setTeamId(myTeam?.id ?? null);
       setIsLeader(me != null && myTeam != null && myTeam.leaderId === me.id);

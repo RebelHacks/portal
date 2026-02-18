@@ -1,43 +1,56 @@
-import { useState } from 'react';
+import { useState } from "react";
 import style from "../../dashboard/dashboard.module.css";
 import api from "@/lib/api";
 import { useTeamContext } from "./TeamContext";
-import type {ErrorResponse, CreateTeamRequest, Track, Team} from "@/lib/types";
+import type { CreateTeamRequest, Track, Team } from "@/lib/types";
+
+const TEAM_NAME_MAX_LENGTH = 48;
 
 export function TeamCreationDash() {
   const { refresh } = useTeamContext();
-  const [teamName, setTeamName] = useState('');
-  const [track, setTrack] = useState<Track>('Software');
+  const [teamName, setTeamName] = useState("");
+  const [track, setTrack] = useState<Track>("Software");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [createdTeam, setCreatedTeam] = useState<Team | null>(null);
 
   const createTeam = async () => {
-    if (!teamName.trim()) {
-      setError('Team name is required');
+    const trimmedTeamName = teamName.trim();
+
+    if (!trimmedTeamName) {
+      setError("Team name is required");
+      return;
+    }
+
+    if (trimmedTeamName.length > TEAM_NAME_MAX_LENGTH) {
+      setError(`Team name must be ${TEAM_NAME_MAX_LENGTH} characters or fewer`);
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
     setSuccess(false);
     setCreatedTeam(null);
 
     const requestData: CreateTeamRequest = {
-      teamName: teamName.trim(),
-      track
+      teamName: trimmedTeamName,
+      track,
     };
 
     try {
-      const response = await api.post<Team>('/teams', requestData);
+      const response = await api.post<Team>("/teams", requestData);
       setCreatedTeam(response);
       setSuccess(true);
-      setTeamName('');
-      setTrack('Software');
+      setTeamName("");
+      setTrack("Software");
       await refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create team');
+    } catch (err: unknown) {
+      const apiMessage =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+      setError(apiMessage || "Failed to create team");
     } finally {
       setLoading(false);
     }
@@ -58,7 +71,9 @@ export function TeamCreationDash() {
                 onChange={(e) => setTeamName(e.target.value)}
                 placeholder="Enter team name..."
                 disabled={loading}
+                maxLength={TEAM_NAME_MAX_LENGTH}
               />
+              <p className="text-xs text-(--sub-text)">Max {TEAM_NAME_MAX_LENGTH} characters</p>
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-xs text-gray-500 tracking-wider">TRACK</label>
@@ -66,8 +81,7 @@ export function TeamCreationDash() {
                 className={style.dropdown}
                 value={track}
                 onChange={(e) => setTrack(e.target.value as Track)}
-                disabled={loading}
-              >
+                disabled={loading}>
                 <option value="Software">Software</option>
                 <option value="Hardware">Hardware</option>
               </select>
@@ -82,28 +96,23 @@ export function TeamCreationDash() {
                 <p className="text-gray-400 text-xs">Status: {createdTeam.status}</p>
               </div>
             )}
-            <button 
-              onClick={createTeam}
-              disabled={loading}
-              className={style.primaryButton}
-            >
-              {loading ? 'Creating...' : 'Create Team'}
+            <button onClick={createTeam} disabled={loading} className={style.primaryButton}>
+              {loading ? "Creating..." : "Create Team"}
             </button>
           </div>
         </div>
 
-        <div className="flex-1 pt-10 border-t md:border-t-0 md:border-l border-[var(--primary-light-border)] md:pl-10">
+        <div className="flex-1 pt-10 border-t md:border-t-0 md:border-l border-(--primary-light-border) text-(--sub-text) md:pl-10">
           <h4 className={style.secondaryTitle}>Team Guidelines</h4>
           <ul className={`${style.list} space-y-2`}>
             <li>Names must be professional.</li>
+            <li>Team name max is {TEAM_NAME_MAX_LENGTH} characters.</li>
             <li>Teams are limited to 5 members.</li>
             <li>Tracks must be either Software or Hardware.</li>
             <li>After creation, make a project.</li>
           </ul>
         </div>
       </div>
-
-      
     </>
   );
 }
