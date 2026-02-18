@@ -72,7 +72,7 @@ export interface Team {
   project: TeamProject;
   assignments: Record<string, number[]>;
   leaderId: number | null;
-  members?: TeamMember[];
+  users?: TeamMember[];
 }
 
 export interface Judge {

@@ -245,69 +245,69 @@ class ApiController extends AbstractController
         ]);
     }
 
-#[Route('/users/upload-file', name: 'upload_file', methods: ['POST'])]
-public function uploadFile(
-    Request $request,
-    EntityManagerInterface $em
-): JsonResponse {
-    /** @var User $user */
-    $user = $this->getUser();
-    if (!$user) {
-        return $this->json(['message' => 'Unauthorized'], 401);
-    }
-
-    $file = $request->files->get('file');
-    $type = $request->request->get('type'); // e.g., 'transcript', 'form', 'resume'
-
-    if (!$file || !$type) {
-        return $this->json(['message' => 'File and type are required'], 400);
-    }
-
-    // --- LOGIC FOR UNIQUENESS ---
-    // Define which types should only have ONE file per user
-    $uniqueTypes = ['transcript'];
-
-    if (in_array($type, $uniqueTypes)) {
-        $oldFile = $em->getRepository(File::class)->findOneBy([
-            'user' => $user,
-            'type' => $type
-        ]);
-
-        if ($oldFile) {
-            $oldPath = $this->getParameter('kernel.project_dir') . $oldFile->getFilepath();
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
-            }
-            $em->remove($oldFile);
-            // We don't flush yet, we'll flush at the end
+    #[Route('/users/upload-file', name: 'upload_file', methods: ['POST'])]
+    public function uploadFile(
+        Request $request,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Unauthorized'], 401);
         }
+
+        $file = $request->files->get('file');
+        $type = $request->request->get('type'); // e.g., 'transcript', 'form', 'resume'
+
+        if (!$file || !$type) {
+            return $this->json(['message' => 'File and type are required'], 400);
+        }
+
+        // --- LOGIC FOR UNIQUENESS ---
+        // Define which types should only have ONE file per user
+        $uniqueTypes = ['transcript'];
+
+        if (in_array($type, $uniqueTypes)) {
+            $oldFile = $em->getRepository(File::class)->findOneBy([
+                'user' => $user,
+                'type' => $type
+            ]);
+
+            if ($oldFile) {
+                $oldPath = $this->getParameter('kernel.project_dir') . $oldFile->getFilepath();
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+                $em->remove($oldFile);
+                // We don't flush yet, we'll flush at the end
+            }
+        }
+        // If the type is 'form', the logic above is skipped, and a new record is added.
+
+        // --- FILE SAVING ---
+        $fileName = sprintf('%s_%d_%s.%s', $type, $user->getId(), uniqid(), $file->guessExtension());
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/files';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $file->move($uploadDir, $fileName);
+
+        $fileEntity = new File();
+        $fileEntity->setUser($user);
+        $fileEntity->setFilepath('/public/files/' . $fileName);
+        $fileEntity->setType($type);
+
+        $em->persist($fileEntity);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'File uploaded successfully',
+            'fileId' => $fileEntity->getId(),
+            'filepath' => $fileEntity->getFilepath()
+        ], 200);
     }
-    // If the type is 'form', the logic above is skipped, and a new record is added.
-
-    // --- FILE SAVING ---
-    $fileName = sprintf('%s_%d_%s.%s', $type, $user->getId(), uniqid(), $file->guessExtension());
-    $uploadDir = $this->getParameter('kernel.project_dir') . '/public/files';
-    
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-
-    $file->move($uploadDir, $fileName);
-
-    $fileEntity = new File();
-    $fileEntity->setUser($user);
-    $fileEntity->setFilepath('/public/files/' . $fileName);
-    $fileEntity->setType($type);
-
-    $em->persist($fileEntity);
-    $em->flush();
-
-    return $this->json([
-        'message' => 'File uploaded successfully',
-        'fileId' => $fileEntity->getId(),
-        'filepath' => $fileEntity->getFilepath()
-    ], 200);
-}
 
 
     #[Route('/users/{id}', methods: ['PATCH'])]
@@ -338,7 +338,7 @@ public function uploadFile(
     {
         /** @var User $user */
         $user = $this->getUser(); // Get current logged-in user
-        
+
         if (!$user) {
             return $this->json(['message' => 'Auth required'], 401);
         }
@@ -346,10 +346,10 @@ public function uploadFile(
         if ($user->getTeam()) {
             return $this->json(['message' => 'User is already in a team'], 400);
         }
-    
+
         $data = json_decode($request->getContent(), true);
         $teamName = trim((string)($data['teamName'] ?? ''));
-    
+
         // 1. Validation
         if ($teamName === '') {
             return $this->json(['message' => 'Team name is required'], 400);
@@ -362,28 +362,28 @@ public function uploadFile(
         if ($existing) {
             return $this->json(['message' => 'Team name already exists'], 409);
         }
-    
+
         // 2. Create the Team Entity
         $team = new Team();
         $team->setName($teamName);
         $team->setStatus('Unverified');
         $team->setTrack($data['track'] ?? 'Software');
-        
+
         $em->persist($team);
-    
+
         // 3. Assign User to Team (This marks them as a user/leader)
         // Based on your schema screenshot: user.team is a varchar(128)
-        $user->setTeam($team); 
-        
+        $user->setTeam($team);
+
         // Add team leader role
         $currentRoles = array_diff($user->getRoles(), ['ROLE_USER']);
         $currentRoles[] = 'ROLE_TEAM_LEADER';
         $user->setRoles($currentRoles);
-    
+
         $em->flush();
-    
+
         // Return the created team with user data
-        $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $users = $em->getRepository(User::class)->findBy(['team' => $team]);
         $userData = array_map(fn(User $u) => [
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
@@ -391,7 +391,7 @@ public function uploadFile(
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
         ], $users);
-        
+
         return $this->json($this->serializeTeam($team, $userData, $user->getId()), 201);
     }
 
@@ -546,7 +546,7 @@ public function uploadFile(
 
         $em->flush();
 
-        $updatedusers = $em->getRepository(User::class)->findBy(['team' => $currentName]);
+        $updatedusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         $jsonusers = array_map(fn(User $u) => [
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
@@ -577,7 +577,7 @@ public function uploadFile(
         $userIds = $data['userIds'] ?? null;
 
         if (!is_array($userIds)) {
-            return $this->json(['message' => 'userIds must be an array of user ids'], 400);
+            return $this->json(['message' => 'userIds must be an array of user ids'. $userIds == null], 400);
         }
 
         $userIds = array_values(array_unique(array_map('intval', $userIds)));
@@ -632,12 +632,12 @@ public function uploadFile(
 
         // Check if selected users are not in another team
         foreach ($selectedUsers as $user) {
-            if ($user->getTeam() && $user->getTeam() !== $teamName) {
+            if ($user->getTeam()?->getName() !== $teamName && $user->getTeam()) {
                 return $this->json(['message' => 'User ' . $user->getId() . ' is already in another team'], 400);
             }
         }
 
-        $currentusers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $currentusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         $selectedIdsLookup = array_fill_keys($userIds, true);
 
         foreach ($currentusers as $user) {
@@ -669,7 +669,7 @@ public function uploadFile(
 
         $em->flush();
 
-        $updatedusers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $updatedusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         $jsonusers = array_map(fn(User $u) => [
             'id' => $u->getId(),
             'name' => $u->getName() ?? '',
@@ -707,11 +707,11 @@ public function uploadFile(
                 return $this->json(['message' => 'Unauthorized'], 401);
             }
 
-            if ($user->getTeam() !== $teamName) {
+            if ($user->getTeam()?->getName() !== $teamName) {
                 return $this->json(['message' => 'Only team users can disband this team'], 403);
             }
 
-            $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+            $users = $em->getRepository(User::class)->findBy(['team' => $team]);
             $isLeader = in_array('ROLE_TEAM_LEADER', $user->getRoles(), true);
             $isSolouser = count($users) === 1 && $users[0]->getId() === $user->getId();
 
@@ -720,7 +720,7 @@ public function uploadFile(
             }
         }
 
-        $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $users = $em->getRepository(User::class)->findBy(['team' => $team]);
         foreach ($users as $user) {
             $user->setTeam(null);
             $currentRoles = array_diff($user->getRoles(), ['ROLE_USER', 'ROLE_TEAM_LEADER', 'ROLE_user']);
@@ -767,7 +767,7 @@ public function uploadFile(
             $teams = $em->getRepository(Team::class)->findAll();
             $userTeam = null;
             foreach ($teams as $t) {
-                $users = $em->getRepository(User::class)->findBy(['team' => $t->getName()]);
+                $users = $em->getRepository(User::class)->findBy(['team' => $t]);
                 foreach ($users as $m) {
                     if ($m->getId() === $user->getId()) {
                         $userTeam = $t;
@@ -785,7 +785,7 @@ public function uploadFile(
         }
 
         // Find the team the user leads
-        $userTeamName = $user->getTeam();
+        $userTeamName = $user->getTeam()?->getName();
         if (!$userTeamName) {
             return $this->json(['message' => 'You are not in a team'], 400);
         }
@@ -795,7 +795,7 @@ public function uploadFile(
         }
 
         // Check team capacity
-        $currentusers = $em->getRepository(User::class)->findBy(['team' => $userTeamName]);
+        $currentusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         $pendingInvites = $em->getRepository(Invitation::class)->findBy(['team' => $team, 'status' => 'pending']);
         if (count($currentusers) + count($pendingInvites) >= self::TEAM_user_LIMIT) {
             return $this->json(['message' => 'Team is at capacity (including pending invitations)'], 400);
@@ -865,7 +865,7 @@ public function uploadFile(
         }
 
         // Check if user is a user of this team
-        if ($user->getTeam() !== $team->getName()) {
+        if ($user->getTeam() !== $team) {
             return $this->json(['message' => 'Access denied'], 403);
         }
 
@@ -905,7 +905,7 @@ public function uploadFile(
         $teamName = $team->getName();
 
         // Check team capacity
-        $currentusers = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $currentusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         if (count($currentusers) >= self::TEAM_user_LIMIT) {
             return $this->json(['message' => 'Team is already at maximum capacity'], 400);
         }
@@ -991,7 +991,7 @@ public function uploadFile(
 
     private function findTeamLeaderId(EntityManagerInterface $em, string $teamName): ?int
     {
-        $users = $em->getRepository(User::class)->findBy(['team' => $teamName]);
+        $users = $em->getRepository(User::class)->findByTeamName($teamName);
         foreach ($users as $user) {
             if (in_array('ROLE_TEAM_LEADER', $user->getRoles(), true)) {
                 return $user->getId();

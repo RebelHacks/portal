@@ -36,7 +36,7 @@ function normalizeTeam(team: Team): Team {
     track: team.track ?? "Software",
     project: team.project ?? { name: "", details: "" },
     assignments: team.assignments ?? {},
-    members: team.members ?? [],
+    users: team.users ?? [],
   };
 }
 
@@ -78,7 +78,7 @@ export default function TeamsAdminPage() {
         const inTeam = norm(team.teamName).includes(query);
         const inTrack = norm(team.track).includes(query);
         const inProject = norm(team.project.name).includes(query) || norm(team.project.details).includes(query);
-        const inMembers = (team.members ?? []).some(
+        const inMembers = (team.users ?? []).some(
           (member) => norm(member.name).includes(query) || norm(member.email).includes(query),
         );
         return inTeam || inTrack || inProject || inMembers;
@@ -90,7 +90,7 @@ export default function TeamsAdminPage() {
   const memberTeamByUserId = useMemo(() => {
     const map = new Map<number, string>();
     teams.forEach((team) => {
-      (team.members ?? []).forEach((member) => {
+      (team.users ?? []).forEach((member) => {
         map.set(member.id, team.teamName);
       });
     });
@@ -116,7 +116,7 @@ export default function TeamsAdminPage() {
 
   const activeLeader = useMemo(() => {
     if (!activeTeam?.leaderId) return null;
-    return (activeTeam.members ?? []).find((member) => member.id === activeTeam.leaderId) ?? null;
+    return (activeTeam.users ?? []).find((member) => member.id === activeTeam.leaderId) ?? null;
   }, [activeTeam]);
 
   const filteredNonTeamUsers = useMemo(
@@ -171,7 +171,7 @@ export default function TeamsAdminPage() {
     setDraftProjectName(team.project.name);
     setDraftProjectDetails(team.project.details);
     setDraftAssignments(team.assignments ?? {});
-    setSelectedMemberIds((team.members ?? []).map((member) => member.id));
+    setSelectedMemberIds((team.users ?? []).map((member) => member.id));
   }
 
   function closeEditor() {
@@ -197,7 +197,7 @@ export default function TeamsAdminPage() {
     setDraftProjectName(normalized.project.name);
     setDraftProjectDetails(normalized.project.details);
     setDraftAssignments(normalized.assignments);
-    setSelectedMemberIds((normalized.members ?? []).map((member) => member.id));
+    setSelectedMemberIds((normalized.users ?? []).map((member) => member.id));
   }
 
   async function saveTeamInfo() {
@@ -259,8 +259,8 @@ export default function TeamsAdminPage() {
     setSavingMembers(true);
     setError(null);
     try {
-      const updated = await api.patch<Team>(`/admin/teams/${activeTeam.id}/members`, {
-        memberIds,
+      const updated = await api.patch<Team>(`/admin/teams/${activeTeam.id}/users`, {
+       'userIds' : memberIds,
       });
       applyUpdatedTeam(updated);
     } catch (err: unknown) {
@@ -419,7 +419,7 @@ export default function TeamsAdminPage() {
                       </span>
                     </td>
                     <td className="py-3">{team.project.name || "—"}</td>
-                    <td className="py-3">{(team.members ?? []).length}</td>
+                    <td className="py-3">{(team.users ?? []).length}</td>
                     <td className="py-3 text-right">
                       <button onClick={() => openEditor(team)} className={`${styles.primaryButton} text-xs`}>
                         Edit

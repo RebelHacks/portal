@@ -11,6 +11,14 @@ const TEAM_LIMIT = 5;
 interface MemberView { id: number; name: string; email: string; status?: 'Active' | 'Pending'; }
 interface AvailableUser { id: number; name: string; email: string; }
 
+function extractErrorMessage(err: unknown, fallback: string): string {
+  if (typeof err === "object" && err !== null && "response" in err) {
+    const response = (err as { response?: { data?: { message?: string } } }).response;
+    return response?.data?.message ?? fallback;
+  }
+  return fallback;
+}
+
 export function TeamViewDash() {
   const { teamId, currentUserId, isLeader, refresh } = useTeamContext();
   const [search, setSearch] = useState("");
@@ -42,7 +50,7 @@ export function TeamViewDash() {
       const sorted: MemberView[] = [];
       
       // Add leader
-      const leader = team.members?.find(m => m.id === team.leaderId);
+      const leader = team.users?.find(u => u.id === team.leaderId);
       if (leader) sorted.push({ 
         id: leader.id, 
         name: leader.name || leader.email, 
@@ -51,12 +59,12 @@ export function TeamViewDash() {
       });
       
       // Add other active members
-      team.members?.forEach(m => {
-        if (m.id !== team.leaderId) {
+      team.users?.forEach(u => {
+        if (u.id !== team.leaderId) {
           sorted.push({ 
-            id: m.id, 
-            name: m.name || m.email, 
-            email: m.email,
+            id: u.id, 
+            name: u.name || u.email, 
+            email: u.email,
             status: 'Active'
           });
         }
@@ -89,7 +97,7 @@ export function TeamViewDash() {
     } finally {
       setLoading(false);
     }
-  }, [teamId, currentUserId]);
+  }, [teamId]);
 
   useEffect(() => { fetchTeamData(); }, [fetchTeamData]);
 
@@ -99,28 +107,28 @@ export function TeamViewDash() {
     try {
       await api.post('/invitations', { inviteeId: userId });
       await fetchTeamData(); // Refresh to show the pending member
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send invitation');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to send invitation"));
     }
   };
 
   const removeMember = async (userId: number) => {
     const newIds = members.map(m => m.id).filter(id => id !== userId);
     try {
-      await api.patch(`/teams/${teamId}/members`, { memberIds: newIds });
+      await api.patch(`/teams/${teamId}/users`, { userIds: newIds });
       await fetchTeamData();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to remove member');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to remove member"));
     }
   };
 
   const leaveTeam = async () => {
     const newIds = members.map(m => m.id).filter(id => id !== currentUserId);
     try {
-      await api.patch(`/teams/${teamId}/members`, { memberIds: newIds });
+      await api.patch(`/teams/${teamId}/users`, { userIds: newIds });
       await refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to leave team');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to leave team"));
     }
   };
 
@@ -129,8 +137,8 @@ export function TeamViewDash() {
       await api.delete(`/teams/${teamId}`);
       setShowDisbandModal(false);
       await refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to disband team');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to disband team"));
       setShowDisbandModal(false);
     }
   };
