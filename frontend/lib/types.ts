@@ -72,7 +72,7 @@ export interface Team {
   project: TeamProject;
   assignments: Record<string, number[]>;
   leaderId: number | null;
-  members?: TeamMember[];
+  users?: TeamMember[];
 }
 
 export interface Judge {
@@ -92,3 +92,8 @@ export interface Invitation {
     email: string;
   };
 }
+
+export type RoundOption = {
+  id: string;
+  name: string;
+};

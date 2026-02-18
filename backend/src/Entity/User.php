@@ -18,6 +18,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(inversedBy: 'users')]
+    private ?Team $team = null;
+    
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -34,13 +37,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column]
-    private bool $isVerified = false;
+    private bool $is_verified = false;
 
     #[ORM\Column(length: 128, nullable: true)]
     private ?string $name = null;
-
-    #[ORM\Column(length: 128, nullable: true)]
-    private ?string $team = null;
 
     #[ORM\Column(length: 128, nullable: true)]
     private ?string $track = null;
@@ -50,6 +50,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $major = null;
+
+   
 
     public function getId(): ?int
     {
@@ -95,7 +97,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
+        $roles[] = 'ROLE_USER';
+        $this->roles = array_values(array_unique($roles));
 
         return $this;
     }
@@ -123,12 +126,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isVerified(): bool
     {
-        return $this->isVerified;
+        return $this->is_verified;
     }
 
-    public function setIsVerified(bool $isVerified): static
+    public function setIsVerified(bool $is_verified): static
     {
-        $this->isVerified = $isVerified;
+        $this->is_verified = $is_verified;
 
         return $this;
     }
@@ -145,17 +148,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getTeam(): ?string
-    {
-        return $this->team;
-    }
-
-    public function setTeam(?string $team): static
-    {
-        $this->team = $team;
-
-        return $this;
-    }
 
     public function getTrack(): ?string
     {
@@ -189,6 +181,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setMajor(?string $major): static
     {
         $this->major = $major;
+
+        return $this;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): static
+    {
+        $this->team = $team;
 
         return $this;
     }

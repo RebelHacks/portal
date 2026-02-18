@@ -4,8 +4,11 @@ import api from "@/lib/api";
 import { useTeamContext } from "./TeamContext";
 import type { Team } from "@/lib/types";
 
+const PROJECT_NAME_MAX_LENGTH = 100;
+const PROJECT_DETAILS_MAX_LENGTH = 250;
+
 export function TeamProjectDash() {
-  const { teamId, currentUserId, isLeader } = useTeamContext();
+  const { teamId, isLeader } = useTeamContext();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [isCreated, setIsCreated] = useState(false);
@@ -27,7 +30,7 @@ export function TeamProjectDash() {
     } finally {
       setLoading(false);
     }
-  }, [teamId, currentUserId]);
+  }, [teamId]);
 
   useEffect(() => { fetchProject(); }, [fetchProject]);
 
@@ -39,7 +42,7 @@ export function TeamProjectDash() {
       setIsCreated(true);
       setIsEditing(false);
       await fetchProject();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to save project:', err);
     } finally {
       setSaving(false);
@@ -79,7 +82,7 @@ export function TeamProjectDash() {
               {/* Content Section: Aligned to the left under the header */}
               <div className="pt-2">
                 <p className="text-gray-400 max-w-md leading-relaxed">
-                  Your Team Leader hasn't created the project yet. Once they set the scope, 
+                  Your Team Leader hasn&apos;t created the project yet. Once they set the scope, 
                   the details and judge feedback will appear here.
                 </p>
               </div>
@@ -117,7 +120,11 @@ export function TeamProjectDash() {
                   placeholder="Enter project name..."
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  maxLength={PROJECT_NAME_MAX_LENGTH}
                 />
+                <div className="mt-1 text-xs text-(--sub-text)">
+                  Max {PROJECT_NAME_MAX_LENGTH} characters
+                </div>
               </div>
 
               <div>
@@ -127,10 +134,13 @@ export function TeamProjectDash() {
                 <textarea
                   className={`${style.descriptionInput} ${style.primaryScroll} min-h-[150px]`}
                   placeholder="Briefly describe the goals..."
-                  maxLength={250}
+                  maxLength={PROJECT_DETAILS_MAX_LENGTH}
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
                 />
+                <div className="mt-1 text-xs text-(--sub-text)">
+                  Max {PROJECT_DETAILS_MAX_LENGTH} characters
+                </div>
               </div>
 
               <button 
@@ -164,7 +174,8 @@ export function TeamProjectDash() {
             <>
               <h4 className={style.secondaryTitle}>Guidelines</h4>
               <ul className={`${style.list} text-gray-400 leading-loose`}>
-                <li>Maximum 250 characters.</li>
+                <li>Project name: max {PROJECT_NAME_MAX_LENGTH} characters.</li>
+                <li>Description: max {PROJECT_DETAILS_MAX_LENGTH} characters.</li>
                 <li>Scores are on a 5.0 scale.</li>
                 <li>Feedback released after every round.</li>
               </ul>
