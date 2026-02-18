@@ -8,6 +8,7 @@ use App\Form\ResetPasswordRequestFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,6 @@ use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
-#[Route('/reset-password')]
 class ResetPasswordController extends AbstractController
 {
     use ResetPasswordControllerTrait;
@@ -33,7 +33,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Display & process form to request a password reset.
      */
-    #[Route('', name: 'app_forgot_password_request')]
+    #[Route('/reset-password', name: 'app_forgot_password_request')]
     public function request(Request $request, MailerInterface $mailer): Response
     {
         $form = $this->createForm(ResetPasswordRequestFormType::class);
@@ -43,8 +43,7 @@ class ResetPasswordController extends AbstractController
             /** @var string $email */
             $email = $form->get('email')->getData();
 
-            return $this->processSendingPasswordResetEmail($email, $mailer
-            );
+            return $this->processSendingPasswordResetEmail($email, $mailer);
         }
 
         return $this->render('reset_password/request.html.twig', [
@@ -55,7 +54,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Confirmation page after a user has requested a password reset.
      */
-    #[Route('/check-email', name: 'app_check_email')]
+    #[Route('/reset-password/check-email', name: 'app_check_email')]
     public function checkEmail(): Response
     {
         // Generate a fake token if the user does not exist or someone hit this page directly.
@@ -72,7 +71,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Validates and process the reset URL that the user clicked in their email.
      */
-    #[Route('/reset/{token}', name: 'app_reset_password')]
+    #[Route('/reset-password/reset/{token}', name: 'app_reset_password')]
     public function reset(Request $request, UserPasswordHasherInterface $passwordHasher, ?string $token = null): Response
     {
         if ($token) {
@@ -171,5 +170,122 @@ class ResetPasswordController extends AbstractController
         $this->setTokenObjectInSession($resetToken);
 
         return $this->redirectToRoute('app_check_email');
+    }
+
+    // ============ API ENDPOINTS FOR FRONTEND ============
+
+    /**
+     * API endpoint to request a password reset email.
+     */
+    #[Route('/api/reset-password', name: 'api_forgot_password_request', methods: ['POST'])]
+    public function apiRequest(Request $request, MailerInterface $mailer): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? null;
+
+        if (!$email)
+            return $this->json(['message' => 'Email is required'], 400);
+
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        // Do not reveal whether a user account was found or not.
+        if (!$user)
+            return $this->json(['message' => 'If an account with that email exists, a password reset link has been sent.']);
+
+        try {
+            $resetToken = $this->resetPasswordHelper->generateResetToken($user);
+        } catch (ResetPasswordExceptionInterface $e) {
+            // Silently fail to not reveal if user exists
+            return $this->json(['message' => 'If an account with that email exists, a password reset link has been sent.']);
+        }
+
+        $emailMessage = (new TemplatedEmail())
+            ->from(new Address('info@rebelhacks.com', 'Reset Password'))
+            ->to((string) $user->getEmail())
+            ->subject('Your password reset request')
+            ->htmlTemplate('reset_password/email.html.twig')
+            ->context([
+                'resetToken' => $resetToken,
+            ])
+        ;
+
+        $mailer->send($emailMessage);
+
+        return $this->json(['message' => 'If an account with that email exists, a password reset link has been sent.']);
+    }
+
+    /**
+     * API endpoint to validate a reset token.
+     */
+    #[Route('/api/reset-password/validate', name: 'api_reset_password_validate', methods: ['POST'])]
+    public function apiValidateToken(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $token = $data['token'] ?? null;
+
+        if (!$token)
+            return $this->json(['message' => 'Token is required'], 400);
+
+        try {
+            /** @var User $user */
+            $this->resetPasswordHelper->validateTokenAndFetchUser($token);
+            return $this->json(['valid' => true]);
+        } catch (ResetPasswordExceptionInterface $e) {
+            return $this->json([
+                'valid' => false,
+                'message' => 'Invalid or expired reset token. Please request a new password reset.',
+            ], 400);
+        }
+    }
+
+    /**
+     * API endpoint to reset the password with a valid token.
+     */
+    #[Route('/api/reset-password/reset', name: 'api_reset_password', methods: ['POST'])]
+    public function apiReset(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $token = $data['token'] ?? null;
+        $Password = $data['password'] ?? null;
+
+        if (!$token)
+            return $this->json(['message' => 'Token is required'], 400);
+
+        if (!$Password)
+            return $this->json(['message' => 'Password is required'], 400);
+
+        // Password validation
+        if (strlen($Password) < 8)
+            return $this->json(['message' => 'Password must be at least 8 characters long'], 400);
+
+        if (!preg_match('/[A-Z]/', $Password))
+            return $this->json(['message' => 'Password must contain at least one uppercase letter'], 400);
+
+        if (!preg_match('/[a-z]/', $Password))
+            return $this->json(['message' => 'Password must contain at least one lowercase letter'], 400);
+
+        if (!preg_match('/[0-9]/', $Password))
+            return $this->json(['message' => 'Password must contain at least one number'], 400);
+
+        if (!preg_match('/[\W_]/', $Password))
+            return $this->json(['message' => 'Password must contain at least one special character'], 400);
+
+        try {
+            /** @var User $user */
+            $user = $this->resetPasswordHelper->validateTokenAndFetchUser($token);
+        } catch (ResetPasswordExceptionInterface $e) {
+            return $this->json([
+                'message' => 'Invalid or expired reset token. Please request a new password reset.',
+            ], 400);
+        }
+
+        // A password reset token should be used only once, remove it.
+        $this->resetPasswordHelper->removeResetRequest($token);
+
+        // Encode(hash) the plain password, and set it.
+        $user->setPassword($passwordHasher->hashPassword($user, $Password));
+        $this->entityManager->flush();
+
+        return $this->json(['message' => 'Password has been reset successfully.']);
     }
 }

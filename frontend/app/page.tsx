@@ -378,9 +378,7 @@ export default function LoginPage() {
         <div className="mt-4 flex flex-col items-center gap-2 text-sm">
           {mode === "login" && (
             <button
-              onClick={() => {
-                window.location.assign(`http://localhost:8000/reset-password`);
-              }}
+              onClick={() => router.push('/reset-password')}
               className={`${styles.mutedText} hover:underline`}
             >
               Forgot password?
