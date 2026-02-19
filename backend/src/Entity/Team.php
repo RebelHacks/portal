@@ -111,4 +111,40 @@ class Team
 
         return $this;
     }
+    //added functions for scores and writing
+    public function getApplication(): ?int { return $this->application; }
+    public function setApplication(int $application): static { $this->application = $application; return $this; }
+
+    public function getTechnicality(): ?int { return $this->technicality; }
+    public function setTechnicality(int $technicality): static { $this->technicality = $technicality; return $this; }
+
+    public function getCreativity(): ?int { return $this->creativity; }
+    public function setCreativity(int $creativity): static { $this->creativity = $creativity; return $this; }
+
+    public function getFunctionality(): ?int { return $this->functionality; }
+    public function setFunctionality(int $functionality): static { $this->functionality = $functionality; return $this; }
+
+    public function isTheme(): ?bool { return $this->theme; }
+    public function setTheme(bool $theme): static { $this->theme = $theme; return $this; }
+
+    public function getReview(): ?string { return $this->review; }
+    public function setReview(?string $review): static { $this->review = $review; return $this; }
+
+    #[ORM\Column(nullable: true)]
+    private ?int $application = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $technicality = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $creativity = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $functionality = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $theme = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $review = null;
 }

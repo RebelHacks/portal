@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+//added for judge
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -192,4 +193,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    //below code added for judge
+    public function setApplication(?int $value): static { $this->application = $value; return $this; }
+    public function setTechnicality(?int $value): static { $this->technicality = $value; return $this; }
+    public function setCreativity(?int $value): static { $this->creativity = $value; return $this; }
+    public function setFunctionality(?int $value): static { $this->functionality = $value; return $this; }
+    public function setTheme(?bool $value): static { $this->theme = $value; return $this; }
+    public function setReview(?string $value): static { $this->review = $value; return $this; }
 }
