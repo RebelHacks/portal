@@ -11,6 +11,14 @@ const TEAM_LIMIT = 5;
 interface MemberView { id: number; name: string; email: string; status?: 'Active' | 'Pending'; }
 interface AvailableUser { id: number; name: string; email: string; }
 
+function extractErrorMessage(err: unknown, fallback: string): string {
+  if (typeof err === "object" && err !== null && "response" in err) {
+    const response = (err as { response?: { data?: { message?: string } } }).response;
+    return response?.data?.message ?? fallback;
+  }
+  return fallback;
+}
+
 export function TeamViewDash() {
   const { teamId, currentUserId, isLeader, refresh } = useTeamContext();
   const [search, setSearch] = useState("");
@@ -42,7 +50,7 @@ export function TeamViewDash() {
       const sorted: MemberView[] = [];
       
       // Add leader
-      const leader = team.members?.find(m => m.id === team.leaderId);
+      const leader = team.users?.find(u => u.id === team.leaderId);
       if (leader) sorted.push({ 
         id: leader.id, 
         name: leader.name || leader.email, 
@@ -51,12 +59,12 @@ export function TeamViewDash() {
       });
       
       // Add other active members
-      team.members?.forEach(m => {
-        if (m.id !== team.leaderId) {
+      team.users?.forEach(u => {
+        if (u.id !== team.leaderId) {
           sorted.push({ 
-            id: m.id, 
-            name: m.name || m.email, 
-            email: m.email,
+            id: u.id, 
+            name: u.name || u.email, 
+            email: u.email,
             status: 'Active'
           });
         }
@@ -89,7 +97,7 @@ export function TeamViewDash() {
     } finally {
       setLoading(false);
     }
-  }, [teamId, currentUserId]);
+  }, [teamId]);
 
   useEffect(() => { fetchTeamData(); }, [fetchTeamData]);
 
@@ -99,28 +107,28 @@ export function TeamViewDash() {
     try {
       await api.post('/invitations', { inviteeId: userId });
       await fetchTeamData(); // Refresh to show the pending member
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send invitation');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to send invitation"));
     }
   };
 
   const removeMember = async (userId: number) => {
     const newIds = members.map(m => m.id).filter(id => id !== userId);
     try {
-      await api.patch(`/teams/${teamId}/members`, { memberIds: newIds });
+      await api.patch(`/teams/${teamId}/users`, { userIds: newIds });
       await fetchTeamData();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to remove member');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to remove member"));
     }
   };
 
   const leaveTeam = async () => {
     const newIds = members.map(m => m.id).filter(id => id !== currentUserId);
     try {
-      await api.patch(`/teams/${teamId}/members`, { memberIds: newIds });
+      await api.patch(`/teams/${teamId}/users`, { userIds: newIds });
       await refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to leave team');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to leave team"));
     }
   };
 
@@ -129,8 +137,8 @@ export function TeamViewDash() {
       await api.delete(`/teams/${teamId}`);
       setShowDisbandModal(false);
       await refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to disband team');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Failed to disband team"));
       setShowDisbandModal(false);
     }
   };
@@ -145,13 +153,15 @@ export function TeamViewDash() {
     member.name.toLowerCase().includes(search.toLowerCase()) ||
     member.email.toLowerCase().includes(search.toLowerCase())
   );
+  const activeMemberCount = members.filter((m) => m.status === 'Active').length;
+  const isSoloTeam = activeMemberCount === 1;
 
   if (loading) return null;
 
   return (
     <>
       <TeamModals
-        state={{ error, showDisband: showDisbandModal, teamName }}
+        state={{ error, showDisband: showDisbandModal, teamName, isSoloLeader: isSoloTeam }}
         onAction={handleModalAction}
       />
 
@@ -160,7 +170,7 @@ export function TeamViewDash() {
           <h1 className={style.primaryTitle}>{teamName}</h1>
           <div className="text-left md:text-right w-full md:w-auto">
             <div className="text-sm text-gray-400 mb-2">
-              {members.filter(m => m.status === 'Active').length} / {TEAM_LIMIT} Members
+              {activeMemberCount} / {TEAM_LIMIT} Members
               {members.filter(m => m.status === 'Pending').length > 0 && (
                 <span className="ml-2 text-yellow-400">
                   (+{members.filter(m => m.status === 'Pending').length} pending)
@@ -168,7 +178,14 @@ export function TeamViewDash() {
               )}
             </div>
             
-            {isLeader ? (
+            {isSoloTeam ? (
+              <button 
+                onClick={() => setShowDisbandModal(true)} 
+                className={`${style.warnButton} text-xs w-full md:w-auto`}
+              >
+                LEAVE TEAM
+              </button>
+            ) : isLeader ? (
               <button 
                 onClick={() => setShowDisbandModal(true)} 
                 className={`${style.warnButton} text-xs w-full md:w-auto`}
@@ -195,7 +212,7 @@ export function TeamViewDash() {
                 <div key={member.id} className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={style.memberAvatar}>👤</div>
-                    <span className="truncate max-w-[100px] md:max-w-none">{member.name}</span>
+                    <span className="truncate max-w-25 md:max-w-none text-white">{member.name}</span>
                     
                     {index === 0 ? (
                       <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-400 uppercase font-bold">
@@ -233,11 +250,11 @@ export function TeamViewDash() {
               />
               <div className={`${style.primaryScroll} space-y-2 max-h-48 overflow-y-auto pr-2 mt-2`}>
                 {filteredMembers.map((member) => (
-                  <div key={member.id} className="flex justify-between items-center p-2 border-b border-white/5 hover:bg-white/5 rounded">
+                  <div key={member.id} className="flex justify-between items-center p-2 border-b border-white/5 hover:bg-white/5 rounded text-(--sub-text)">
                     {member.name}
                     <button 
                       onClick={() => sendInvitation(member.id)} 
-                      className="text-[var(--primary)] cursor-pointer whitespace-nowrap"
+                      className="text-(--primary) cursor-pointer whitespace-nowrap"
                     >
                       + Invite
                     </button>

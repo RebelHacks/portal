@@ -32,7 +32,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
-
+    
+    // Returns array of users
+    public function findByTeamName($name): array
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.team', 't')
+            ->andWhere('t.name = :name')
+            ->setParameter('name', $name)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
