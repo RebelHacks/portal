@@ -1,5 +1,60 @@
 @import "tailwindcss";
 
+:root {
+  scroll-behavior: smooth;
+
+  --foreground: #ffffff;
+  --background: #111435;
+  --primary: #fea70a;
+  --sub-header: #00d0f3;
+  --sub-text: #cfcfcf;
+  --card-header: #f5f5f5;
+
+  /* Utopia scale */
+
+  --step--2: clamp(0.95rem, 0.88rem + 0.3vw, 1.05rem);
+  --step--1: clamp(1.1rem, 1.02rem + 0.45vw, 1.35rem);
+  --step-0: clamp(1.25rem, 1.15rem + 0.6vw, 1.6rem); /* body */
+  --step-1: clamp(1.55rem, 1.35rem + 0.9vw, 2.1rem);
+  --step-2: clamp(1.95rem, 1.65rem + 1.3vw, 2.8rem);
+  --step-3: clamp(2.45rem, 2rem + 1.9vw, 3.8rem);
+  --step-4: clamp(3.1rem, 2.5rem + 2.8vw, 5.2rem);
+  --step-5: clamp(3.9rem, 3.1rem + 4vw, 7.5rem); /* hero */
+}
+
+
 body {
-    background-color: skyblue;
+    margin: 0;
+    min-height: 100vh;
+
+    background-color: #050d1e;
+    background-image:
+        radial-gradient(
+            circle at center,
+            rgba(0, 255, 255, 0.1),
+            #050d1e 60%
+        );
+
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.page-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    background-color: #050d1e;
+    background-image: radial-gradient(
+        circle at center,
+        rgba(0,255,255,0.1),
+        #050d1e 60%
+    );
 }
