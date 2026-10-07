@@ -1,3 +1,11 @@
+---
+name: General Issue
+about: Propose a change, addition, or fix
+title: ''
+labels: ''
+assignees: ''
+---
+
 ## Description
 
 What needs to be changed, added, or fixed?
