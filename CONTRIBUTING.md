@@ -134,8 +134,8 @@ Delete the branch after the Pull Request has been successfully merged.
 
 ## Use of AI
 
-AI tools may be used to assist with development.
+AI tools may be used to assist with development, but contributors are encouraged to use them minimally when writing code.
 
-You are responsible for the code you submit. Understand your changes and be prepared to explain how the code works and why it was implemented that way.
+RebelHacks is an opportunity to learn and improve your skills. There is no need to rush through development, so take the time to understand the problem, work through solutions, and learn from the process.
 
-Review and test AI-generated code before submitting it.
+If you use AI-generated code, you are still responsible for the result. Understand your changes, review and test the code, and be prepared to explain how it works and why it was implemented that way.
