@@ -8,7 +8,7 @@ Start with the website repository's [developer onboarding guide](https://github.
 
 Use Node.js 24, PHP 8.3 with `pdo_mysql`, Composer 2, and MariaDB 10.11.
 
-These steps are for a **new local development database**. If you already have a working environment, keep its configuration and use [starting again tomorrow](#starting-again-tomorrow).
+These steps set up the portal and an empty database on your computer. If you've already done this, use [starting again tomorrow](#starting-again-tomorrow).
 
 ### 1. Start MariaDB
 
@@ -67,7 +67,7 @@ You should get something that looks like:
 +----------------------------------+
 ```
 
-Keep the version number (in the example, `10.6.23`) for step 2 - we'll use it to set up our DB. Also note that this will only give us the running server's version! `mariadb --version` will give you the client version.
+Keep the version number (in the example, `10.6.23`) for step 2. Use the number from `SELECT VERSION();`, which asks the database server. `mariadb --version` reports the version of the terminal program instead.
 
 On a fresh MariaDB installation, choose a password for `root`. Replace `your-local-db-password` below with your choice. If root already has a password, keep it and skip this command.
 
@@ -114,7 +114,7 @@ Open `backend/.env` in your editor:
 
 1. Replace `APP_SECRET` with the value printed by PHP.
 2. In `DATABASE_URL`, set `serverVersion` to the numeric server version from step 1 followed by `-MariaDB`. For example, a server reporting `10.11.13-MariaDB-...` uses `10.11.13-MariaDB`.
-3. Replace `your-local-db-password` in `DATABASE_URL` with your MariaDB root password. Keep the database name `portal`, user `root`, host `127.0.0.1`, and port `3306`. URL-encode special characters in the password when putting it in this connection string.
+3. Replace `your-local-db-password` in `DATABASE_URL` with your MariaDB root password. Keep the database name `portal`, user `root`, host `127.0.0.1`, and port `3306`. Special characters in the password need URL encoding here: for example, write `@` as `%40` in this URL.
 
 The template's connection string looks like this:
 
@@ -122,7 +122,7 @@ The template's connection string looks like this:
 DATABASE_URL="mysql://root:your-local-db-password@127.0.0.1:3306/portal?serverVersion=10.11.0-MariaDB&charset=utf8mb4"
 ```
 
-The `mysql://` prefix is intentional: Doctrine connects to MariaDB through PHP's MySQL driver. Use `127.0.0.1` consistently here; `localhost` can select a Unix socket instead of the TCP connection we tested.
+Keep `mysql://` at the start: PHP uses its MySQL driver to connect to MariaDB. Use the same host and port as the terminal connection in step 1.
 
 While still in `portal/backend`:
 
@@ -133,7 +133,7 @@ php bin/console about
 php -r 'var_export(extension_loaded("pdo_mysql")); echo PHP_EOL;'
 ```
 
-**Checkpoint:** Composer should finish successfully, Symfony should report the development environment, and the last command should print `true`. The environment file must exist before `composer install`, because Composer runs Symfony setup commands.
+**Checkpoint:** Composer should finish without errors, `php bin/console about` should show `dev`, and the last command should print `true`. Create `.env` before running `composer install`, because the installation reads those settings.
 
 ### 3. Create keys, tables, and sample data
 
@@ -148,10 +148,10 @@ php bin/console doctrine:schema:validate
 
 Run these commands one at a time and check that each succeeds.
 
-- The keys let the API sign login tokens. They stay in ignored `backend/config/jwt/*.pem` files.
-- Schema creation makes the tables defined by the current PHP entities. Run it once, against the empty local database from step 1.
-- Fixtures create sample users and event data. Password hashing can take roughly a minute with little output. Let the command finish.
-- Validation should report that the mapping is correct and the database schema is in sync.
+- The first command creates the keys the API uses for login. They are saved in `backend/config/jwt/` and excluded from Git.
+- The second creates the database tables described by the PHP classes in `backend/src/Entity/`.
+- The third loads sample users and teams. The scripts that add this data are called **fixtures**. Loading them can take about a minute; wait for the terminal prompt to return.
+- The fourth checks that the tables match the PHP classes. Both checks should report `[OK]`.
 
 Run this section once during initial setup.
 
@@ -163,7 +163,7 @@ From `portal/backend`:
 php -S 127.0.0.1:8001 -t public
 ```
 
-Leave this terminal running, open another terminal, and test a fixture login:
+Leave this terminal running, open another terminal, and sign in with a sample account:
 
 ```bash
 curl -i http://127.0.0.1:8001/api/login \
@@ -171,7 +171,7 @@ curl -i http://127.0.0.1:8001/api/login \
   --data '{"email":"ava@demo.com","password":"password"}'
 ```
 
-**Checkpoint:** expect HTTP 200 and JSON containing a `token`. This verifies the database, sample user, password checking, and JWT keys together. An unauthenticated request to a protected route such as `/api/teams` should return 401; that alone does not mean the API is broken.
+**Checkpoint:** expect `HTTP/1.1 200 OK` and a response containing `"token"`. That means the sample account signed in successfully.
 
 ### 5. Start the frontend
 
@@ -184,9 +184,9 @@ npm ci
 npm run dev -- --port 3001
 ```
 
-`npm ci` installs the versions recorded in the lockfile. Do not regenerate or upgrade dependencies as an incidental onboarding change.
+`npm ci` installs the package versions listed in `package-lock.json`.
 
-Open **http://localhost:3001** and sign in using one of these local fixture accounts:
+Open **http://localhost:3001** and sign in using one of these sample accounts:
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -194,7 +194,7 @@ Open **http://localhost:3001** and sign in using one of these local fixture acco
 | Team leader | `zz.team.01.lead@demo.com` | `password` |
 | Judge | `judge1@demo.com` | `password` |
 
-These are sample accounts for your local database. Fixtures do not provide an administrator account; ask a maintainer for the local setup if your assigned task needs that role.
+The sample data has no administrator account. Ask a maintainer to help create one if your task needs access to the admin pages.
 
 The frontend template contains:
 
@@ -203,7 +203,7 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:8001/api
 NEXT_PUBLIC_ROUND_COUNT=2
 ```
 
-NEXT_PUBLIC_ROUND_COUNT is required and matches the two sample rounds in the fixtures. Restart the frontend after editing environment variables.  
+`NEXT_PUBLIC_ROUND_COUNT` sets the judging-round choices on the admin page for assigning judges. With `2`, the choices include "Round 1" and "Round 2". Restart the frontend after editing `.env.local`.
 
 ## Starting again tomorrow
 
@@ -218,32 +218,32 @@ Ctrl+C stops each development server. Do not repeat schema creation, fixture loa
 
 ## Backend environment reference
 
-The committed `.env.example` contains synthetic local values. Your real `.env` and private keys stay uncommitted.
+These are the settings in `backend/.env`. Keep that file and the private login key out of Git.
 
 | Setting | Purpose |
 | --- | --- |
-| `APP_ENV=dev`, `APP_DEBUG=1` | Symfony development mode |
-| `APP_SECRET` | A locally generated application secret |
-| `DEFAULT_URI` | API base address used outside browser requests |
-| `DATABASE_URL` | Database driver, credentials, host, database, and server version |
-| `JWT_SECRET_KEY`, `JWT_PUBLIC_KEY` | Paths to the generated local key pair |
-| `JWT_PASSPHRASE` | Passphrase used when generating and reading the private key |
-| `CORS_ALLOW_ORIGIN` | Origin regular expression for Nelmio's CORS configuration |
-| `CORS_ALLOWED_ORIGINS` | Origin list for the custom CORS listener |
-| `MAILER_DSN=null://null` | Disables email delivery in this local setup |
+| `APP_ENV=dev`, `APP_DEBUG=1` | Runs Symfony in development mode with detailed error messages |
+| `APP_SECRET` | Paste the random value printed by the PHP command in step 2 |
+| `DEFAULT_URI` | Address Symfony uses when generating links from terminal commands |
+| `DATABASE_URL` | Connection details for your MariaDB database |
+| `JWT_SECRET_KEY`, `JWT_PUBLIC_KEY` | Files containing the keys used to create and check login tokens |
+| `JWT_PASSPHRASE` | Password that protects the private login key |
+| `CORS_ALLOW_ORIGIN` | Frontend addresses allowed to call the API, written as a regular expression |
+| `CORS_ALLOWED_ORIGINS` | The same frontend addresses, separated by commas |
+| `MAILER_DSN=null://null` | Turns off email delivery |
 
-Both CORS settings are consumed by the current backend. The examples allow the portal frontend on port 3001. If you change the frontend's address, update both settings consistently. `NEXT_PUBLIC_` frontend values are browser-visible and must not contain secrets.
+The backend reads both CORS settings. They allow requests from `http://localhost:3001` and `http://127.0.0.1:3001`. If you change the frontend's address, update it in both settings. Visitors can read values beginning with `NEXT_PUBLIC_`, so keep passwords and private keys out of them.
 
 ## Finding the code and checking a change
 
 | Path | Purpose |
 | --- | --- |
-| `frontend/app/` | Routes, pages, and their UI |
-| `frontend/lib/api.ts` | API client configuration |
-| `frontend/lib/rounds.ts` | Round-count configuration |
-| `backend/src/Controller/` | API routes and request handling |
-| `backend/src/Entity/` | Database models used by Doctrine |
-| `backend/src/DataFixtures/` | Local sample users and event data |
+| `frontend/app/` | Pages and their components |
+| `frontend/lib/api.ts` | Sends requests to the backend |
+| `frontend/lib/rounds.ts` | Creates the list of judging rounds |
+| `backend/src/Controller/` | Handles API requests |
+| `backend/src/Entity/` | PHP classes that describe the database tables |
+| `backend/src/DataFixtures/` | Scripts that create sample users and teams |
 | `backend/config/packages/security.yaml` | Login and access rules |
 
 From `frontend`, run these separately:
@@ -255,6 +255,6 @@ npx tsc --noEmit --incremental false
 npm run build
 ```
 
-There is no `npm test` script!! Report existing failures separately from anything introduced by your change. Builds fetch Google fonts and require network access.
+There is no `npm test` script!! Include any failed checks in your pull request, and point out errors that were already present before your changes. The build downloads Google fonts, so it needs internet access.
 
-For backend changes, run `composer check-platform-reqs` and `php bin/console lint:container` from `backend`, then exercise the affected API with local fixture data. Review `git diff` before staging: generated files already tracked in this repository can change during setup.
+For backend changes, run `composer check-platform-reqs` and `php bin/console lint:container` from `backend`. Then try the feature you changed using the sample accounts above. Check `git diff` before staging files; setup commands can also change files generated by Next.js and TypeScript.
