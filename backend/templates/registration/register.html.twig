@@ -7,21 +7,37 @@
         <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
     {% endfor %}
 
-    <h1>Register</h1>
+    <div class="page-container">
+        <div class="relative flex w-11/12 max-w-md flex-col items-center rounded-2xl bg-[#0f2c44] p-6 text-white shadow-[0_10px_40px_rgba(0,0,0,0.4)] sm:p-8 md:p-10">
+            <div class="mb-6 text-center">
+                <h1 class="text-2xl font-bold">Create an account</h1>
+                <p class="mt-2 text-sm">Register with your email and password</p>
+            </div>
+            <div id="registration-error" class="mb-4 w-full rounded-md border border-red-500 bg-red-500/10 p-3 text-sm text-red-500" role="alert" hidden></div>
 
-    {{ form_errors(registrationForm) }}
-
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
-
-        <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
-
-    {% if message is defined %}
-        <p>{{ message }}</p>
-    {% endif %}
+            <form id="registration-form" action="{{ path('api_register') }}" method="post" data-login-url="{{ path('api_login') }}" data-success-url="/" class="flex w-full flex-col gap-4">
+                {% set input_class = 'mt-2 w-full rounded-lg border-2 border-[#00ffff] bg-[#0d1b2a] p-3.5 text-base text-white [text-shadow:0_0_2px_#00ffff] transition duration-300 focus:border-[#ff7f50] focus:shadow-[0_0_5px_#ff7f50,0_0_10px_#ff7f50] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed' %}
+                <label for="registration-username" class="flex flex-col text-base">
+                    User Name
+                    <input type="text" name="username" id="registration-username" class="{{ input_class }}" autocomplete="username" placeholder="User Name" required autofocus>
+                </label>
+                <label for="registration-email" class="flex flex-col text-base">
+                    Email
+                    <input type="email" name="email" id="registration-email" class="{{ input_class }}" autocomplete="email" placeholder="Email" required>
+                </label>
+                <label for="registration-password" class="flex flex-col text-base">
+                    Password
+                    <input type="password" name="password" id="registration-password" class="{{ input_class }}" autocomplete="new-password" placeholder="Password" required>
+                </label>
+                <label for="registration-confirm-password" class="flex flex-col text-base">
+                    Confirm Password
+                    <input type="password" name="confirmPassword" id="registration-confirm-password" class="{{ input_class }}" autocomplete="new-password" placeholder="Confirm Password" required>
+                </label>
+                <button type="submit" class="mt-2 w-full cursor-pointer rounded-lg border-2 border-[#ff7f50] bg-transparent p-4 text-lg font-bold text-[#ff7f50] transition duration-300 hover:bg-[#ff7f50] hover:text-[#0d1b2a] hover:shadow-[0_0_10px_#ff7f50,0_0_20px_#ff7f50] disabled:opacity-50 disabled:cursor-not-allowed">Register</button>
+            </form>
+            <div class="mt-4 flex flex-col items-center gap-2 text-sm">
+                <a href="{{ path('app_login') }}" class="cursor-pointer hover:underline">Already have an account? Log in</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}
