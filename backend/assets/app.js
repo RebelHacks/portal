@@ -6,4 +6,6 @@
  */
 import './styles/app.css';
 
+import './registration.js';
+
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
