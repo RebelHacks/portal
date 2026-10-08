@@ -2,7 +2,7 @@
 
 The portal uses Next.js for the interface, Symfony for the API, and MariaDB for, well, the DB. By the end, you should be able to sign into the local portal using a sample account.
 
-Start with the website repository's [developer onboarding guide](https://github.com/RebelHacks/website/blob/main/docs/ONBOARDING.md) for Git, Node, PHP, and editor installation.
+The website repository's [developer onboarding guide](https://github.com/RebelHacks/website/blob/main/docs/ONBOARDING.md) covers Git, Node, PHP, Composer, and editor installation. MariaDB setup is included below. On Windows, run the commands below inside Ubuntu/WSL.
 
 ## Development setup
 
@@ -10,7 +10,7 @@ Use Node.js 24, PHP 8.3 with `pdo_mysql`, Composer 2, and MariaDB 10.11.
 
 These steps set up the portal and an empty database on your computer. If you've already done this, use [starting again tomorrow](#starting-again-tomorrow).
 
-### 1. Start MariaDB
+### 1. Install and start MariaDB
 
 The local portal connects to MariaDB as `root` and uses a database named `portal`.
 
@@ -29,9 +29,11 @@ sudo mariadb --protocol=socket
 
 The last command opens MariaDB's SQL prompt!
 Looks like this.
+
 ```
 MariaDB [(none)]>
 ```
+
 If `sudo` asks for a password, enter your Ubuntu account password. The MariaDB `root` password is separate.
 
 If you already set a MariaDB root password, you can log in with `mariadb -u root -p` and enter it at the prompt.
@@ -51,23 +53,23 @@ Add that `export PATH` line to your shell profile (usually `~/.zshrc`) to make i
 
 For other Linux distributions, install MariaDB and the MySQL extension for your PHP version through the distribution's package manager, then start its MariaDB service.
 
-**Checkpoint:** the prompt should now be MariaDB's SQL prompt!
- Run:
+At the MariaDB prompt, run:
 
 ```sql
 SELECT VERSION();
 ```
 
 You should get something that looks like:
+
 ```
-+----------------------------------+
-| VERSION()                        |
-+----------------------------------+
-| 10.6.23-MariaDB-0ubuntu0.22.04.1 |
-+----------------------------------+
++----------------------+
+| VERSION()            |
++----------------------+
+| 10.11.14-MariaDB-...  |
++----------------------+
 ```
 
-Keep the version number (in the example, `10.6.23`) for step 2. Use the number from `SELECT VERSION();`, which asks the database server. `mariadb --version` reports the version of the terminal program instead.
+Keep the version number for step 2: this example would use `10.11.14-MariaDB`. Use your own result from `SELECT VERSION();`.
 
 On a fresh MariaDB installation, choose a password for `root`. Replace `your-local-db-password` below with your choice. If root already has a password, keep it and skip this command.
 
@@ -113,7 +115,7 @@ php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
 Open `backend/.env` in your editor:
 
 1. Replace `APP_SECRET` with the value printed by PHP.
-2. In `DATABASE_URL`, set `serverVersion` to the numeric server version from step 1 followed by `-MariaDB`. For example, a server reporting `10.11.13-MariaDB-...` uses `10.11.13-MariaDB`.
+2. In `DATABASE_URL`, set `serverVersion` to the value you kept from step 1, such as `10.11.14-MariaDB`.
 3. Replace `your-local-db-password` in `DATABASE_URL` with your MariaDB root password. Keep the database name `portal`, user `root`, host `127.0.0.1`, and port `3306`. Special characters in the password need URL encoding here: for example, write `@` as `%40` in this URL.
 
 The template's connection string looks like this:
@@ -122,7 +124,7 @@ The template's connection string looks like this:
 DATABASE_URL="mysql://root:your-local-db-password@127.0.0.1:3306/portal?serverVersion=10.11.0-MariaDB&charset=utf8mb4"
 ```
 
-Keep `mysql://` at the start: PHP uses its MySQL driver to connect to MariaDB. Use the same host and port as the terminal connection in step 1.
+Keep `mysql://` at the start: PHP uses its MySQL driver to connect to MariaDB.
 
 While still in `portal/backend`:
 
@@ -133,11 +135,11 @@ php bin/console about
 php -r 'var_export(extension_loaded("pdo_mysql")); echo PHP_EOL;'
 ```
 
-**Checkpoint:** Composer should finish without errors, `php bin/console about` should show `dev`, and the last command should print `true`. Create `.env` before running `composer install`, because the installation reads those settings.
+**Checkpoint:** Composer should finish without errors, `php bin/console about` should show `dev`, and the last command should print `true`.
 
 ### 3. Create keys, tables, and sample data
 
-From `portal/backend`, with MariaDB still running:
+Run this section once, using the empty `portal` database you just created. From `portal/backend`, with MariaDB still running:
 
 ```bash
 php bin/console lexik:jwt:generate-keypair --skip-if-exists
@@ -152,8 +154,6 @@ Run these commands one at a time and check that each succeeds.
 - The second creates the database tables described by the PHP classes in `backend/src/Entity/`.
 - The third loads sample users and teams. The scripts that add this data are called **fixtures**. Loading them can take about a minute; wait for the terminal prompt to return.
 - The fourth checks that the tables match the PHP classes. Both checks should report `[OK]`.
-
-Run this section once during initial setup.
 
 ### 4. Start and check the API
 
@@ -205,16 +205,18 @@ NEXT_PUBLIC_ROUND_COUNT=2
 
 `NEXT_PUBLIC_ROUND_COUNT` sets the judging-round choices on the admin page for assigning judges. With `2`, the choices include "Round 1" and "Round 2". Restart the frontend after editing `.env.local`.
 
+Visitors can read values beginning with `NEXT_PUBLIC_`, so keep passwords and private keys out of them.
+
 ## Starting again tomorrow
 
-Your database and sample users persist when you stop the servers. You only need to start the services again.
+Stopping the servers keeps your database and sample users. You only need to start the services again.
 
 1. Start MariaDB: `sudo service mariadb start` on Ubuntu/WSL, or `brew services start mariadb@10.11` on macOS.
 2. In a terminal at `portal/backend`, run `php -S 127.0.0.1:8001 -t public`.
 3. In a terminal at `portal/frontend`, run `npm run dev -- --port 3001`.
 4. Open **http://localhost:3001**.
 
-Ctrl+C stops each development server. Do not repeat schema creation, fixture loading, key generation, or environment-file copying as part of daily startup.
+Ctrl+C stops each development server.
 
 ## Backend environment reference
 
@@ -232,7 +234,7 @@ These are the settings in `backend/.env`. Keep that file and the private login k
 | `CORS_ALLOWED_ORIGINS` | The same frontend addresses, separated by commas |
 | `MAILER_DSN=null://null` | Turns off email delivery |
 
-The backend reads both CORS settings. They allow requests from `http://localhost:3001` and `http://127.0.0.1:3001`. If you change the frontend's address, update it in both settings. Visitors can read values beginning with `NEXT_PUBLIC_`, so keep passwords and private keys out of them.
+The backend reads both CORS settings. They allow requests from `http://localhost:3001` and `http://127.0.0.1:3001`. If you change the frontend's address, update it in both settings.
 
 ## Finding the code and checking a change
 
@@ -255,6 +257,6 @@ npx tsc --noEmit --incremental false
 npm run build
 ```
 
-There is no `npm test` script!! Include any failed checks in your pull request, and point out errors that were already present before your changes. The build downloads Google fonts, so it needs internet access.
+There is no `npm test` script!! Include any failed checks in your pull request, and point out errors that were already present before your changes.
 
 For backend changes, run `composer check-platform-reqs` and `php bin/console lint:container` from `backend`. Then try the feature you changed using the sample accounts above. Check `git diff` before staging files; setup commands can also change files generated by Next.js and TypeScript.
