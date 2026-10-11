@@ -1,5 +1,6 @@
 /frontend/node_modules
 /frontend/.next
+/frontend/AGENTS.md
 
 /backend/.env
 /backend/.env.local
