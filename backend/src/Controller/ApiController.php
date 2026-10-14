@@ -366,6 +366,7 @@ class ApiController extends AbstractController
         // 2. Create the Team Entity
         $team = new Team();
         $team->setName($teamName);
+        $team->setName($teamName);
         $team->setStatus('Unverified');
         $team->setTrack($data['track'] ?? 'Software');
 
@@ -430,6 +431,8 @@ class ApiController extends AbstractController
         $json_data = array_map(fn(Team $t) => $this->serializeTeam(
             $t,
             $usersByTeam[$t->getName() ?? ''] ?? [],
+            $leaderByTeam[$t->getName() ?? ''] ?? null
+            $membersByTeam[$t->getName() ?? ''] ?? [],
             $leaderByTeam[$t->getName() ?? ''] ?? null
         ), $teams);
 
@@ -790,6 +793,7 @@ class ApiController extends AbstractController
             return $this->json(['message' => 'You are not in a team'], 400);
         }
         $team = $em->getRepository(Team::class)->findOneBy(['name' => $userTeamName]);
+        $team = $em->getRepository(Team::class)->findOneBy(['name' => $userTeamName]);
         if (!$team) {
             return $this->json(['message' => 'Team not found'], 404);
         }
@@ -866,6 +870,8 @@ class ApiController extends AbstractController
 
         // Check if user is a user of this team
         if ($user->getTeam() !== $team) {
+        // Check if user is a member of this team
+        if ($user->getTeam() !== $team->getName()) {
             return $this->json(['message' => 'Access denied'], 403);
         }
 
@@ -902,6 +908,7 @@ class ApiController extends AbstractController
         }
 
         $team = $invitation->getTeam();
+        $teamName = $team->getName();
         $teamName = $team->getName();
 
         // Check team capacity
