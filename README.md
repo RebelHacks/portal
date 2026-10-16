@@ -4,6 +4,12 @@ The portal uses Next.js for the interface, Symfony for the API, and MariaDB for,
 
 The website repository's [developer onboarding guide](https://github.com/RebelHacks/website/blob/main/docs/ONBOARDING.md) covers Git, Node, PHP, Composer, and editor installation. MariaDB setup is included below. On Windows, run the commands below inside Ubuntu/WSL.
 
+## Branch naming scheme
+
+Your branch naming scheme should be:
+<type>/num-description 
+e.g. `refactor/44-login-and-registration-to-backend`
+
 ## Development setup
 
 Use Node.js 24, PHP 8.3 with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works.
@@ -295,3 +301,4 @@ npm run build
 There is no `npm test` script!! `npm run lint` already reports a few errors on a fresh clone, so run it once before you start your task: whatever shows up then was there before you. If a check fails, paste its output in the pull request description and say whether it was already failing before your change.
 
 For backend changes, run `composer check-platform-reqs` and `php bin/console lint:container` from `backend`. Then try the feature you changed using the sample accounts above. Check `git diff` before staging files. Running the frontend rewrites `frontend/next-env.d.ts`; undo that with `git restore frontend/next-env.d.ts` before you commit.
+
