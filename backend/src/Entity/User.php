@@ -40,9 +40,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private bool $is_verified = false;
 
     #[ORM\Column(length: 128, nullable: true)]
-    private ?string $name = null;
-
-    #[ORM\Column(length: 128, nullable: true)]
     private ?string $track = null;
 
     #[ORM\Column(length: 128, nullable: true)]
@@ -50,6 +47,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $major = null;
+
+    #[ORM\Column(length: 128)]
+    private ?string $first_name = null;
+
+    #[ORM\Column(length: 128)]
+    private ?string $last_name = null;
 
    
 
@@ -136,19 +139,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-
     public function getTrack(): ?string
     {
         return $this->track;
@@ -193,6 +183,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTeam(?Team $team): static
     {
         $this->team = $team;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->first_name;
+    }
+
+    public function setFirstName(string $first_name): static
+    {
+        $this->first_name = $first_name;
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->last_name;
+    }
+
+    public function setLastName(string $last_name): static
+    {
+        $this->last_name = $last_name;
 
         return $this;
     }
