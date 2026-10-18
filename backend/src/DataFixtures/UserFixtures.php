@@ -21,22 +21,23 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $userRepository = $manager->getRepository(User::class);
 
         $people = [
-            ['Ava Nguyen', 'ava@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
-            ['Liam Chen', 'liam@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
-            ['Mateo Rivera', 'mateo@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
-            ['Jordan Lee', 'jordan@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
-            ['Sofia Patel', 'sofia@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
-            ['Noah Brooks', 'noah@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
-            ['Eva Flores', 'eva@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
-            ['Alex Kim', 'alex@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
-            ['Judge One', 'judge1@demo.com', null, 'Software', 'Pending', ['ROLE_JUDGE']],
-            ['Judge Two', 'judge2@demo.com', null, 'Hardware', 'Pending', ['ROLE_JUDGE']],
-            ['Judge Three', 'judge3@demo.com', null, 'Software', 'Pending', ['ROLE_JUDGE']],
+            ['Ava', 'Nguyen', 'ava@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Liam', 'Chen', 'liam@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Mateo', 'Rivera', 'mateo@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
+            ['Jordan', 'Lee', 'jordan@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
+            ['Sofia', 'Patel', 'sofia@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Noah', 'Brooks', 'noah@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Eva', 'Flores', 'eva@demo.com', null, 'Hardware', 'Pending', ['ROLE_USER']],
+            ['Alex', 'Kim', 'alex@demo.com', null, 'Software', 'Pending', ['ROLE_USER']],
+            ['Judge', 'One', 'judge1@demo.com', null, 'Software', 'Pending', ['ROLE_JUDGE']],
+            ['Judge', 'Two', 'judge2@demo.com', null, 'Hardware', 'Pending', ['ROLE_JUDGE']],
+            ['Judge', 'Three', 'judge3@demo.com', null, 'Software', 'Pending', ['ROLE_JUDGE']],
         ];
 
-        foreach ($people as [$name, $email, $team, $track, $state, $roles]) {
+        foreach ($people as [$firstName, $lastName, $email, $team, $track, $state, $roles]) {
             $user = $userRepository->findOneBy(['email' => $email]) ?? new User();
-            $user->setName($name);
+            $user->setFirstName($firstName);
+            $user->setLastName($lastName);
             $user->setEmail($email);
             $user->setTeam($team);
             $user->setTrack($track);
@@ -79,7 +80,8 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
                 $leaderCandidates[] = $newLeader;
             }
             foreach ($leaderCandidates as $leader) {
-                $leader->setName(sprintf('ZZ Team %s Lead', $number));
+                $leader->setFirstName(sprintf('ZZ Team %s', $number));
+                $leader->setLastName('Lead');
                 $leader->setTeam($team);
                 $leader->setTrack($track);
                 $leader->setState('Pending');
@@ -107,7 +109,8 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
                 $memberCandidates[] = $newMember;
             }
             foreach ($memberCandidates as $member) {
-                $member->setName(sprintf('ZZ Team %s Member', $number));
+                $member->setFirstName(sprintf('ZZ Team %s', $number));
+                $member->setLastName('Member');
                 $member->setTeam($team);
                 $member->setTrack($track);
                 $member->setState('Pending');

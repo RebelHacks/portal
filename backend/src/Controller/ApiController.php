@@ -62,6 +62,8 @@ class ApiController extends AbstractController
             // Judge application
             $user = (new User());
             $user->setEmail($data['email'])
+                ->setFirstName('')
+                ->setLastName('')
                 ->setRoles(['ROLE_JUDGE'])
                 ->setState('Pending');
 
@@ -127,7 +129,9 @@ class ApiController extends AbstractController
             $user = (new User());
             $user->setEmail($data['email'])
                 ->setPassword($passwordHasher->hashPassword($user, $data['password']))
-                ->setName($data['username'])
+                // TODO: Registration still accepts a username until separate name inputs are added.
+                ->setFirstName($data['username'])
+                ->setLastName('')
                 ->setRoles(['ROLE_USER'])
                 ->setState('Pending');
 
@@ -180,7 +184,7 @@ class ApiController extends AbstractController
 
         $json_data = array_map(fn(User $u) => [
             'id' => $u->getId(),
-            'name' => $u->getName() ?? '',
+            'name' => trim($u->getFirstName() . ' ' . $u->getLastName()),
             'email' => $u->getEmail(),
             'team' => $u->getTeam()?->getName() ?? '',
             'track' => $u->getTrack() ?? '',
@@ -207,7 +211,7 @@ class ApiController extends AbstractController
 
         $jsonData = array_map(fn(User $u) => [
             'id' => $u->getId(),
-            'name' => $u->getName() ?? '',
+            'name' => trim($u->getFirstName() . ' ' . $u->getLastName()),
             'email' => $u->getEmail(),
         ], $judges);
 
@@ -386,7 +390,7 @@ class ApiController extends AbstractController
         $users = $em->getRepository(User::class)->findBy(['team' => $team]);
         $userData = array_map(fn(User $u) => [
             'id' => $u->getId(),
-            'name' => $u->getName() ?? '',
+            'name' => trim($u->getFirstName() . ' ' . $u->getLastName()),
             'email' => $u->getEmail(),
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
@@ -416,7 +420,7 @@ class ApiController extends AbstractController
 
             $usersByTeam[$userTeamName][] = [
                 'id' => $user->getId(),
-                'name' => $user->getName() ?? '',
+                'name' => trim($user->getFirstName() . ' ' . $user->getLastName()),
                 'email' => $user->getEmail(),
                 'track' => $user->getTrack() ?? '',
                 'state' => $user->getState() ?? 'Pending',
@@ -549,7 +553,7 @@ class ApiController extends AbstractController
         $updatedusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         $jsonusers = array_map(fn(User $u) => [
             'id' => $u->getId(),
-            'name' => $u->getName() ?? '',
+            'name' => trim($u->getFirstName() . ' ' . $u->getLastName()),
             'email' => $u->getEmail(),
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
@@ -672,7 +676,7 @@ class ApiController extends AbstractController
         $updatedusers = $em->getRepository(User::class)->findBy(['team' => $team]);
         $jsonusers = array_map(fn(User $u) => [
             'id' => $u->getId(),
-            'name' => $u->getName() ?? '',
+            'name' => trim($u->getFirstName() . ' ' . $u->getLastName()),
             'email' => $u->getEmail(),
             'track' => $u->getTrack() ?? '',
             'state' => $u->getState() ?? 'Pending',
@@ -983,7 +987,7 @@ class ApiController extends AbstractController
             'status' => $invitation->getStatus(),
             'invitee' => [
                 'id' => $invitee->getId(),
-                'name' => $invitee->getName() ?: $invitee->getEmail(),
+                'name' => trim($invitee->getFirstName() . ' ' . $invitee->getLastName()) ?: $invitee->getEmail(),
                 'email' => $invitee->getEmail(),
             ],
         ];
