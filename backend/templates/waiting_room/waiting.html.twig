@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Waiting Room {% endblock %}
+
+{% block body %}
+    <div class="page-container">
+        <div class="relative flex w-11/12 max-w-md flex-col items-center rounded-2xl bg-[#0f2c44] p-6 text-white shadow-[0_10px_40px_rgba(0,0,0,0.4)] sm:p-8 md:p-10">
+
+            <div class="mb-6 text-center">
+                <h1 class="text-2xl font-bold"> Welcome to the Waiting Room </h1>
+            </div>
+
+            <p class="text-center text-sm">
+                Additional event information will become available closer to the event date.
+            </p>
+
+            <div class="mt-6 w-full rounded-lg border-2 border-[#00ffff] bg-[#0d1b2a] p-4 text-center">
+                <p class="font-bold text-[#ff7f50]">Event details coming soon</p>
+            </div>
+
+            {% if target_date %}
+                <div id="countdown" class="mt-6" data-target="{{ target_date }}">
+                    Loading countdown...
+                </div>
+
+            {% else %}
+                <div id="countdown-none">
+                    REGISTRATION_OPEN_DATE IS NOT CONFIGURED
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const countdownEl = document.getElementById('countdown');
+            const targetDate = new Date(countdownEl.dataset.target).getTime();
+
+            const timer = setInterval(function () {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    clearInterval(timer);
+                    countdownEl.innerHTML = "EXPIRED";
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }, 1000);
+        });
+    </script>
+
+{% endblock %}
