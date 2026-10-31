@@ -1,0 +1,17 @@
+# Limits per IP address are high because a whole room on campus Wi-Fi can share one address.
+framework:
+    rate_limiter:
+        registration:
+            policy: sliding_window
+            limit: 500
+            interval: '1 hour'
+        # wrong passwords for one account
+        login_account:
+            policy: sliding_window
+            limit: 5
+            interval: '5 minutes'
+        # wrong passwords for any account
+        login_address:
+            policy: sliding_window
+            limit: 500
+            interval: '5 minutes'

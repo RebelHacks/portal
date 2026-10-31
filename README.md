@@ -12,7 +12,7 @@ e.g. `refactor/44-login-and-registration-to-backend`
 
 ## Development setup
 
-Use Node.js 24, PHP 8.3 with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works.
+Use Node.js 24, PHP 8.3.36 or newer with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works. Older PHP releases have a remote code execution bug, so Composer refuses to install on them. On Ubuntu, `sudo apt upgrade` gets the newest 8.3.
 
 These steps set up the portal and an empty database on your computer. If you've already done this, skip to [day-to-day startup](#day-to-day-startup).
 
@@ -274,6 +274,14 @@ These are the settings in `backend/.env`. Keep that file and the private login k
 | `MAILER_DSN=null://null` | Turns off email delivery |
 
 The backend reads both CORS settings. They allow requests from `http://localhost:3001` and `http://127.0.0.1:3001`. If you change the frontend's address, update it in both settings.
+
+## Running on a server
+
+The settings above are for your own computer. On a server other people can reach:
+
+- Set `APP_ENV=prod` and `APP_DEBUG=0`. In development mode, anyone can open Symfony's debug pages, and they show every secret.
+- Generate a new `APP_SECRET` and `JWT_PASSPHRASE`. Never reuse your local ones.
+- If the server sits behind a proxy or load balancer, set Symfony's trusted proxies. Otherwise every visitor looks like the same address and shares one sign-up and login limit.
 
 ## Quick Links
 
