@@ -8,6 +8,7 @@ use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +27,7 @@ class RegistrationController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
+        Security $security,
     ): Response {
         $user = new User();
 
@@ -96,13 +98,9 @@ class RegistrationController extends AbstractController
             throw $exception;
         }
 
-        $this->addFlash(
-            'success',
-            'Registration successful! You can now log in.'
-        );
+        $security->login($user, 'form_login', 'main');
 
-
-        return $this->redirectToRoute('app_login');
+        return $this->redirectToRoute('app_lobby');
     }
 
     return $this->render(
