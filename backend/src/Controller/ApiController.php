@@ -79,6 +79,14 @@ class ApiController extends AbstractController
             ], 201);
         } else {
             // Student registration
+            $email = trim((string) $data['email']);
+
+            if (!preg_match('/@(?:[a-z0-9-]+\.)+edu$/i', $email)) {
+                return $this->json([
+                    'message' => 'Please register using a university email ending in .edu'
+                ], 400);
+            }
+
             // Validate password
             if (!isset($data['password']) || empty($data['password'])) {
                 return $this->json(['message' => 'Password is required'], 400);
