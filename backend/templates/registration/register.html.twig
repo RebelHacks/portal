@@ -103,7 +103,7 @@
                     }) }}
 
                     <p class="mt-2 text-xs text-gray-300">
-                        Optional. PDF only, maximum 10 MB.
+                        Required. PDF only, maximum 10 MB.
                     </p>
 
                     <div class="text-sm text-red-300">
@@ -111,17 +111,6 @@
                     </div>
                 </div>
             </section>
-
-            <div>
-                <div class="flex items-center gap-3 text-sm">
-                    {{ form_widget(registrationForm.agreeTerms) }}
-                    {{ form_label(registrationForm.agreeTerms, 'I agree to the registration terms') }}
-                </div>
-
-                <div class="mt-1 text-sm text-red-300">
-                    {{ form_errors(registrationForm.agreeTerms) }}
-                </div>
-            </div>
 
             <button
                 type="submit"

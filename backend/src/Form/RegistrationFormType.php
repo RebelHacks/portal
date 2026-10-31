@@ -4,7 +4,6 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -22,12 +21,14 @@ class RegistrationFormType extends AbstractType
     ): void {
         $builder
             ->add('firstName', TextType::class, [
+                'attr' => ['placeholder' => 'Enter your first name', 'autocomplete' => 'given-name'],
                 'constraints'=> [
                     new Assert\NotBlank(),
                     new Assert\Length(max: 128),
                 ],
             ])
             ->add('lastName', TextType::class, [
+                'attr' => ['placeholder' => 'Enter your last name', 'autocomplete' => 'family-name'],
                 'constraints'=> [
                     new Assert\NotBlank(),
                     new Assert\Length(max: 128),
@@ -58,11 +59,11 @@ class RegistrationFormType extends AbstractType
                 'invalid_message' => 'Passwords do not match.',
                 'first_options' => [
                     'label' => 'Password',
-                    'attr' => ['autocomplete' => 'new-password'],
+                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => 'Create a password'],
                 ],
                 'second_options' => [
                     'label' => 'Confirm Password',
-                    'attr' => ['autocomplete' => 'new-password'],
+                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => 'Confirm your password'],
                 ],
                 'constraints' => [
                     new Assert\NotBlank(),
@@ -74,6 +75,7 @@ class RegistrationFormType extends AbstractType
                 ]
             ])
             ->add('major', TextType::class, [
+                'attr' => ['placeholder' => 'e.g. Computer Science'],
                 'constraints' => [
                     new Assert\NotBlank(),
                     new Assert\Length(max: 50),
@@ -82,22 +84,15 @@ class RegistrationFormType extends AbstractType
             ->add('resume', FileType::class, [
                 'label' => 'Resume (PDF)',
                 'mapped' => false,
-                'required' => false,
+                'required' => true,
                 'constraints' => [
+                    new Assert\NotNull(message: 'Please upload your resume.'),
                     new Assert\File(
                         maxSize: '10M',
                         mimeTypes: ['application/pdf'],
                         mimeTypesMessage: 'Please upload a PDF resume.'
                     )
                 ]
-            ])
-            ->add('agreeTerms', CheckboxType::class, [
-                'mapped' => false,
-                'constraints' => [
-                    new Assert\IsTrue(
-                        message: 'You must agree to the terms.'
-                    ),
-                ],
             ]);
     }
 
