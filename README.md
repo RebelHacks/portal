@@ -12,7 +12,7 @@ e.g. `refactor/44-login-and-registration-to-backend`
 
 ## Development setup
 
-Use Node.js 24, PHP 8.3 with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works.
+Use Node.js 24, PHP 8.5.12 or newer with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works.
 
 These steps set up the portal and an empty database on your computer. If you've already done this, skip to [day-to-day startup](#day-to-day-startup).
 
@@ -28,7 +28,7 @@ We're making local DBs first. Shared DBs come later, and this guide doesn't cove
 
 ```bash
 sudo apt update
-sudo apt install mariadb-server php8.3-mysql
+sudo apt install mariadb-server php8.5-mysql
 sudo service mariadb start
 sudo mariadb --protocol=socket
 ```
@@ -149,7 +149,7 @@ php bin/console about
 php -r 'var_export(extension_loaded("pdo_mysql")); echo PHP_EOL;'
 ```
 
-**Checkpoint:** Composer should finish without errors, `php bin/console about` should show `dev`, and the last command should print `true`. If it prints `false` on Ubuntu, run `sudo apt install php8.3-mysql` and try again.
+**Checkpoint:** Composer should finish without errors, `php bin/console about` should show `dev`, and the last command should print `true`. If it prints `false` on Ubuntu, run `sudo apt install php8.5-mysql` and try again.
 
 ### 3. Create keys, tables, and sample data
 
