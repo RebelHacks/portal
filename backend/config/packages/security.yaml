@@ -23,6 +23,9 @@ security:
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            # slows password guessing; the limits are in rate_limiter.yaml
+            login_throttling:
+                limiter: app.login_rate_limiter
         register:
             pattern: ^/api/register
             stateless: true
@@ -39,8 +42,12 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
+            login_throttling:
+                limiter: app.login_rate_limiter
             logout:
                 path: app_logout
+                # logout links carry a token, so other sites can't sign people out
+                enable_csrf: true
                 # where to redirect after logout
                 # target: app_any_route
 
@@ -50,14 +57,20 @@ security:
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
+    # Only the first rule that matches is used. Anything not listed needs a login.
+    # Paths end in \z, not $, because $ also matches before a trailing newline (%0A).
     access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api/test, roles: PUBLIC_ACCESS }
-        - { path: ^/api/admin, roles: ROLE_ADMIN }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY}
+        - { path: ^/api/login\z, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register\z, roles: PUBLIC_ACCESS }
+        # only changes the logged-in user's own major and track
+        - { path: ^/api/users/profile\z, roles: IS_AUTHENTICATED_FULLY }
+        # the rest of the old dashboard API is organizers only until the new portal replaces it
+        - { path: ^/api, roles: ROLE_ADMIN }
+        - { path: ^/\z, roles: PUBLIC_ACCESS } # the login page
+        - { path: ^/register\z, roles: PUBLIC_ACCESS }
+        - { path: ^/verify/email\z, roles: PUBLIC_ACCESS }
+        - { path: ^/logout\z, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:
