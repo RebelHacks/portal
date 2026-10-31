@@ -53,6 +53,10 @@ class ApiController extends AbstractController
             return $this->json(['message' => 'Invalid email format'], 400);
         }
 
+        if (!preg_match('/@(?:[a-z0-9-]+\.)+edu$/i', trim((string) $data['email']))) {
+            return $this->json(['message' => 'Please register using a university email ending in .edu'], 400);
+        }
+
         // Validate password
         if (!isset($data['password']) || empty($data['password'])) {
             return $this->json(['message' => 'Password is required'], 400);
