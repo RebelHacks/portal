@@ -29,6 +29,10 @@ class RegistrationController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         Security $security,
     ): Response {
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('app_lobby');
+        }
+
         $user = new User();
 
         $form = $this->createForm(
