@@ -1,0 +1,50 @@
+{# Keep this ID: your JavaScript uses it to toggle the backdrop. #}
+<div
+    id="drawer-panel-backdrop"
+    class="drawerBackdrop hidden"
+></div>
+
+<aside
+    id="drawer-panel"
+    class="drawerPanel -translate-x-full"
+>
+    <div class="drawerHeader">
+        <div class="text-xl font-bold tracking-widest text-[var(--primary)]">
+            MENU
+        </div>
+
+        <button
+            id="drawer-panel-close"
+            type="button"
+            class="closeButton"
+        >
+            ✕
+        </button>
+    </div>
+
+    <nav class="space-y-2">
+        <a
+            href="{{ path('dashboard_team') }}"
+            id="team-tab-button"
+            class="option block text-lg transition-colors {{ app.request.attributes.get('_route') == 'dashboard_team' ? 'active' : '' }}"
+        >
+            Team
+        </a>
+
+        <a
+            href="{{ path('dashboard_schedule') }}"
+            id="schedule-tab-button"
+            class="option block text-lg transition-colors {{ app.request.attributes.get('_route') == 'dashboard_schedule' ? 'active' : '' }}"
+        >
+            Schedule
+        </a>
+
+        <a
+            href="{{ path('dashboard_submissions') }}"
+            id="submissions-tab-button"
+            class="option block text-lg transition-colors {{ app.request.attributes.get('_route') == 'dashboard_submissions' ? 'active' : '' }}"
+        >
+            Submissions
+        </a>
+    </nav>
+</aside>

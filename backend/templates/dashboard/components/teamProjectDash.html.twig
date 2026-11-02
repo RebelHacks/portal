@@ -1,0 +1,193 @@
+{# Placeholder values for previewing the different layouts. #}
+{# Placeholder state: team leader creating a project. #}
+{% set isCreated = false %}
+{% set isEditing = false %}
+
+{% set projectNameMaxLength = 100 %}
+{% set projectDetailsMaxLength = 250 %}
+
+{% set projectName = '' %}
+{% set projectDescription = '' %}
+{% set rounds = [] %}
+
+{# Determine which sections appear. #}
+{% set isMemberWaiting = not isLeader and not isCreated %}
+{% set isFormView = isLeader and (not isCreated or isEditing) %}
+{% set isProjectView = isCreated and not isEditing %}
+
+<div class="card">
+    <div class="splitPanel">
+
+        {# LEFT COLUMN #}
+        <div class="flex-[1.2] flex flex-col gap-6">
+
+            {# SCENARIO 1: MEMBER WAITING #}
+            {% if isMemberWaiting %}
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-[var(--primary-light-border)] pb-4">
+                        <h2 class="primaryTitle mb-0">
+                            Pending Creation
+                        </h2>
+                    </div>
+
+                    <div class="pt-2">
+                        <p class="text-gray-400 max-w-md leading-relaxed">
+                            Your Team Leader hasn't created the project yet.
+                            Once they set the scope, the details and judge
+                            feedback will appear here.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+
+            {# HEADER SHARED BY FORM AND PROJECT VIEWS #}
+            {% if not isMemberWaiting %}
+                <div class="flex justify-between items-center border-b border-[var(--primary-light-border)] pb-4">
+                    <h2 class="primaryTitle mb-0">
+                        {% if isFormView %}
+                            {{ isCreated ? 'Edit Details' : 'Project Management' }}
+                        {% else %}
+                            {{ projectName }}
+                        {% endif %}
+                    </h2>
+
+                    {% if isCreated and isLeader %}
+                        <button
+                            type="button"
+                            class="secondaryButton text-xs px-3"
+                            disabled
+                            title="Placeholder: project editing is not implemented."
+                        >
+                            {{ isEditing ? 'CANCEL' : 'EDIT' }}
+                        </button>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {# SCENARIO 2: CREATE / EDIT FORM PREVIEW #}
+            {% if isFormView %}
+                <div class="space-y-6">
+                    <div>
+                        <label
+                            for="project-name"
+                            class="text-[var(--primary)] text-xs font-bold tracking-widest block mb-2"
+                        >
+                            PROJECT NAME
+                        </label>
+
+                        <input
+                            id="project-name"
+                            type="text"
+                            class="inputContainer"
+                            placeholder="Enter project name..."
+                            value="{{ isCreated ? projectName : '' }}"
+                            maxlength="{{ projectNameMaxLength }}"
+                            disabled
+                        >
+
+                        <div class="mt-1 text-xs text-(--sub-text)">
+                            Max {{ projectNameMaxLength }} characters
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            for="project-description"
+                            class="text-[var(--primary)] text-xs font-bold tracking-widest block mb-2"
+                        >
+                            DESCRIPTION
+                        </label>
+
+                        <textarea
+                            id="project-description"
+                            class="descriptionInput primaryScroll min-h-[150px]"
+                            placeholder="Briefly describe the goals..."
+                            maxlength="{{ projectDetailsMaxLength }}"
+                            disabled
+                        >{{ isCreated ? projectDescription : '' }}</textarea>
+
+                        <div class="mt-1 text-xs text-(--sub-text)">
+                            Max {{ projectDetailsMaxLength }} characters
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="primaryButton"
+                        disabled
+                        title="Placeholder: saving projects is not implemented."
+                    >
+                        {{ isCreated ? 'Save Changes' : 'Create Project' }}
+                    </button>
+                </div>
+            {% endif %}
+
+            {# SCENARIO 3: PROJECT READ-ONLY VIEW #}
+            {% if isProjectView %}
+                <div>
+                    <div class="text-[var(--primary)] text-xs font-bold tracking-widest block mb-2">
+                        OVERVIEW
+                    </div>
+
+                    <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">{{ projectDescription }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {# RIGHT COLUMN #}
+        <div class="splitRight">
+
+            {# GUIDELINES #}
+            {% if not isCreated or isEditing %}
+                <h4 class="secondaryTitle">Guidelines</h4>
+
+                <ul class="list text-gray-400 leading-loose">
+                    <li>
+                        Project name: max {{ projectNameMaxLength }} characters.
+                    </li>
+                    <li>
+                        Description: max {{ projectDetailsMaxLength }} characters.
+                    </li>
+                    <li>Scores are on a 5.0 scale.</li>
+                    <li>Feedback released after every round.</li>
+                </ul>
+            {% endif %}
+
+            {# PLACEHOLDER JUDGE FEEDBACK #}
+            {% if isCreated and not isEditing %}
+                <h4 class="secondaryTitle">Judge Feedback</h4>
+
+                <div class="flex flex-col gap-6 mt-6">
+                    {% for round in rounds %}
+                        <div>
+                            <div class="flex justify-between items-baseline mb-2">
+                                <span class="text-[var(--primary)] text-xs font-bold tracking-widest">
+                                    ROUND {{ round.id }}
+                                </span>
+
+                                <span class="text-white font-bold text-lg">
+                                    {{ round.score }}
+                                    <span class="text-gray-400 text-xs font-normal">
+                                        / 5.0
+                                    </span>
+                                </span>
+                            </div>
+
+                            <div class="feedbackBox">
+                                <p class="text-gray-300 text-sm leading-relaxed m-0">
+                                    {{ round.feedback }}
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="opacity-50 pl-4">
+                        <span class="text-gray-400 text-xs font-bold">
+                            Round {{ rounds|length + 1 }} Pending...
+                        </span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

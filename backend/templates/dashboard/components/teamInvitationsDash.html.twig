@@ -1,0 +1,42 @@
+{# Placeholder invitations for layout preview. Use [] to preview the empty state. #}
+{% set invitations = [] %}
+
+<div class="card" style="margin-top: 2rem;">
+    <h2 class="primaryTitle">Invitations</h2>
+
+    {% if invitations is empty %}
+        <p class="text-gray-400">
+            You have no invitations at this time.
+        </p>
+    {% else %}
+        <div class="space-y-3 mt-4">
+            {% for invitation in invitations %}
+                <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                    <span>{{ invitation.teamName }}</span>
+
+                    <div class="flex gap-2">
+                        <button
+                            type="button"
+                            disabled
+                            class="primaryButton text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Accept
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled
+                            class="warnButton text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <p class="mt-3 text-xs text-gray-400">
+            Accepting and declining invitations is coming soon.
+        </p>
+    {% endif %}
+</div>

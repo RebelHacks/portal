@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{# Dashboard - controls which aspects (twig templates) are displayed 
+ based on the active tab and the current team context #}
+
+{% block title %}Event Dashboard{% endblock %}
+
+{% block body %}
+    <div
+        id="dashboard-body"
+        class="pageContainer flex flex-col relative text-white"
+    >
+        {% include 'dashboard/components/header.html.twig' %}
+        {% include 'dashboard/components/drawer.html.twig' %}
+
+        <main class="flex-1 w-full p-6">
+            {% if activeTab == 'Team' %}
+                {% if teamId %}
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        {% include 'dashboard/components/teamViewDash.html.twig' %}
+                        {% include 'dashboard/components/teamProjectDash.html.twig' %}
+                    </div>
+                {% else %}
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        {% include 'dashboard/components/teamCreationDash.html.twig' %}
+                        {% include 'dashboard/components/teamInvitationsDash.html.twig' %}
+                    </div>
+                {% endif %}
+
+            {% elseif activeTab == 'Schedule' %}
+                {% include 'dashboard/components/schedule.html.twig' %}
+
+            {% elseif activeTab == 'Submissions' %}
+                {% include 'dashboard/components/submissions.html.twig' %}
+            {% endif %}
+        </main>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {# {{ parent() }} #}
+    {{ importmap('dashboard') }}
+{% endblock %}

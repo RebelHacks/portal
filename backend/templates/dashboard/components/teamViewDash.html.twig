@@ -1,0 +1,131 @@
+{# Placeholder data for the dashboard layout only. #}
+{% set teamName = 'Example Team' %}
+{% set teamLimit = 4 %}
+{% set currentUserId = '1' %}
+
+{% set members = [
+    { id: '1', name: 'Your Name', status: 'Active' },
+    { id: '2', name: 'Example Member', status: 'Active' },
+    { id: '3', name: 'Pending Member', status: 'Pending' }
+] %}
+
+{% set availableMembers = [
+    { id: '4', name: 'Example Participant' },
+    { id: '5', name: 'Another Participant' }
+] %}
+
+{% set activeMemberCount = members
+    |filter(member => member.status == 'Active')
+    |length
+%}
+
+{% set pendingMemberCount = members
+    |filter(member => member.status == 'Pending')
+    |length
+%}
+
+{% set isSoloTeam = members|length == 1 %}
+
+<div class="card space-y-8">
+    <div class="flex flex-col md:flex-row justify-between items-start border-b border-(--primary-light-border) pb-4 gap-4">
+        <h1 class="primaryTitle">{{ teamName }}</h1>
+
+        <div class="text-left md:text-right w-full md:w-auto">
+            <div class="text-sm text-gray-400 mb-2">
+                {{ activeMemberCount }} / {{ teamLimit }} Members
+
+                {% if pendingMemberCount > 0 %}
+                    <span class="ml-2 text-yellow-400">
+                        (+{{ pendingMemberCount }} pending)
+                    </span>
+                {% endif %}
+            </div>
+
+            {# Placeholder action; team management is outside this issue. #}
+            <button
+                type="button"
+                class="warnButton text-xs w-full md:w-auto"
+                disabled
+                title="Placeholder: team management is not implemented."
+            >
+                {{ isSoloTeam or not isLeader ? 'LEAVE TEAM' : 'DISBAND TEAM' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div class="{{ not isLeader ? 'lg:col-span-2' : '' }}">
+            <h3 class="secondaryTitle">Current Members</h3>
+
+            <div class="space-y-3">
+                {% for member in members %}
+                    <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="memberAvatar">👤</div>
+
+                            <span class="truncate max-w-25 md:max-w-none text-white">
+                                {{ member.name }}
+                            </span>
+
+                            {% if loop.first %}
+                                <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-400 uppercase font-bold">
+                                    Leader
+                                </span>
+                            {% elseif member.status == 'Pending' %}
+                                <span class="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded uppercase font-bold">
+                                    Pending
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if isLeader
+                            and member.status != 'Pending'
+                            and member.id != currentUserId
+                        %}
+                            <button
+                                type="button"
+                                class="warnButton text-xs"
+                                disabled
+                                title="Placeholder: removing members is not implemented."
+                            >
+                                Remove
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if isLeader %}
+            <div>
+                <h3 class="secondaryTitle">Invite Members</h3>
+
+                <input
+                    type="text"
+                    placeholder="Search users..."
+                    aria-label="Search users to invite"
+                    class="inputContainer"
+                    disabled
+                    title="Placeholder: user search is not implemented."
+                >
+
+                <div class="primaryScroll space-y-2 max-h-48 overflow-y-auto pr-2 mt-2">
+                    {% for member in availableMembers %}
+                        <div class="flex justify-between items-center p-2 border-b border-white/5 hover:bg-white/5 rounded text-(--sub-text)">
+                            <span>{{ member.name }}</span>
+
+                            <button
+                                type="button"
+                                class="text-(--primary) whitespace-nowrap"
+                                disabled
+                                title="Placeholder: invitations are not implemented."
+                            >
+                                + Invite
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
