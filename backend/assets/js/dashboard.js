@@ -1,6 +1,4 @@
 // DASHBOARD JS
-// handles functionality for the dashboard page
-
 
 const hamburgerButton = document.getElementById("hamburger-button");
 const drawerCloseButton = document.getElementById("drawer-panel-close");
@@ -34,7 +32,7 @@ function setIsDrawerOpen(isDrawerOpen) {
     }
 }    
 
-// Close drawer if we click off drawer, but not if we click on the drawer itself?
+// Close drawer if we click off drawer
 drawerBackdrop?.addEventListener("click", (event) => {
         setIsDrawerOpen(false);
 });
