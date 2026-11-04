@@ -151,12 +151,11 @@ php -r 'var_export(extension_loaded("pdo_mysql")); echo PHP_EOL;'
 
 **Checkpoint:** Composer should finish without errors, `php bin/console about` should show `dev`, and the last command should print `true`. If it prints `false` on Ubuntu, run `sudo apt install php8.5-mysql` and try again.
 
-### 3. Create keys, tables, and sample data
+### 3. Create tables and sample data
 
 Run this section once, using the empty `portal` database you just created. From `portal/backend`, with MariaDB still running:
 
 ```bash
-php bin/console lexik:jwt:generate-keypair --skip-if-exists
 php bin/console doctrine:schema:create
 php bin/console doctrine:fixtures:load --append --no-interaction
 php bin/console doctrine:schema:validate
@@ -164,16 +163,15 @@ php bin/console doctrine:schema:validate
 
 Run these commands one at a time and check that each succeeds.
 
-- The first command creates the keys the API uses for login. They are saved in `backend/config/jwt/` and excluded from Git.
-- The second creates the database tables described by the PHP classes in `backend/src/Entity/`.
-- The third loads sample users and teams. The scripts that add this data are called **fixtures**. Loading them can take about a minute; wait for the terminal prompt to return.
-- The fourth checks that the tables match the PHP classes. Both checks should report `[OK]`.
+- The first creates the database tables described by the PHP classes in `backend/src/Entity/`.
+- The second loads sample users and teams. The scripts that add this data are called **fixtures**. Loading them can take about a minute; wait for the terminal prompt to return.
+- The third checks that the tables match the PHP classes. Both checks should report `[OK]`.
 
 `doctrine:schema:create` prints a `[CAUTION]` about production. That's expected on your own computer.
 
 Skip `doctrine:migrations:migrate`, even if a Symfony tutorial tells you to run it. The files in `backend/migrations/` are out of date and the command fails partway. If you already ran it, use the rebuild commands in [after pulling new changes](#after-pulling-new-changes).
 
-### 4. Start and check the API
+### 4. Start the backend
 
 From `portal/backend`:
 
@@ -181,15 +179,9 @@ From `portal/backend`:
 php -S 127.0.0.1:8001 -t public
 ```
 
-Leave this terminal running, open another terminal, and sign in with a sample account:
+Leave this terminal running and open **http://127.0.0.1:8001**. Sign in as `ava@demo.com` with the password `password`.
 
-```bash
-curl -i http://127.0.0.1:8001/api/login \
-  -H 'Content-Type: application/json' \
-  --data '{"email":"ava@demo.com","password":"password"}'
-```
-
-**Checkpoint:** expect `HTTP/1.1 200 OK` and a response containing `"token"`. That means the sample account signed in successfully.
+**Checkpoint:** the page says "You are logged in as ava@demo.com".
 
 ### 5. Start the frontend
 
@@ -259,7 +251,7 @@ This empties your local `portal` database and reloads the sample users. If you m
 
 ## Environment variables
 
-These are the settings in `backend/.env`. Keep that file and the private login key out of Git.
+These are the settings in `backend/.env`. Keep that file out of Git.
 
 | Setting | Purpose |
 | --- | --- |
@@ -267,20 +259,14 @@ These are the settings in `backend/.env`. Keep that file and the private login k
 | `APP_SECRET` | Paste the random value printed by the PHP command in step 2 |
 | `DEFAULT_URI` | Address Symfony uses when generating links from terminal commands |
 | `DATABASE_URL` | Connection details for your MariaDB database |
-| `JWT_SECRET_KEY`, `JWT_PUBLIC_KEY` | Files containing the keys used to create and check login tokens |
-| `JWT_PASSPHRASE` | Password that protects the private login key |
-| `CORS_ALLOW_ORIGIN` | Frontend addresses allowed to call the API, written as a regular expression |
-| `CORS_ALLOWED_ORIGINS` | The same frontend addresses, separated by commas |
 | `MAILER_DSN=null://null` | Turns off email delivery |
-
-The backend reads both CORS settings. They allow requests from `http://localhost:3001` and `http://127.0.0.1:3001`. If you change the frontend's address, update it in both settings.
 
 ## Running on a server
 
 The settings above are for your own computer. On a server other people can reach:
 
 - Set `APP_ENV=prod` and `APP_DEBUG=0`. In development mode, anyone can open Symfony's debug pages, and they show every secret.
-- Generate a new `APP_SECRET` and `JWT_PASSPHRASE`. Never reuse your local ones.
+- Generate a new `APP_SECRET`. Never reuse your local one.
 - If the server sits behind a proxy or load balancer, set Symfony's trusted proxies. Otherwise every visitor looks like the same address and shares one sign-up and login limit.
 
 ## Quick Links

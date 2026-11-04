@@ -20,14 +20,6 @@ class ApiController extends AbstractController
     private const PROJECT_NAME_MAX_LENGTH = 100;
     private const PROJECT_DETAILS_MAX_LENGTH = 250;
 
-    #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login()
-    {
-        // This is intercepted by json_login in security.yaml
-        // Controller code is never executed
-        throw new \LogicException('Error logging in dude');
-    }
-
     // Get user json object
     #[Route('/users', name: 'users', methods: ['GET'])]
     #[Route('/admin/users', name: 'admin_users', methods: ['GET'])]
