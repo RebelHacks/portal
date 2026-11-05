@@ -42,6 +42,8 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
+                default_target_path: app_lobby
+                always_use_default_target_path: true
             login_throttling:
                 limiter: app.login_rate_limiter
             logout:
@@ -70,6 +72,8 @@ security:
         - { path: ^/register\z, roles: PUBLIC_ACCESS }
         - { path: ^/verify/email\z, roles: PUBLIC_ACCESS }
         - { path: ^/logout\z, roles: PUBLIC_ACCESS }
+        # The lobby controller returns 404 to visitors without a session.
+        - { path: ^/lobby\z, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:
