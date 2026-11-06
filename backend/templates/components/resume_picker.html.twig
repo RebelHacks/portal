@@ -1,22 +1,21 @@
 
 {#
     Resume picker - Styled file input which shows the file name selected
-
     How to use:
         {{ include('components/resume_picker.html.twig', { name: 'resume' }, with_context = false) }}
-        my example was previously inserted into  register.html.twig right below the submit button around line 37
+
     Parameters:
-        name     the name of the field only mandatory parameter
-        id       What the label points at. Must be unique defaults to name
-        label    name of the label (the words above the box, defaults to resume)
-        accept   Filters the type of file allowed, defaults to .pdf
-        required Bool, True means a file needs to be submitted before proceeeding. False means the opposite. defaults to false
+        name           (required) the name of the form field, submitted as this key
+        id             what the label points at. Must be unique on the page, defaults to name
+        label          text shown above the box, defaults to 'Resume'
+        accepted_types filters the type of file allowed (the HTML accept attribute), defaults to .pdf
+        required       bool, true means a file must be chosen before the form submits, defaults to false
 #}
 
 
 {%set id = id|default(name)%}
 {%set label = label|default('Resume') %}
-{%set accept = accept|default('.pdf') %}
+{%set accepted_types = accepted_types|default('.pdf') %}
 {%set required = required|default(false)%}
 
 {#Input class originated on templates/registration/register.html.twig on line #19 It is the style used for the other buttons in the registration page#}
@@ -24,6 +23,6 @@
 
 <div class="flex flex-col text-base">
     <label for="{{id}}"> {{label}} </label>
-    <input id="{{id}}" type="file" accept="{{accept}}" name="{{name}}"{% if required %} required{% endif %} class="{{ input_class }} cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-cyan-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-cyan-600">
+    <input id="{{id}}" type="file" accept="{{accepted_types}}" name="{{name}}"{% if required %} required{% endif %} class="{{ input_class }} cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-cyan-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-cyan-600">
     {# "File:mr-4" and onwards styles the 'choose file' button. Style was derived "frontend/app/register/page.tsx" at the transcript file handler section. Aprox line 133  #}
 </div>
