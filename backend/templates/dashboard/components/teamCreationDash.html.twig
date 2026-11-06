@@ -1,0 +1,67 @@
+<div class="card splitPanel">
+    <div class="flex-1 min-w-0">
+        <h2 class="primaryTitle">Create a Team</h2>
+
+        <div class="space-y-4">
+            <div class="flex flex-col gap-2">
+                <label
+                    for="team-name"
+                    class="text-xs text-gray-500 tracking-wider"
+                >
+                    TEAM NAME
+                </label>
+
+                <input
+                    id="team-name"
+                    type="text"
+                    class="inputContainer"
+                    placeholder="Enter team name..."
+                    maxlength="48"
+                    aria-describedby="team-name-help"
+                >
+
+                <p id="team-name-help" class="text-xs text-gray-400">
+                    Max 48 characters
+                </p>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label
+                    for="team-track"
+                    class="text-xs text-gray-500 tracking-wider"
+                >
+                    TRACK
+                </label>
+
+                <select id="team-track" class="dropdown">
+                    <option value="Software">Software</option>
+                    <option value="Hardware">Hardware</option>
+                </select>
+            </div>
+
+            {# Layout placeholder; team creation is not implemented. #}
+            <button
+                type="button"
+                disabled
+                class="primaryButton"
+                title="Team creation is coming soon"
+            >
+                Create Team
+            </button>
+        </div>
+    </div>
+
+    <div class="splitRight min-w-0">
+        <div class="md:pt-10">
+            <h4 class="secondaryTitle">Team Guidelines</h4>
+
+            <ul class="list space-y-2">
+                <li>Names must be professional.</li>
+                <li>Team name max is 48 characters.</li>
+                <li>Teams are limited to 5 members.</li>
+                <li>Tracks must be either Software or Hardware.</li>
+                <li>After creation, make a project.</li>
+            </ul>
+        </div>
+    </div>
+</div>
