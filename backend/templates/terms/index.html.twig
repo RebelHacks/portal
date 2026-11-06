@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Registration Terms | RebelHacks{% endblock %}
+
+{#
+    TODO: this is a draft no organizer has approved yet. Get sign-off before the portal replaces
+    the Google Form. Still undecided:
+    - Can people opt out of photos?
+    - Is agreeing here enough for sponsors to get resumes, or do people need a separate checkbox?
+    - How long do we keep resumes, and how does someone ask us to delete theirs?
+#}
+{% block body %}
+    <main class="min-h-screen px-4 py-10">
+        <article class="mx-auto w-full max-w-2xl rounded-2xl bg-[#0f2c44] p-6 text-white shadow-2xl sm:p-8">
+            <h1 class="text-3xl font-bold">
+                Registration Terms
+            </h1>
+
+            <p class="mt-6 text-gray-300">
+                By registering for RebelHacks, you agree to the following.
+            </p>
+
+            <h2 class="mt-8 text-xl font-semibold">
+                Code of Conduct
+            </h2>
+            <p class="mt-2 text-gray-300">
+                You'll follow our
+                <a href="https://rebelhacks.com/code-of-conduct" class="text-cyan-400 underline">Code of Conduct</a>
+                at the event and in our online spaces.
+            </p>
+
+            <h2 class="mt-8 text-xl font-semibold">
+                Your resume
+            </h2>
+            <p class="mt-2 text-gray-300">
+                We may share your resume, name, email and major with our sponsors
+                for recruiting. Organizers send them over. Sponsors don't get access
+                to the portal.
+            </p>
+
+            <h2 class="mt-8 text-xl font-semibold">
+                Photos and video
+            </h2>
+            <p class="mt-2 text-gray-300">
+                We take photos and video at the event, and we may use them to
+                promote RebelHacks, for example on our website and social media.
+            </p>
+
+            <h2 class="mt-8 text-xl font-semibold">
+                Questions
+            </h2>
+            <p class="mt-2 text-gray-300">
+                Email us at
+                <a href="mailto:info@rebelhacks.com" class="text-cyan-400 underline">info@rebelhacks.com</a>.
+            </p>
+        </article>
+    </main>
+{% endblock %}

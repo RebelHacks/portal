@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -93,6 +94,15 @@ class RegistrationFormType extends AbstractType
                         mimeTypesMessage: 'Please upload a PDF resume.'
                     )
                 ]
+            ])
+            // Only checked at sign-up for now. The new schema stores when they agreed.
+            ->add('agreeTerms', CheckboxType::class, [
+                'mapped' => false,
+                'constraints' => [
+                    new Assert\IsTrue(
+                        message: 'Please agree to the registration terms.'
+                    ),
+                ],
             ]);
     }
 

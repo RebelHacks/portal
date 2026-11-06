@@ -49,8 +49,7 @@ security:
         - { path: ^/register\z, roles: PUBLIC_ACCESS }
         - { path: ^/verify/email\z, roles: PUBLIC_ACCESS }
         - { path: ^/logout\z, roles: PUBLIC_ACCESS }
-        # The lobby controller returns 404 to visitors without a session.
-        - { path: ^/lobby\z, roles: PUBLIC_ACCESS }
+        - { path: ^/terms\z, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:
