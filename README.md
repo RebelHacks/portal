@@ -1,8 +1,8 @@
 # RebelHacks Portal
 
-The portal uses Next.js for the interface, Symfony for the API, and MariaDB for, well, the DB. By the end, you should be able to sign into the local portal using a sample account.
+The portal uses Symfony for the pages and MariaDB for, well, the DB. By the end, you should be able to sign into the local portal using a sample account.
 
-The website repository's [developer onboarding guide](https://github.com/RebelHacks/website/blob/main/docs/ONBOARDING.md) covers Git, Node, PHP, Composer, and editor installation. MariaDB setup is included below. On Windows, run the commands below inside Ubuntu/WSL.
+The website repository's [developer onboarding guide](https://github.com/RebelHacks/website/blob/main/docs/ONBOARDING.md) covers Git, PHP, Composer, and editor installation. MariaDB setup is included below. On Windows, run the commands below inside Ubuntu/WSL.
 
 ## Branch naming scheme
 
@@ -12,7 +12,7 @@ e.g. `refactor/44-login-and-registration-to-backend`
 
 ## Development setup
 
-Use Node.js 24, PHP 8.5.12 or newer with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works.
+Use PHP 8.5.12 or newer with `pdo_mysql`, Composer 2, and MariaDB 10.11. MariaDB 10.6 also works.
 
 These steps set up the portal and an empty database on your computer. If you've already done this, skip to [day-to-day startup](#day-to-day-startup).
 
@@ -181,22 +181,9 @@ php -S 127.0.0.1:8001 -t public
 
 Leave this terminal running and open **http://127.0.0.1:8001**. Sign in as `ava@demo.com` with the password `password`.
 
-**Checkpoint:** the page says "You are logged in as ava@demo.com".
+**Checkpoint:** you land on the lobby, which says "Welcome, Ava Nguyen!".
 
-### 5. Start the frontend
-
-In another terminal, start from the portal repository root:
-
-```bash
-cd frontend
-cp .env.example .env.local
-npm ci
-npm run dev -- --port 3001
-```
-
-`npm ci` installs the package versions listed in `package-lock.json`. It also reports vulnerabilities and suggests `npm audit fix`. Leave that alone: it rewrites `package-lock.json`, which doesn't belong in your pull request.
-
-Open **http://localhost:3001** and sign in using one of these sample accounts:
+These sample accounts all use the same password:
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -204,42 +191,30 @@ Open **http://localhost:3001** and sign in using one of these sample accounts:
 | Team leader | `zz.team.01.lead@demo.com` | `password` |
 | Judge | `judge1@demo.com` | `password` |
 
-The sample data has no administrator account. If your task needs the admin pages, turn a sample user into one. Log in with `mariadb -h 127.0.0.1 -u root -p portal` and run:
+The sample data has no administrator account. If your task needs the organizer-only routes, turn a sample user into one. Log in with `mariadb -h 127.0.0.1 -u root -p portal` and run:
 
 ```sql
 UPDATE user SET roles = '["ROLE_ADMIN"]' WHERE email = 'liam@demo.com';
 EXIT;
 ```
 
-Sign in as `liam@demo.com` with the password `password`, then open **http://localhost:3001/dashboard-admin** yourself. Signing in always lands on `/dashboard`, and nothing links to the admin page.
-
-The frontend template contains:
-
-```env
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8001/api
-NEXT_PUBLIC_ROUND_COUNT=2
-```
-
-`NEXT_PUBLIC_ROUND_COUNT` sets the judging-round choices on the admin page for assigning judges. With `2`, the choices include "Round 1" and "Round 2". Restart the frontend after editing `.env.local`.
-
-Visitors can read values beginning with `NEXT_PUBLIC_`, so keep passwords and private keys out of them.
+Then sign in as `liam@demo.com` with the password `password`.
 
 ## Day-to-day startup
 
-Stopping the servers keeps your database and sample users. You only need to start the services again.
+Stopping the server keeps your database and sample users. You only need to start the services again.
 
 1. Start MariaDB: `sudo service mariadb start` on Ubuntu/WSL, or `brew services start mariadb@10.11` on macOS.
 2. In a terminal at `portal/backend`, run `php -S 127.0.0.1:8001 -t public`.
-3. In a terminal at `portal/frontend`, run `npm run dev -- --port 3001`.
-4. Open **http://localhost:3001**.
+3. Open **http://127.0.0.1:8001**.
 
-Ctrl+C stops each development server.
+Ctrl+C stops the development server.
 
 ## After pulling new changes
 
-New code can need new packages. After a `git pull`, run `composer install` in `portal/backend` and `npm ci` in `portal/frontend`.
+New code can need new packages. After a `git pull`, run `composer install` in `portal/backend`.
 
-If the API then answers with a 500 error mentioning an unknown column or table, your tables are older than the code. The sample data is disposable, so rebuild it. From `portal/backend`:
+If a page then shows a 500 error mentioning an unknown column or table, your tables are older than the code. The sample data is disposable, so rebuild it. From `portal/backend`:
 
 ```bash
 php bin/console doctrine:schema:drop --force --full-database
@@ -273,26 +248,13 @@ The settings above are for your own computer. On a server other people can reach
 
 | Path | Purpose |
 | --- | --- |
-| `frontend/app/` | Pages and their components |
-| `frontend/lib/api.ts` | Sends requests to the backend |
-| `frontend/lib/rounds.ts` | Creates the list of judging rounds |
-| `backend/src/Controller/` | Handles API requests |
+| `backend/templates/` | The pages, written in Twig |
+| `backend/src/Controller/` | Handles page and API requests |
 | `backend/src/Entity/` | PHP classes that describe the database tables |
 | `backend/src/DataFixtures/` | Scripts that create sample users and teams |
 | `backend/config/packages/security.yaml` | Login and access rules |
 
 ## Checks before a pull request
 
-From `frontend`, run these separately:
-
-```bash
-npm run lint
-npx next typegen
-npx tsc --noEmit --incremental false
-npm run build
-```
-
-There is no `npm test` script!! `npm run lint` already reports a few errors on a fresh clone, so run it once before you start your task: whatever shows up then was there before you. If a check fails, paste its output in the pull request description and say whether it was already failing before your change.
-
-For backend changes, run `composer check-platform-reqs` and `php bin/console lint:container` from `backend`. Then try the feature you changed using the sample accounts above. Check `git diff` before staging files. Running the frontend rewrites `frontend/next-env.d.ts`; undo that with `git restore frontend/next-env.d.ts` before you commit.
+From `backend`, run `composer check-platform-reqs` and `php bin/console lint:container`. Then try the feature you changed using the sample accounts above. Check `git diff` before staging files. If a check fails, paste its output in the pull request description and say whether it was already failing before your change.
 
