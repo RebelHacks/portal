@@ -1,11 +1,5 @@
-/frontend/node_modules
-/frontend/.next
-/frontend/AGENTS.md
-
 /backend/.env
 /backend/.env.local
-/frontend/.env
-/frontend/.env.local
 /backend/public/files
 ignore/
 
@@ -13,8 +7,5 @@ backend/config/secrets/prod/prod.decrypt.private.php
 backend/public/bundles/
 backend/var/
 backend/vendor/
-###> lexik/jwt-authentication-bundle ###
-backend/config/jwt/*.pem
-###< lexik/jwt-authentication-bundle ###
 
 .idea

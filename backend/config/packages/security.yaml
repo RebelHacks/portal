@@ -13,28 +13,6 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        login:
-            pattern: ^/api/login
-            stateless: true
-            provider: app_user_provider
-            json_login:
-                check_path: /api/login
-                username_path: email
-                password_path: password
-                success_handler: lexik_jwt_authentication.handler.authentication_success
-                failure_handler: lexik_jwt_authentication.handler.authentication_failure
-            # slows password guessing; the limits are in rate_limiter.yaml
-            login_throttling:
-                limiter: app.login_rate_limiter
-        register:
-            pattern: ^/api/register
-            stateless: true
-
-        api:
-            pattern: ^/api
-            stateless: true
-            jwt: ~
-
         main:
             lazy: true
             provider: app_user_provider
@@ -44,6 +22,7 @@ security:
                 enable_csrf: true
                 default_target_path: app_lobby
                 always_use_default_target_path: true
+            # slows password guessing; the limits are in rate_limiter.yaml
             login_throttling:
                 limiter: app.login_rate_limiter
             logout:
@@ -62,8 +41,6 @@ security:
     # Only the first rule that matches is used. Anything not listed needs a login.
     # Paths end in \z, not $, because $ also matches before a trailing newline (%0A).
     access_control:
-        - { path: ^/api/login\z, roles: PUBLIC_ACCESS }
-        - { path: ^/api/register\z, roles: PUBLIC_ACCESS }
         # only changes the logged-in user's own major and track
         - { path: ^/api/users/profile\z, roles: IS_AUTHENTICATED_FULLY }
         # the rest of the old dashboard API is organizers only until the new portal replaces it

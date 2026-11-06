@@ -6,13 +6,15 @@ use App\Entity\File as UserFile;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
@@ -27,7 +29,7 @@ class RegistrationController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
-        Security $security,
+        RateLimiterFactoryInterface $registrationLimiter,
     ): Response {
         if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('app_lobby');
@@ -42,6 +44,15 @@ class RegistrationController extends AbstractController
 
         $form->handleRequest($request);
 
+        if (
+            $form->isSubmitted()
+            && !$registrationLimiter->create($request->getClientIp())->consume()->isAccepted()
+        ) {
+            $form->addError(new FormError(
+                'Too many sign-ups from your network. Please try again later.'
+            ));
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $password = $form->get('plainPassword')->getData();
 
@@ -51,6 +62,12 @@ class RegistrationController extends AbstractController
 
             $user->setRoles(['ROLE_USER']);
             $user->setState('Pending');
+
+            // A taken email gets the same answer just as slowly (the hash above runs either way),
+            // so sign-up can't be used to check who has an account.
+            if ($em->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]) !== null) {
+                return $this->redirectAfterSignUp();
+            }
 
             /** @var UploadedFile|null $resume */
             $resume = $form->get('resume')->getData();
@@ -99,12 +116,14 @@ class RegistrationController extends AbstractController
                 unlink($savedResumePath);
             }
 
-            throw $exception;
+            // the same email signed up at the same moment
+            if (!$exception instanceof UniqueConstraintViolationException) {
+                throw $exception;
+            }
         }
 
-        $security->login($user, 'form_login', 'main');
-
-        return $this->redirectToRoute('app_lobby');
+        // No sign-in here: landing in the lobby would show the email was new.
+        return $this->redirectAfterSignUp();
     }
 
     return $this->render(
@@ -135,5 +154,16 @@ class RegistrationController extends AbstractController
         $this->addFlash('success', 'Your email address has been verified.');
 
         return $this->redirectToRoute('app_register');
+    }
+
+    // TODO: email a verification link, or tell the owner of a taken email they already have an account
+    private function redirectAfterSignUp(): Response
+    {
+        $this->addFlash(
+            'success',
+            'Registration successful! You can now log in.'
+        );
+
+        return $this->redirectToRoute('app_login');
     }
 }

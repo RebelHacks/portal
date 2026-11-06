@@ -5,12 +5,9 @@ namespace App\Controller;
 use App\Entity\Invitation;
 use App\Entity\Team;
 use App\Entity\User;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -22,120 +19,6 @@ class ApiController extends AbstractController
     private const TEAM_NAME_MAX_LENGTH = 48;
     private const PROJECT_NAME_MAX_LENGTH = 100;
     private const PROJECT_DETAILS_MAX_LENGTH = 250;
-
-    #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login()
-    {
-        // This is intercepted by json_login in security.yaml
-        // Controller code is never executed
-        throw new \LogicException('Error logging in dude');
-    }
-
-    #[Route('/register', name: 'register', methods: ['POST'])]
-    public function register(
-        Request $request,
-        EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher,
-        RateLimiterFactoryInterface $registrationLimiter,
-    ) {
-        if (!$registrationLimiter->create($request->getClientIp())->consume()->isAccepted()) {
-            return $this->json(['message' => 'Too many sign-ups from your network. Please try again later.'], 429);
-        }
-
-        $data = json_decode($request->getContent(), true) ?? $request->request->all();
-
-        // Validate email
-        if (!isset($data['email']) || empty($data['email'])) {
-            return $this->json(['message' => 'Email is required'], 400);
-        }
-
-        if ($data['email'] && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            return $this->json(['message' => 'Invalid email format'], 400);
-        }
-
-        if (!preg_match('/@(?:[a-z0-9-]+\.)+edu$/i', trim((string) $data['email']))) {
-            return $this->json(['message' => 'Please register using a university email ending in .edu'], 400);
-        }
-
-        // Validate password
-        if (!isset($data['password']) || empty($data['password'])) {
-            return $this->json(['message' => 'Password is required'], 400);
-        }
-
-        if (strlen($data['password']) < 8 || strlen($data['password']) > 4096) {
-            return $this->json(['message' => 'Password must be between 8 and 4096 characters long'], 400);
-        }
-
-        if ($data['password'] && preg_match('/\s/', $data['password'])) {
-            return $this->json(['message' => 'Password cannot contain whitespace characters'], 400);
-        }
-
-        if ($data['password'] !== ($data['confirmPassword'] ?? '')) {
-            return $this->json(['message' => 'Passwords do not match'], 400);
-        }
-
-        // Password Policy Rules
-        if ($data['password'] && !preg_match('/[A-Z]/', $data['password'])) {
-            return $this->json(['message' => 'Password must contain at least one uppercase letter'], 400);
-        }
-
-        if ($data['password'] && !preg_match('/[a-z]/', $data['password'])) {
-            return $this->json(['message' => 'Password must contain at least one lowercase letter'], 400);
-        }
-
-        if ($data['password'] && !preg_match('/[0-9]/', $data['password'])) {
-            return $this->json(['message' => 'Password must contain at least one number'], 400);
-        }
-
-        if ($data['password'] && !preg_match('/[\W_]/', $data['password'])) {
-            return $this->json(['message' => 'Password must contain at least one special character'], 400);
-        }
-
-        // Validate username
-        if (!isset($data['username']) || empty($data['username'])) {
-            return $this->json(['message' => 'Username is required'], 400);
-        }
-
-        if (strlen($data['username']) < 3 || strlen($data['username']) > 50) {
-            return $this->json(['message' => 'Username must be between 3 and 50 characters long'], 400);
-        }
-
-        if ($data['username'] && preg_match('/\s/', $data['username'])) {
-            return $this->json(['message' => 'Username cannot contain whitespace characters'], 400);
-        }
-
-        $user = (new User());
-        $user->setEmail($data['email'])
-            ->setPassword($passwordHasher->hashPassword($user, $data['password']))
-            // TODO: Registration still accepts a username until separate name inputs are added.
-            ->setFirstName($data['username'])
-            ->setLastName('')
-            ->setRoles(['ROLE_USER'])
-            ->setState('Pending');
-
-        if (isset($data['track'])) {
-            $user->setTrack($data['track']);
-        }
-
-        if (isset($data['major'])) {
-            $user->setMajor($data['major']);
-        }
-
-        // A taken email gets the same answer just as slowly (the hash above runs either way),
-        // so sign-up can't be used to check who has an account.
-        $isTaken = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]) !== null;
-        if (!$isTaken) {
-            try {
-                $em->persist($user);
-                $em->flush();
-            } catch (UniqueConstraintViolationException) {
-                // the same email signed up at the same moment
-            }
-        }
-
-        // TODO: email a verification link, or tell the owner of a taken email they already have an account
-        return $this->json(['message' => 'Thanks for signing up!'], 201);
-    }
 
     // Get user json object
     #[Route('/users', name: 'users', methods: ['GET'])]
