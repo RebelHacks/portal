@@ -39,6 +39,15 @@ body {
     background-attachment: fixed;
 }
 
+.lobby-container {
+    box-sizing: border-box;
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+}
+
 .page-container {
     position: fixed;
     top: 0;

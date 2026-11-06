@@ -31,6 +31,10 @@ class RegistrationController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         RateLimiterFactoryInterface $registrationLimiter,
     ): Response {
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('app_lobby');
+        }
+
         $user = new User();
 
         $form = $this->createForm(
@@ -118,6 +122,7 @@ class RegistrationController extends AbstractController
             }
         }
 
+        // No sign-in here: landing in the lobby would show the email was new.
         return $this->redirectAfterSignUp();
     }
 
