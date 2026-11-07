@@ -49,6 +49,10 @@ class Application
     #[ORM\Column]
     private ?\DateTimeImmutable $agreedToTermsAt = null;
 
+    // which text they agreed to, since the terms (and the photo release in them) can change
+    #[ORM\Column(length: 32)]
+    private ?string $termsVersion = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $submittedAt;
 
@@ -139,6 +143,18 @@ class Application
     public function setAgreedToTermsAt(\DateTimeImmutable $agreedToTermsAt): static
     {
         $this->agreedToTermsAt = $agreedToTermsAt;
+
+        return $this;
+    }
+
+    public function getTermsVersion(): ?string
+    {
+        return $this->termsVersion;
+    }
+
+    public function setTermsVersion(string $termsVersion): static
+    {
+        $this->termsVersion = $termsVersion;
 
         return $this;
     }

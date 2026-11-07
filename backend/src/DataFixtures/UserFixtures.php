@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Controller\TermsController;
 use App\Entity\Application;
 use App\Entity\Event;
 use App\Entity\User;
@@ -92,7 +93,8 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
             ->setSchool('University of Nevada, Las Vegas')
             ->setMajor($major)
             ->setAttendedBefore($attendedBefore)
-            ->setAgreedToTermsAt(new \DateTimeImmutable());
+            ->setAgreedToTermsAt(new \DateTimeImmutable())
+            ->setTermsVersion(TermsController::VERSION);
         $manager->persist($application);
 
         return $application;

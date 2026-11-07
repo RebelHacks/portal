@@ -14,8 +14,10 @@ class File
     #[ORM\Column]
     private ?int $id = null;
 
+    // No cascade: deleting the row wouldn't delete the stored file. Deleting an account
+    // has to remove its files first, so a forgotten one makes the delete fail instead.
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
     #[ORM\Column(length: 16, enumType: FileKind::class)]

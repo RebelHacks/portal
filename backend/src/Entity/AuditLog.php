@@ -15,16 +15,23 @@ class AuditLog
     #[ORM\Column]
     private ?int $id = null;
 
-    // kept if the organizer's account is deleted
+    // Empty for commands run on the server. No cascade: an organizer's account can't be
+    // deleted while the log points at it, so who did what is never erased. Demote them instead.
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $actor = null;
 
     #[ORM\Column(length: 64)]
     private ?string $action = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $subject = null;
+    // What was acted on, as a table and id ("application", 42), never a name or email:
+    // deleting a person can't reach text copied into the log.
+    #[ORM\Column(length: 32)]
+    private ?string $subjectType = null;
+
+    // empty for actions on many rows at once, like an export
+    #[ORM\Column(nullable: true)]
+    private ?int $subjectId = null;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -51,14 +58,26 @@ class AuditLog
         return $this;
     }
 
-    public function getSubject(): ?string
+    public function getSubjectType(): ?string
     {
-        return $this->subject;
+        return $this->subjectType;
     }
 
-    public function setSubject(string $subject): static
+    public function setSubjectType(string $subjectType): static
     {
-        $this->subject = $subject;
+        $this->subjectType = $subjectType;
+
+        return $this;
+    }
+
+    public function getSubjectId(): ?int
+    {
+        return $this->subjectId;
+    }
+
+    public function setSubjectId(?int $subjectId): static
+    {
+        $this->subjectId = $subjectId;
 
         return $this;
     }

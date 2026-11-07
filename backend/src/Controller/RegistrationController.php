@@ -87,14 +87,15 @@ class RegistrationController extends AbstractController
                 ->setMajor($form->get('major')->getData())
                 ->setAttendedBefore($form->get('attendedBefore')->getData())
                 // the form can't be submitted without ticking the terms box
-                ->setAgreedToTermsAt($now);
+                ->setAgreedToTermsAt($now)
+                ->setTermsVersion(TermsController::VERSION);
 
             $resume = null;
 
             // The file first, then the rows. The disk isn't part of the transaction,
             // so if saving the rows fails, the file is deleted.
             try {
-                // Organizers dropped resumes, so uploads are off. To turn them back on, uncomment
+                // Resume uploads are off until storage moves off the server. To turn them back on, uncomment
                 // these lines, the resume field in RegistrationFormType and its block in register.html.twig.
                 // /** @var UploadedFile $upload */
                 // $upload = $form->get('resume')->getData();

@@ -71,7 +71,7 @@ class RegistrationFormType extends AbstractType
                     new Assert\NotBlank(),
                     new Assert\Length(min: 8, max:4096),
                     new Assert\Regex(
-                        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9\s])\S+$/',
+                        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S+$/',
                         message: 'Password must contain uppercase, lowercase, a number, and a special character, with no spaces.'
                     ),
                 ]

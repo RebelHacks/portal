@@ -17,8 +17,10 @@ class TeamMember
     #[ORM\JoinColumn(nullable: false)]
     private ?Team $team = null;
 
+    // No cascade: a cascade could delete a team's leader and leave the team with no one in charge.
+    // Deleting a person fails until they leave their team the normal way (hand off, or disband).
     #[ORM\OneToOne]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Application $application = null;
 
     #[ORM\Column]
