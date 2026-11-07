@@ -156,20 +156,16 @@ php -r 'var_export(extension_loaded("pdo_mysql")); echo PHP_EOL;'
 Run this section once, using the empty `portal` database you just created. From `portal/backend`, with MariaDB still running:
 
 ```bash
-php bin/console doctrine:schema:create
+php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --append --no-interaction
 php bin/console doctrine:schema:validate
 ```
 
 Run these commands one at a time and check that each succeeds.
 
-- The first creates the database tables described by the PHP classes in `backend/src/Entity/`.
-- The second loads sample users and teams. The scripts that add this data are called **fixtures**. Loading them can take about a minute; wait for the terminal prompt to return.
+- The first creates the tables by running the **migrations** in `backend/migrations/`. Each migration is one step of changes to the database, and together they build the tables described by the PHP classes in `backend/src/Entity/`.
+- The second loads sample data: the 2027 event, users with applications, and teams. The scripts that add it are called **fixtures**.
 - The third checks that the tables match the PHP classes. Both checks should report `[OK]`.
-
-`doctrine:schema:create` prints a `[CAUTION]` about production. That's expected on your own computer.
-
-Skip `doctrine:migrations:migrate`, even if a Symfony tutorial tells you to run it. The files in `backend/migrations/` are out of date and the command fails partway. If you already ran it, use the rebuild commands in [after pulling new changes](#after-pulling-new-changes).
 
 ### 4. Start the backend
 
@@ -212,17 +208,35 @@ Ctrl+C stops the development server.
 
 ## After pulling new changes
 
-New code can need new packages. After a `git pull`, run `composer install` in `portal/backend`.
+New code can need new packages and database changes. After a `git pull`, run these in `portal/backend`:
 
-If a page then shows a 500 error mentioning an unknown column or table, your tables are older than the code. The sample data is disposable, so rebuild it. From `portal/backend`:
+```bash
+composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+```
+
+If a page then shows a 500 error mentioning an unknown column or table, or the migration fails, your database is older than the migrations. That happens once for everyone who set up before the migrations existed. The sample data is disposable, so rebuild it:
 
 ```bash
 php bin/console doctrine:schema:drop --force --full-database
-php bin/console doctrine:schema:create
+php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --append --no-interaction
 ```
 
-This empties your local `portal` database and reloads the sample users. If you made yourself an admin, repeat that step.
+This empties your local `portal` database and reloads the sample data. If you made yourself an admin, repeat that step.
+
+## Changing the database
+
+When you change a class in `backend/src/Entity/`, add a migration in the same pull request. From `portal/backend`:
+
+```bash
+php bin/console doctrine:migrations:diff
+php bin/console doctrine:migrations:migrate --no-interaction
+```
+
+The first writes a new file in `backend/migrations/` with the SQL for your change. Read it before you commit it: it should only touch what you changed. The second applies it to your database.
+
+Never edit a migration that's already on `main`. Other people's databases have already run it, so fix mistakes with a new migration.
 
 ## Environment variables
 
@@ -235,6 +249,7 @@ These are the settings in `backend/.env`. Keep that file out of Git.
 | `DEFAULT_URI` | Address Symfony uses when generating links from terminal commands |
 | `DATABASE_URL` | Connection details for your MariaDB database |
 | `MAILER_DSN=null://null` | Turns off email delivery |
+| `UPLOAD_DIR` | Optional, and unused while resume uploads are off. Where uploaded resumes are saved. Leave it out locally to use `backend/var/uploads`. On a server, set it to a folder outside the project, so deploys don't wipe it. |
 
 ## Running on a server
 

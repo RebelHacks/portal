@@ -2,15 +2,16 @@
 
 namespace App\Entity;
 
-use App\Repository\TeamRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: TeamRepository::class)]
-#[ORM\Table(name: '`team`')]
-#[ORM\UniqueConstraint(name: 'UNIQ_TEAM_NAME', fields: ['name'])]
+// No project columns: projects live on Devpost.
+// Delete a team in code (members first, then the team). The database won't cascade it,
+// because the team and its leader point at each other.
+#[ORM\Entity]
+#[ORM\UniqueConstraint(name: 'uniq_team_event_name', fields: ['event', 'name'])]
+#[ORM\Index(name: 'idx_team_event_track', fields: ['event', 'track'])]
 class Team
 {
     #[ORM\Id]
@@ -18,40 +19,45 @@ class Team
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 128)]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Event $event = null;
+
+    #[ORM\Column(length: 48)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 32, options: ['default' => 'Unverified'])]
-    private ?string $status = 'Unverified';
+    // one column, so a team can't have two leaders. Empty only while a new team is being saved.
+    #[ORM\OneToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?TeamMember $leader = null;
 
-    #[ORM\Column(length: 32, options: ['default' => 'Software'])]
-    private ?string $track = 'Software';
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Track $track = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $project_name = null;
+    // for the invite link; the leader or an organizer can reset it
+    #[ORM\Column(length: 32, unique: true)]
+    private ?string $inviteCode = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $project_details = null;
-
-    #[ORM\Column(type: Types::JSON, nullable: true)] // dont do this 
-    private ?array $judge_assignments = [];
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
 
     /**
-     * @var Collection<int, User>
+     * @var Collection<int, TeamMember>
      */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'team')]
-    private Collection $users;
+    #[ORM\OneToMany(targetEntity: TeamMember::class, mappedBy: 'team')]
+    private Collection $members;
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->members = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
     }
-
 
     public function getName(): ?string
     {
@@ -65,90 +71,90 @@ class Team
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getInviteCode(): ?string
     {
-        return $this->status;
+        return $this->inviteCode;
     }
 
-    public function setStatus(string $status): static
+    public function setInviteCode(string $inviteCode): static
     {
-        $this->status = $status;
+        $this->inviteCode = $inviteCode;
 
         return $this;
     }
 
-    public function getTrack(): ?string
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): static
+    {
+        $this->event = $event;
+
+        return $this;
+    }
+
+    public function getLeader(): ?TeamMember
+    {
+        return $this->leader;
+    }
+
+    public function setLeader(?TeamMember $leader): static
+    {
+        $this->leader = $leader;
+
+        return $this;
+    }
+
+    public function getTrack(): ?Track
     {
         return $this->track;
     }
 
-    public function setTrack(string $track): static
+    public function setTrack(?Track $track): static
     {
         $this->track = $track;
 
         return $this;
     }
 
-    public function getProjectName(): ?string
-    {
-        return $this->project_name;
-    }
-
-    public function setProjectName(?string $project_name): static
-    {
-        $this->project_name = $project_name;
-
-        return $this;
-    }
-
-    public function getProjectDetails(): ?string
-    {
-        return $this->project_details;
-    }
-
-    public function setProjectDetails(?string $project_details): static
-    {
-        $this->project_details = $project_details;
-
-        return $this;
-    }
-
-    public function getJudgeAssignments(): ?array
-    {
-        return $this->judge_assignments ?? [];
-    }
-
-    public function setJudgeAssignments(?array $judge_assignments): static
-    {
-        $this->judge_assignments = $judge_assignments ?? [];
-
-        return $this;
-    }
-
     /**
-     * @return Collection<int, User>
+     * @return Collection<int, TeamMember>
      */
-    public function getUsers(): Collection
+    public function getMembers(): Collection
     {
-        return $this->users;
+        return $this->members;
     }
 
-    public function addUser(User $user): static
+    public function addMember(TeamMember $member): static
     {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->setTeam($this);
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
+            $member->setTeam($this);
         }
 
         return $this;
     }
 
-    public function removeUser(User $user): static
+    public function removeMember(TeamMember $member): static
     {
-        if ($this->users->removeElement($user)) {
+        if ($this->members->removeElement($member)) {
             // set the owning side to null (unless already changed)
-            if ($user->getTeam() === $this) {
-                $user->setTeam(null);
+            if ($member->getTeam() === $this) {
+                $member->setTeam(null);
             }
         }
 

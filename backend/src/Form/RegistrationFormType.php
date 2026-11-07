@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -75,26 +76,47 @@ class RegistrationFormType extends AbstractType
                     ),
                 ]
             ])
+            // The rest belongs to this year's application, not the account, so it isn't mapped to User.
+            ->add('school', TextType::class, [
+                'mapped' => false,
+                'attr' => ['placeholder' => 'e.g. University of Nevada, Las Vegas', 'autocomplete' => 'organization'],
+                'constraints' => [
+                    new Assert\NotBlank(),
+                    new Assert\Length(max: 128),
+                ]
+            ])
             ->add('major', TextType::class, [
+                'mapped' => false,
                 'attr' => ['placeholder' => 'e.g. Computer Science'],
                 'constraints' => [
                     new Assert\NotBlank(),
-                    new Assert\Length(max: 50),
+                    new Assert\Length(max: 128),
                 ]
             ])
-            ->add('resume', FileType::class, [
-                'label' => 'Resume (PDF)',
+            // Yes or No, not a checkbox: an unticked box can't tell "no" from "skipped".
+            ->add('attendedBefore', ChoiceType::class, [
                 'mapped' => false,
-                'required' => true,
+                'label' => 'Have you been to RebelHacks before?',
+                'choices' => ['Yes' => true, 'No' => false],
+                'expanded' => true,
                 'constraints' => [
-                    new Assert\NotNull(message: 'Please upload your resume.'),
-                    new Assert\File(
-                        maxSize: '10M',
-                        mimeTypes: ['application/pdf'],
-                        mimeTypesMessage: 'Please upload a PDF resume.'
-                    )
+                    new Assert\NotNull(message: 'Please answer yes or no.'),
                 ]
             ])
+            // Resumes are off for now. RegistrationController says how to turn them back on.
+            // ->add('resume', FileType::class, [
+            //     'label' => 'Resume (PDF)',
+            //     'mapped' => false,
+            //     'required' => true,
+            //     'constraints' => [
+            //         new Assert\NotNull(message: 'Please upload your resume.'),
+            //         new Assert\File(
+            //             maxSize: '10M',
+            //             mimeTypes: ['application/pdf'],
+            //             mimeTypesMessage: 'Please upload a PDF resume.'
+            //         )
+            //     ]
+            // ])
             // Only checked at sign-up for now. The new schema stores when they agreed.
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,

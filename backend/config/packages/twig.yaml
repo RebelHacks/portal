@@ -1,5 +1,8 @@
 twig:
     file_name_pattern: '*.twig'
+    # Times are saved in UTC (see Kernel.php). The |date filter shows them in Las Vegas time.
+    date:
+        timezone: 'America/Los_Angeles'
 
 when@test:
     twig:

@@ -2,102 +2,59 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Application;
+use App\Entity\Event;
 use App\Entity\Team;
+use App\Entity\TeamMember;
+use App\Entity\Track;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class TeamFixtures extends Fixture
+// "ZZ Test Team 01" to "25", each with a leader and one member, spread across the tracks.
+class TeamFixtures extends Fixture implements DependentFixtureInterface
 {
-    public const TEST_TEAM_COUNT = 25;
-
-    public const TEST_TEAM_REF_PREFIX = 'zz_test_team_';
-
-    public static function testTeamName(int $number): string
-    {
-        return sprintf('ZZ Test Team %02d', $number);
-    }
-
-    public static function testTeamReference(int $number): string
-    {
-        return self::TEST_TEAM_REF_PREFIX . sprintf('%02d', $number);
-    }
-
     public function load(ObjectManager $manager): void
     {
-        $teamRepository = $manager->getRepository(Team::class);
+        $event = $this->getReference(EventFixtures::EVENT, Event::class);
 
-        $teams = [
-            [
-                'name' => 'Neon Ninjas',
-                'status' => 'Verified',
-                'track' => 'Software',
-                'project_name' => 'GlowFlow',
-                'project_details' => 'Realtime queue tracker for event operations.',
-            ],
-            [
-                'name' => 'Circuit Cowboys',
-                'status' => 'Unverified',
-                'track' => 'Hardware',
-                'project_name' => 'VoltVault',
-                'project_details' => 'Battery health dashboard and alerting.',
-            ],
-            [
-                'name' => 'Desert Debuggers',
-                'status' => 'Verified',
-                'track' => 'Software',
-                'project_name' => 'Dune Deploy',
-                'project_details' => 'Deploy monitor for student hackathon projects.',
-            ],
-            [
-                'name' => 'Byte Bandits',
-                'status' => 'Unverified',
-                'track' => 'Hardware',
-                'project_name' => null,
-                'project_details' => null,
-            ],
-        ];
+        for ($i = 1; $i <= UserFixtures::TEST_TEAM_COUNT; $i++) {
+            $trackName = EventFixtures::TRACKS[$i % count(EventFixtures::TRACKS)];
+            $track = $this->getReference('track_' . $trackName, Track::class);
 
-        foreach ($teams as $item) {
-            $existing = $teamRepository->findOneBy(['name' => $item['name']]);
-            if ($existing !== null) {
-                continue;
+            $team = (new Team())
+                ->setEvent($event)
+                ->setName(sprintf('ZZ Test Team %02d', $i))
+                ->setTrack($track)
+                ->setInviteCode(bin2hex(random_bytes(8)));
+            $manager->persist($team);
+
+            $allBeginners = true;
+            foreach (['lead', 'member'] as $kind) {
+                $application = $this->getReference(UserFixtures::applicationReference($i, $kind), Application::class);
+                $allBeginners = $allBeginners && $application->isBeginner();
+
+                $member = (new TeamMember())
+                    ->setApplication($application);
+                $team->addMember($member);
+                $manager->persist($member);
+
+                if ($kind === 'lead') {
+                    $team->setLeader($member);
+                }
             }
 
-            $manager->persist(
-                (new Team())
-                    ->setName($item['name'])
-                    ->setStatus($item['status'])
-                    ->setTrack($item['track'])
-                    ->setProjectName($item['project_name'])
-                    ->setProjectDetails($item['project_details'])
-                    ->setJudgeAssignments([
-                        'r1' => [],
-                        'r2' => [],
-                    ])
-            );
-        }
-
-        for ($i = 1; $i <= self::TEST_TEAM_COUNT; $i++) {
-            $track = $i % 2 === 0 ? 'Hardware' : 'Software';
-            $teamName = self::testTeamName($i);
-            $team = $teamRepository->findOneBy(['name' => $teamName]);
-            if ($team === null) {
-                $team = (new Team())
-                    ->setName($teamName)
-                    ->setStatus('Verified')
-                    ->setTrack($track)
-                    ->setProjectName(sprintf('Fixture Project %02d', $i))
-                    ->setProjectDetails('Fixture team for judge assignment testing.')
-                    ->setJudgeAssignments([
-                        'r1' => [],
-                        'r2' => [],
-                    ]);
-                $manager->persist($team);
+            // The rule the app follows too: anyone who's been before keeps the team out of Beginner.
+            if ($track->isBeginnersOnly() && !$allBeginners) {
+                $team->setTrack($track->getFallbackTrack());
             }
-
-            $this->addReference(self::testTeamReference($i), $team);
         }
 
         $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [UserFixtures::class];
     }
 }

@@ -86,8 +86,34 @@
                     Hackathon Information
                 </h2>
 
+                {{ fields.input(registrationForm.school, inputClass) }}
+
                 {{ fields.input(registrationForm.major, inputClass) }}
 
+                <fieldset>
+                    <legend class="mb-2 block text-sm font-medium">
+                        {{ registrationForm.attendedBefore.vars.label }}
+                    </legend>
+
+                    <div class="flex gap-6 text-sm">
+                        {% for choice in registrationForm.attendedBefore %}
+                            <label class="flex items-center gap-2">
+                                {{ form_widget(choice, {
+                                    attr: {
+                                        class: 'h-4 w-4 accent-[#ff7f50]'
+                                    }
+                                }) }}
+                                {{ choice.vars.label }}
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-1 text-sm text-red-300">
+                        {{ form_errors(registrationForm.attendedBefore) }}
+                    </div>
+                </fieldset>
+
+                {# Resumes are off for now. RegistrationController says how to turn them back on.
                 <div>
                     {{ form_label(registrationForm.resume, null, {
                         label_attr: {
@@ -110,6 +136,7 @@
                         {{ form_errors(registrationForm.resume) }}
                     </div>
                 </div>
+                #}
             </section>
 
             <div>
