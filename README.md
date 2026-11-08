@@ -215,7 +215,7 @@ composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 ```
 
-If a page then shows a 500 error mentioning an unknown column or table, or the migration fails, your database is older than the migrations. That happens once for everyone who set up before the migrations existed. The sample data is disposable, so rebuild it:
+If a page then shows a 500 error mentioning an unknown column or table, or the migration fails, your database is older than the migrations. That happens once for everyone who set up before the new schema in November 2026, because its migration replaced the old one. The sample data is disposable, so rebuild it:
 
 ```bash
 php bin/console doctrine:schema:drop --force --full-database
@@ -264,7 +264,7 @@ The settings above are for your own computer. On a server other people can reach
 | Path | Purpose |
 | --- | --- |
 | `backend/templates/` | The pages, written in Twig |
-| `backend/src/Controller/` | Handles page and API requests |
+| `backend/src/Controller/` | Handles page requests |
 | `backend/src/Entity/` | PHP classes that describe the database tables |
 | `backend/src/DataFixtures/` | Scripts that create sample users and teams |
 | `backend/config/packages/security.yaml` | Login and access rules |
