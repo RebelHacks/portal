@@ -4,7 +4,7 @@ namespace App\DataFixtures;
 
 use App\Controller\TermsController;
 use App\Entity\Application;
-use App\Entity\Event;
+use App\Entity\Hackathon;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -23,7 +23,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
 
     public function load(ObjectManager $manager): void
     {
-        $event = $this->getReference(EventFixtures::EVENT, Event::class);
+        $hackathon = $this->getReference(HackathonFixtures::HACKATHON, Hackathon::class);
 
         // hash once: the same password for everyone, and hashing 61 times takes a minute
         $hash = $this->passwordHasher->hashPassword(new User(), 'password');
@@ -41,7 +41,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
 
         foreach ($hackers as $i => [$firstName, $lastName, $email, $major]) {
             $user = $this->user($manager, $firstName, $lastName, $email, $hash);
-            $this->application($manager, $user, $event, $major, $i % 2 === 0);
+            $this->application($manager, $user, $hackathon, $major, $i % 2 === 0);
         }
 
         for ($i = 1; $i <= self::TEST_TEAM_COUNT; $i++) {
@@ -49,7 +49,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
 
             foreach (['lead' => 'Lead', 'member' => 'Member'] as $kind => $lastName) {
                 $user = $this->user($manager, sprintf('ZZ Team %s', $number), $lastName, sprintf('zz.team.%s.%s@demo.com', $number, $kind), $hash);
-                $application = $this->application($manager, $user, $event, 'Computer Science', $i % 3 === 0);
+                $application = $this->application($manager, $user, $hackathon, 'Computer Science', $i % 3 === 0);
                 $this->addReference(self::applicationReference($i, $kind), $application);
             }
         }
@@ -69,7 +69,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
 
     public function getDependencies(): array
     {
-        return [EventFixtures::class];
+        return [HackathonFixtures::class];
     }
 
     private function user(ObjectManager $manager, string $firstName, string $lastName, string $email, string $hash): User
@@ -85,11 +85,11 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         return $user;
     }
 
-    private function application(ObjectManager $manager, User $user, Event $event, string $major, bool $attendedBefore): Application
+    private function application(ObjectManager $manager, User $user, Hackathon $hackathon, string $major, bool $attendedBefore): Application
     {
         $application = (new Application())
             ->setUser($user)
-            ->setEvent($event)
+            ->setHackathon($hackathon)
             ->setSchool('University of Nevada, Las Vegas')
             ->setMajor($major)
             ->setAttendedBefore($attendedBefore)

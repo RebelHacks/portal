@@ -2,23 +2,37 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Event;
+use App\Entity\Hackathon;
+use App\Entity\ScheduleItem;
 use App\Entity\Track;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
 // RebelHacks 2027, with sign-ups open so local testing works.
-class EventFixtures extends Fixture
+class HackathonFixtures extends Fixture
 {
-    public const EVENT = 'event';
+    public const HACKATHON = 'hackathon';
 
     // Only Beginner is public. The other tracks stay secret until they're announced,
     // so they don't get real names here.
     public const TRACKS = ['Beginner', 'Example Track 1', 'Example Track 2', 'Example Track 3'];
 
+    // A sample schedule, not the real one: title, start, end (empty for a moment), location.
+    private const SCHEDULE = [
+        ['Check-in', '2027-02-20 09:00', '2027-02-20 10:00', 'SEB Auditorium'],
+        ['Opening ceremony', '2027-02-20 10:00', '2027-02-20 11:00', 'SEB Auditorium'],
+        ['Hacking starts', '2027-02-20 11:00', null, null],
+        ['Lunch', '2027-02-20 12:30', '2027-02-20 13:30', null],
+        ['Dinner', '2027-02-20 18:30', '2027-02-20 19:30', null],
+        ['Breakfast', '2027-02-21 08:00', '2027-02-21 09:00', null],
+        ['Hacking ends', '2027-02-21 11:00', null, null],
+        ['Judging', '2027-02-21 11:30', '2027-02-21 14:30', null],
+        ['Closing ceremony', '2027-02-21 16:30', '2027-02-21 17:30', 'SEB Auditorium'],
+    ];
+
     public function load(ObjectManager $manager): void
     {
-        $event = (new Event())
+        $hackathon = (new Hackathon())
             ->setName('RebelHacks 2027')
             ->setStartsAt(self::vegasTime('2027-02-20 09:00'))
             ->setEndsAt(self::vegasTime('2027-02-21 18:00'))
@@ -26,13 +40,13 @@ class EventFixtures extends Fixture
             ->setRegistrationClosesAt(self::vegasTime('2027-02-19 23:59'))
             ->setMaxTeamSize(5)
             ->setCapacity(200);
-        $manager->persist($event);
-        $this->addReference(self::EVENT, $event);
+        $manager->persist($hackathon);
+        $this->addReference(self::HACKATHON, $hackathon);
 
         $tracks = [];
         foreach (self::TRACKS as $name) {
             $track = (new Track())
-                ->setEvent($event)
+                ->setHackathon($hackathon)
                 ->setName($name)
                 ->setDescription($name === 'Beginner' ? 'For participants attending their first RebelHacks event' : null);
             $manager->persist($track);
@@ -43,6 +57,15 @@ class EventFixtures extends Fixture
         $tracks['Beginner']
             ->setBeginnersOnly(true)
             ->setFallbackTrack($tracks['Example Track 1']);
+
+        foreach (self::SCHEDULE as [$title, $startsAt, $endsAt, $location]) {
+            $manager->persist((new ScheduleItem())
+                ->setHackathon($hackathon)
+                ->setTitle($title)
+                ->setStartsAt(self::vegasTime($startsAt))
+                ->setEndsAt($endsAt !== null ? self::vegasTime($endsAt) : null)
+                ->setLocation($location));
+        }
 
         $manager->flush();
     }

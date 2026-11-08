@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Application;
-use App\Entity\Event;
+use App\Entity\Hackathon;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -18,8 +18,8 @@ class ApplicationRepository extends ServiceEntityRepository
         parent::__construct($registry, Application::class);
     }
 
-    public function findForUserAtEvent(User $user, Event $event): ?Application
+    public function findForUserAtHackathon(User $user, Hackathon $hackathon): ?Application
     {
-        return $this->findOneBy(['user' => $user, 'event' => $event]);
+        return $this->findOneBy(['user' => $user, 'hackathon' => $hackathon]);
     }
 }

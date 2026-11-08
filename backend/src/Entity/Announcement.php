@@ -15,7 +15,7 @@ class Announcement
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Event $event = null;
+    private ?Hackathon $hackathon = null;
 
     // kept if the organizer's account is deleted
     #[ORM\ManyToOne]
@@ -57,14 +57,14 @@ class Announcement
         return $this;
     }
 
-    public function getEvent(): ?Event
+    public function getHackathon(): ?Hackathon
     {
-        return $this->event;
+        return $this->hackathon;
     }
 
-    public function setEvent(?Event $event): static
+    public function setHackathon(?Hackathon $hackathon): static
     {
-        $this->event = $event;
+        $this->hackathon = $hackathon;
 
         return $this;
     }

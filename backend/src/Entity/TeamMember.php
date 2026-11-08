@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-// The application is unique, so a person is on at most one team per event, and only people who applied can join.
+// The application is unique, so a person is on at most one team per hackathon, and only people who applied can join.
 #[ORM\Entity]
 class TeamMember
 {

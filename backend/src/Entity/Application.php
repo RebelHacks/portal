@@ -6,10 +6,10 @@ use App\Enum\ApplicationStatus;
 use App\Repository\ApplicationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-// One person applying to one event.
+// One person applying to one hackathon.
 #[ORM\Entity(repositoryClass: ApplicationRepository::class)]
-#[ORM\UniqueConstraint(name: 'uniq_application_user_event', fields: ['user', 'event'])]
-#[ORM\Index(name: 'idx_application_event_status', fields: ['event', 'status'])]
+#[ORM\UniqueConstraint(name: 'uniq_application_user_hackathon', fields: ['user', 'hackathon'])]
+#[ORM\Index(name: 'idx_application_hackathon_status', fields: ['hackathon', 'status'])]
 class Application
 {
     #[ORM\Id]
@@ -23,7 +23,7 @@ class Application
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Event $event = null;
+    private ?Hackathon $hackathon = null;
 
     #[ORM\Column(length: 16, enumType: ApplicationStatus::class)]
     private ApplicationStatus $status = ApplicationStatus::Submitted;
@@ -211,14 +211,14 @@ class Application
         return $this;
     }
 
-    public function getEvent(): ?Event
+    public function getHackathon(): ?Hackathon
     {
-        return $this->event;
+        return $this->hackathon;
     }
 
-    public function setEvent(?Event $event): static
+    public function setHackathon(?Hackathon $hackathon): static
     {
-        $this->event = $event;
+        $this->hackathon = $hackathon;
 
         return $this;
     }

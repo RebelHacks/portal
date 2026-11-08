@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 // Every team is in the grand prize automatically, so it isn't a track.
 #[ORM\Entity]
-#[ORM\UniqueConstraint(name: 'uniq_track_event_name', fields: ['event', 'name'])]
+#[ORM\UniqueConstraint(name: 'uniq_track_hackathon_name', fields: ['hackathon', 'name'])]
 class Track
 {
     #[ORM\Id]
@@ -16,7 +16,7 @@ class Track
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Event $event = null;
+    private ?Hackathon $hackathon = null;
 
     #[ORM\Column(length: 64)]
     private ?string $name = null;
@@ -63,14 +63,14 @@ class Track
         return $this;
     }
 
-    public function getEvent(): ?Event
+    public function getHackathon(): ?Hackathon
     {
-        return $this->event;
+        return $this->hackathon;
     }
 
-    public function setEvent(?Event $event): static
+    public function setHackathon(?Hackathon $hackathon): static
     {
-        $this->event = $event;
+        $this->hackathon = $hackathon;
 
         return $this;
     }

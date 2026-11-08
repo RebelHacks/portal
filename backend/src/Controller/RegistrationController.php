@@ -7,7 +7,7 @@ use App\Entity\User;
 use App\Enum\FileKind;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
-use App\Service\CurrentEvent;
+use App\Service\CurrentHackathon;
 use App\Service\UploadStorage;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,20 +33,20 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
         RateLimiterFactoryInterface $registrationLimiter,
-        CurrentEvent $currentEvent,
+        CurrentHackathon $currentHackathon,
         UploadStorage $uploads,
     ): Response {
         if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('app_lobby');
         }
 
-        // An application belongs to an event, and only while its registration is open.
-        $event = $currentEvent->get();
+        // An application belongs to a hackathon, and only while its registration is open.
+        $hackathon = $currentHackathon->get();
         $now = new \DateTimeImmutable();
 
-        if ($event === null || !$event->isRegistrationOpen($now)) {
+        if ($hackathon === null || !$hackathon->isRegistrationOpen($now)) {
             return $this->render('registration/not_open.html.twig', [
-                'event' => $event,
+                'hackathon' => $hackathon,
                 'now' => $now,
             ]);
         }
@@ -82,7 +82,7 @@ class RegistrationController extends AbstractController
 
             $application = (new Application())
                 ->setUser($user)
-                ->setEvent($event)
+                ->setHackathon($hackathon)
                 ->setSchool($form->get('school')->getData())
                 ->setMajor($form->get('major')->getData())
                 ->setAttendedBefore($form->get('attendedBefore')->getData())

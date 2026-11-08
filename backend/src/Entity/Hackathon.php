@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\EventRepository;
+use App\Repository\HackathonRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-// One RebelHacks. The current one is the event that starts last (see CurrentEvent).
-#[ORM\Entity(repositoryClass: EventRepository::class)]
-#[ORM\Index(name: 'idx_event_starts_at', fields: ['startsAt'])]
-class Event
+// One RebelHacks. The current one is the one that starts last (see CurrentHackathon).
+#[ORM\Entity(repositoryClass: HackathonRepository::class)]
+#[ORM\Index(name: 'idx_hackathon_starts_at', fields: ['startsAt'])]
+class Hackathon
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

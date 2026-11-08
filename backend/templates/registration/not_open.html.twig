@@ -5,19 +5,19 @@
 {% block body %}
     <main class="min-h-screen px-4 py-10">
         <div class="mx-auto w-full max-w-lg rounded-2xl bg-[#0f2c44] p-6 text-center text-white shadow-2xl sm:p-8">
-            {% if event and now < event.registrationOpensAt %}
+            {% if hackathon and now < hackathon.registrationOpensAt %}
                 <h1 class="text-3xl font-bold">
                     Registration opens soon
                 </h1>
                 <p class="mt-4 text-gray-300">
-                    Sign-ups for {{ event.name }} open {{ event.registrationOpensAt|date('l, F j \\a\\t g:i A') }}, Las Vegas time.
+                    Sign-ups for {{ hackathon.name }} open {{ hackathon.registrationOpensAt|date('l, F j \\a\\t g:i A') }}, Las Vegas time.
                 </p>
-            {% elseif event %}
+            {% elseif hackathon %}
                 <h1 class="text-3xl font-bold">
                     Registration is closed
                 </h1>
                 <p class="mt-4 text-gray-300">
-                    Sign-ups for {{ event.name }} have closed.
+                    Sign-ups for {{ hackathon.name }} have closed.
                 </p>
             {% else %}
                 <h1 class="text-3xl font-bold">

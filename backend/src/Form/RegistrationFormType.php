@@ -52,7 +52,9 @@ class RegistrationFormType extends AbstractType
                     new Assert\Regex(
                         pattern: '/@(?:[a-z0-9-]+\.)+edu$/i',
                         message: 'Please use a university email address ending in .edu.'
-                    )
+                    ),
+                    // the most user.email holds
+                    new Assert\Length(max: 180),
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [

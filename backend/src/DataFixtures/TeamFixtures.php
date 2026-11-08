@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Application;
-use App\Entity\Event;
+use App\Entity\Hackathon;
 use App\Entity\Team;
 use App\Entity\TeamMember;
 use App\Entity\Track;
@@ -16,14 +16,14 @@ class TeamFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $event = $this->getReference(EventFixtures::EVENT, Event::class);
+        $hackathon = $this->getReference(HackathonFixtures::HACKATHON, Hackathon::class);
 
         for ($i = 1; $i <= UserFixtures::TEST_TEAM_COUNT; $i++) {
-            $trackName = EventFixtures::TRACKS[$i % count(EventFixtures::TRACKS)];
+            $trackName = HackathonFixtures::TRACKS[$i % count(HackathonFixtures::TRACKS)];
             $track = $this->getReference('track_' . $trackName, Track::class);
 
             $team = (new Team())
-                ->setEvent($event)
+                ->setHackathon($hackathon)
                 ->setName(sprintf('ZZ Test Team %02d', $i))
                 ->setTrack($track)
                 ->setInviteCode(bin2hex(random_bytes(8)));

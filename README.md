@@ -164,7 +164,7 @@ php bin/console doctrine:schema:validate
 Run these commands one at a time and check that each succeeds.
 
 - The first creates the tables by running the **migrations** in `backend/migrations/`. Each migration is one step of changes to the database, and together they build the tables described by the PHP classes in `backend/src/Entity/`.
-- The second loads sample data: the 2027 event, users with applications, and teams. The scripts that add it are called **fixtures**.
+- The second loads sample data: RebelHacks 2027 with a sample schedule, users with applications, and teams. The scripts that add it are called **fixtures**.
 - The third checks that the tables match the PHP classes. Both checks should report `[OK]`.
 
 ### 4. Start the backend

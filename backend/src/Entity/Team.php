@@ -10,8 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 // Delete a team in code (members first, then the team). The database won't cascade it,
 // because the team and its leader point at each other.
 #[ORM\Entity]
-#[ORM\UniqueConstraint(name: 'uniq_team_event_name', fields: ['event', 'name'])]
-#[ORM\Index(name: 'idx_team_event_track', fields: ['event', 'track'])]
+#[ORM\UniqueConstraint(name: 'uniq_team_hackathon_name', fields: ['hackathon', 'name'])]
+#[ORM\Index(name: 'idx_team_hackathon_track', fields: ['hackathon', 'track'])]
 class Team
 {
     #[ORM\Id]
@@ -21,8 +21,9 @@ class Team
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Event $event = null;
+    private ?Hackathon $hackathon = null;
 
+    // TODO: settle the limit when the team card is designed. The team form has to check the same length.
     #[ORM\Column(length: 48)]
     private ?string $name = null;
 
@@ -95,14 +96,14 @@ class Team
         return $this;
     }
 
-    public function getEvent(): ?Event
+    public function getHackathon(): ?Hackathon
     {
-        return $this->event;
+        return $this->hackathon;
     }
 
-    public function setEvent(?Event $event): static
+    public function setHackathon(?Hackathon $hackathon): static
     {
-        $this->event = $event;
+        $this->hackathon = $hackathon;
 
         return $this;
     }

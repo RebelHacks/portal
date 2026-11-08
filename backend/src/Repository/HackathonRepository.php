@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\Event;
+use App\Entity\Hackathon;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Event>
+ * @extends ServiceEntityRepository<Hackathon>
  */
-class EventRepository extends ServiceEntityRepository
+class HackathonRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Event::class);
+        parent::__construct($registry, Hackathon::class);
     }
 
-    // The current event is the one that starts last.
-    public function findCurrent(): ?Event
+    // The current hackathon is the one that starts last.
+    public function findCurrent(): ?Hackathon
     {
         return $this->createQueryBuilder('e')
             ->orderBy('e.startsAt', 'DESC')
