@@ -94,7 +94,8 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
             ->setMajor($major)
             ->setAttendedBefore($attendedBefore)
             ->setAgreedToTermsAt(new \DateTimeImmutable())
-            ->setTermsVersion(TermsController::VERSION);
+            ->setTermsVersion(TermsController::VERSION)
+            ->setShareResumeWithSponsors(true);
         $manager->persist($application);
 
         return $application;

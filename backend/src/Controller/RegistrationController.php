@@ -88,7 +88,9 @@ class RegistrationController extends AbstractController
                 ->setAttendedBefore($form->get('attendedBefore')->getData())
                 // the form can't be submitted without ticking the terms box
                 ->setAgreedToTermsAt($now)
-                ->setTermsVersion(TermsController::VERSION);
+                ->setTermsVersion(TermsController::VERSION)
+                // The current terms include sharing. If it gets its own checkbox, read the box here.
+                ->setShareResumeWithSponsors(true);
 
             $resume = null;
 

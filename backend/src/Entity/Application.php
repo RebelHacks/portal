@@ -53,6 +53,10 @@ class Application
     #[ORM\Column(length: 32)]
     private ?string $termsVersion = null;
 
+    // Organizers only send sponsors the resumes where this is yes.
+    #[ORM\Column(options: ['default' => false])]
+    private bool $shareResumeWithSponsors = false;
+
     #[ORM\Column]
     private \DateTimeImmutable $submittedAt;
 
@@ -155,6 +159,18 @@ class Application
     public function setTermsVersion(string $termsVersion): static
     {
         $this->termsVersion = $termsVersion;
+
+        return $this;
+    }
+
+    public function isShareResumeWithSponsors(): bool
+    {
+        return $this->shareResumeWithSponsors;
+    }
+
+    public function setShareResumeWithSponsors(bool $shareResumeWithSponsors): static
+    {
+        $this->shareResumeWithSponsors = $shareResumeWithSponsors;
 
         return $this;
     }
