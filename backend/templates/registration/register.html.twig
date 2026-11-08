@@ -112,6 +112,25 @@
                 </div>
             </section>
 
+            <div>
+                <div class="flex items-start gap-3 text-sm">
+                    {{ form_widget(registrationForm.agreeTerms, {
+                        attr: {
+                            class: 'mt-1 h-4 w-4 accent-[#ff7f50]'
+                        }
+                    }) }}
+
+                    {# opens in a new tab so the form keeps what they typed #}
+                    {{ form_label(registrationForm.agreeTerms, 'I agree to the <a href="' ~ path('app_terms') ~ '" target="_blank" class="text-cyan-400 underline">registration terms</a>', {
+                        label_html: true
+                    }) }}
+                </div>
+
+                <div class="mt-1 text-sm text-red-300">
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                </div>
+            </div>
+
             <button
                 type="submit"
                 class="w-full rounded-lg border-2 border-[#ff7f50] p-4 text-lg font-bold text-[#ff7f50] transition hover:bg-[#ff7f50] hover:text-[#0d1b2a]"

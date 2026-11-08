@@ -12,15 +12,9 @@ class LobbyController extends AbstractController
     #[Route('/lobby', name: 'app_lobby', methods: ['GET'])]
     public function index(): Response
     {
+        // Visitors without a session never get here: access_control sends them to log in.
+        /** @var User $user */
         $user = $this->getUser();
-
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY') || !($user instanceof User)) {
-            return $this->render(
-                'bundles/TwigBundle/Exception/error404.html.twig',
-                [],
-                new Response(status: Response::HTTP_NOT_FOUND),
-            );
-        }
 
         $name = trim(sprintf(
             '%s %s',
