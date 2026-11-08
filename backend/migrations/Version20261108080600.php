@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20261108064452 extends AbstractMigration
+final class Version20261108080600 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -37,7 +37,7 @@ final class Version20261108064452 extends AbstractMigration
         $this->addSql('ALTER TABLE application ADD CONSTRAINT FK_A45BDDC1996D90CF FOREIGN KEY (hackathon_id) REFERENCES hackathon (id)');
         $this->addSql('ALTER TABLE application ADD CONSTRAINT FK_A45BDDC1D262AF09 FOREIGN KEY (resume_id) REFERENCES file (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE audit_log ADD CONSTRAINT FK_F6E1C0F510DAF24A FOREIGN KEY (actor_id) REFERENCES user (id)');
-        $this->addSql('ALTER TABLE file ADD CONSTRAINT FK_8C9F36107E3C61F9 FOREIGN KEY (owner_id) REFERENCES user (id)');
+        $this->addSql('ALTER TABLE file ADD CONSTRAINT FK_8C9F36107E3C61F9 FOREIGN KEY (owner_id) REFERENCES user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE schedule_item ADD CONSTRAINT FK_FF530545996D90CF FOREIGN KEY (hackathon_id) REFERENCES hackathon (id)');
         $this->addSql('ALTER TABLE team ADD CONSTRAINT FK_C4E0A61F996D90CF FOREIGN KEY (hackathon_id) REFERENCES hackathon (id)');
         $this->addSql('ALTER TABLE team ADD CONSTRAINT FK_C4E0A61F73154ED4 FOREIGN KEY (leader_id) REFERENCES team_member (id) ON DELETE SET NULL');

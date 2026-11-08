@@ -258,6 +258,7 @@ The settings above are for your own computer. On a server other people can reach
 - Set `APP_ENV=prod` and `APP_DEBUG=0`. In development mode, anyone can open Symfony's debug pages, and they show every secret.
 - Generate a new `APP_SECRET`. Never reuse your local one.
 - If the server sits behind a proxy or load balancer, set Symfony's trusted proxies. Otherwise every visitor looks like the same address and shares one sign-up and login limit.
+- Run `php bin/console app:sweep-files` once a day, for example from cron. Deleting an account deletes its file rows, and this removes the stored files they leave behind. `--dry-run` lists them without deleting.
 
 ## Quick Links
 

@@ -11,6 +11,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 // Saves uploads outside public/ under a random name. The name the browser sent is only kept in the database.
 class UploadStorage
 {
+    // What save() names files. Anything else in the folder isn't ours, so the cleanup leaves it alone.
+    private const STORED_NAME = '/^[0-9a-f]{32}\.[a-z0-9]+$/';
+
     public function __construct(
         #[Autowire('%app.upload_dir%')]
         private string $uploadDir,
@@ -46,5 +49,32 @@ class UploadStorage
         if (is_file($path)) {
             unlink($path);
         }
+    }
+
+    // Deletes stored files older than $cutoff whose names aren't in $keep, and returns their names.
+    // Nothing chooses a name to delete: it only ever removes files the portal itself named.
+    /** @param array<string, true> $keep @return list<string> */
+    public function sweep(array $keep, \DateTimeImmutable $cutoff, bool $dryRun): array
+    {
+        if (!is_dir($this->uploadDir)) {
+            return [];
+        }
+
+        $deleted = [];
+
+        foreach (new \FilesystemIterator($this->uploadDir) as $entry) {
+            $name = $entry->getFilename();
+
+            if (!$entry->isFile() || !preg_match(self::STORED_NAME, $name) || isset($keep[$name]) || $entry->getMTime() > $cutoff->getTimestamp()) {
+                continue;
+            }
+
+            if (!$dryRun) {
+                unlink($entry->getPathname());
+            }
+            $deleted[] = $name;
+        }
+
+        return $deleted;
     }
 }
