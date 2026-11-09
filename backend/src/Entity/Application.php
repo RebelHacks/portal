@@ -53,15 +53,15 @@ class Application
     #[ORM\Column(length: 32)]
     private ?string $termsVersion = null;
 
-    // Organizers only send sponsors the resumes where this is yes.
-    #[ORM\Column(options: ['default' => false])]
-    private bool $shareResumeWithSponsors = false;
-
     #[ORM\Column]
     private \DateTimeImmutable $submittedAt;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $checkedInAt = null;
+
+    // UNLV's liability waiver. How it gets signed is still being settled with Student Involvement.
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $waiverSignedAt = null;
 
     public function __construct()
     {
@@ -163,18 +163,6 @@ class Application
         return $this;
     }
 
-    public function isShareResumeWithSponsors(): bool
-    {
-        return $this->shareResumeWithSponsors;
-    }
-
-    public function setShareResumeWithSponsors(bool $shareResumeWithSponsors): static
-    {
-        $this->shareResumeWithSponsors = $shareResumeWithSponsors;
-
-        return $this;
-    }
-
     public function getSubmittedAt(): ?\DateTimeImmutable
     {
         return $this->submittedAt;
@@ -195,6 +183,18 @@ class Application
     public function setCheckedInAt(?\DateTimeImmutable $checkedInAt): static
     {
         $this->checkedInAt = $checkedInAt;
+
+        return $this;
+    }
+
+    public function getWaiverSignedAt(): ?\DateTimeImmutable
+    {
+        return $this->waiverSignedAt;
+    }
+
+    public function setWaiverSignedAt(?\DateTimeImmutable $waiverSignedAt): static
+    {
+        $this->waiverSignedAt = $waiverSignedAt;
 
         return $this;
     }

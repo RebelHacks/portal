@@ -39,7 +39,7 @@ class HackathonFixtures extends Fixture
             ->setRegistrationOpensAt(new \DateTimeImmutable('-1 day'))
             ->setRegistrationClosesAt(self::vegasTime('2027-02-19 23:59'))
             ->setMaxTeamSize(5)
-            ->setCapacity(200);
+            ->setCapacity(300);
         $manager->persist($hackathon);
         $this->addReference(self::HACKATHON, $hackathon);
 

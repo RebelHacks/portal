@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-// No project columns: projects live on Devpost.
+// The project's details are on Submission; the project itself is judged on Devpost.
 // Delete a team in code (members first, then the team). The database won't cascade it,
 // because the team and its leader point at each other.
 #[ORM\Entity]

@@ -88,17 +88,16 @@ class RegistrationController extends AbstractController
                 ->setAttendedBefore($form->get('attendedBefore')->getData())
                 // the form can't be submitted without ticking the terms box
                 ->setAgreedToTermsAt($now)
-                ->setTermsVersion(TermsController::VERSION)
-                // The current terms include sharing. If it gets its own checkbox, read the box here.
-                ->setShareResumeWithSponsors(true);
+                ->setTermsVersion(TermsController::VERSION);
 
             $resume = null;
 
             // The file first, then the rows. The disk isn't part of the transaction,
             // so if saving the rows fails, the file is deleted.
             try {
-                // Resume uploads are off until storage moves off the server. To turn them back on, uncomment
-                // these lines, the resume field in RegistrationFormType and its block in register.html.twig.
+                // A resume is required (decided November 8, 2026), but the upload stays off until files go to
+                // S3 instead of the server. Turning it on: uncomment these lines, the resume field in
+                // RegistrationFormType and its block in register.html.twig.
                 // /** @var UploadedFile $upload */
                 // $upload = $form->get('resume')->getData();
                 // $resume = $uploads->save($upload, $user, FileKind::Resume);

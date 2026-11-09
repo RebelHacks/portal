@@ -105,7 +105,7 @@ class RegistrationFormType extends AbstractType
                     new Assert\NotNull(message: 'Please answer yes or no.'),
                 ]
             ])
-            // Resumes are off for now. RegistrationController says how to turn them back on.
+            // Required once uploads go to S3. RegistrationController says how to turn it on.
             // ->add('resume', FileType::class, [
             //     'label' => 'Resume (PDF)',
             //     'mapped' => false,
