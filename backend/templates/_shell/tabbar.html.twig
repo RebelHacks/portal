@@ -1,0 +1,26 @@
+{# Phones: the sidebar becomes a tab bar along the bottom. Hackers only; judges and organizers get the desktop sidebar's pages through Home. #}
+{% set section = section|default('home') %}
+{% if is_granted('ROLE_ADMIN') %}
+<nav class="tabbar" aria-label="Portal">
+    <a href="{{ path('app_organizer') }}" style="--c: var(--red)"{% if section == 'home' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Home</a>
+    <a href="{{ path('app_organizer_people') }}" style="--c: var(--blue)"{% if section == 'people' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>People</a>
+    <a href="{{ path('app_organizer_teams') }}" style="--c: var(--blue)"{% if section == 'teams' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Teams</a>
+    <a href="{{ path('app_organizer_checkin') }}" style="--c: var(--gold)"{% if section == 'checkin' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Check-in</a>
+    <a href="{{ path('app_map') }}" style="--c: var(--ink-soft)"{% if section == 'map' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Map</a>
+</nav>
+{% elseif is_granted('ROLE_JUDGE') %}
+<nav class="tabbar" aria-label="Portal" style="grid-template-columns: repeat(4, 1fr)">
+    <a href="{{ path('app_judge') }}" style="--c: var(--red)"{% if section == 'home' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Home</a>
+    <a href="{{ path('app_judge_teams') }}" style="--c: var(--gold)"{% if section == 'my-teams' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>My teams</a>
+    <a href="{{ path('app_judge_rubric') }}" style="--c: var(--black)"{% if section == 'rubric' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Rubric</a>
+    <a href="{{ path('app_map') }}" style="--c: var(--ink-soft)"{% if section == 'map' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Map</a>
+</nav>
+{% else %}
+<nav class="tabbar" aria-label="Portal">
+    <a href="{{ path('app_lobby') }}" style="--c: var(--red)"{% if section == 'home' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Home</a>
+    <a href="{{ path('app_team') }}" style="--c: var(--blue)"{% if section == 'team' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Team</a>
+    <a href="{{ path('app_schedule') }}" style="--c: var(--gold)"{% if section == 'schedule' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Schedule</a>
+    <a href="{{ path('app_submission') }}" style="--c: var(--black)"{% if section == 'submission' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Submit</a>
+    <a href="{{ path('app_map') }}" style="--c: var(--ink-soft)"{% if section == 'map' %} aria-current="page"{% endif %}><svg><use href="#hex" /></svg>Map</a>
+</nav>
+{% endif %}

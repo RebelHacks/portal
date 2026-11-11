@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+{% set section = 'schedule' %}
+
+{% block title %}Schedule{% endblock %}
+
+{% block body %}
+<div class="grid">
+    {% if items is empty %}
+        <section class="panel span-12" style="--c: var(--gold); --on-c: #141414"><div class="panel-body"><p class="meta">The schedule isn't posted yet.</p></div></section>
+    {% else %}
+        {% set first = items|first %}
+        {% set last = items|last %}
+        {# the line runs from the first item to one hour past the last; --h is hours from the start #}
+        {% set start = first.startsAt.timestamp %}
+        {% set hours = max(1, ((last.startsAt.timestamp - start) / 3600) + 1) %}
+        {% set nowH = (now.timestamp - start) / 3600 %}
+        <section class="panel span-12" style="--c: var(--gold); --on-c: #141414">
+            <header class="panel-tab"><h2>The weekend</h2></header>
+            <div class="panel-body">
+                <div class="timeline" style="--hours: {{ hours }}; --now: {{ max(0, min(hours, nowH)) }}">
+                    <div class="tl-line"></div>
+                    {% set lastDay = '' %}
+                    {% for item in items %}
+                        {% set day = item.startsAt|date('l') %}
+                        {% if day != lastDay %}<div class="tl-day" style="--h: {{ (item.startsAt.timestamp - start) / 3600 }}">{{ day }}</div>{% set lastDay = day %}{% endif %}
+                    {% endfor %}
+                    {% for item in items %}
+                        <div class="tl-tick" style="--h: {{ (item.startsAt.timestamp - start) / 3600 }}"><span>{{ item.startsAt|date('g:i A') }}<br><b>{{ item.title }}</b></span></div>
+                    {% endfor %}
+                    {% if nowH >= 0 and nowH <= hours %}<div class="tl-now"><i></i><span>now</span></div>{% endif %}
+                </div>
+            </div>
+        </section>
+
+        {% set days = {} %}
+        {% for item in items %}{% set key = item.startsAt|date('Y-m-d') %}{% set days = days|merge({ (key): (days[key]|default([]))|merge([item]) }) %}{% endfor %}
+        {% for key, dayItems in days %}
+        <section class="panel span-6" style="--c: var(--gold); --on-c: #141414">
+            <header class="panel-tab"><h2>{{ dayItems|first.startsAt|date('l, F j') }}</h2></header>
+            <table class="table">
+                {% for item in dayItems %}
+                    {% set live = item.startsAt <= now and (item.endsAt ? item.endsAt > now : false) %}
+                    <tr{% if live %} class="next"{% endif %}><td class="mono">{{ item.startsAt|date('g:i A') }}</td><td class="strong">{{ item.title }}{% if item.location %}<small>{{ item.location }}</small>{% endif %}</td></tr>
+                {% endfor %}
+            </table>
+            {% if loop.last %}<div class="panel-actions"><a class="soft" href="{{ path('app_map') }}">Where these rooms are</a></div>{% endif %}
+        </section>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

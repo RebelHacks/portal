@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}Tracks{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_team') }}">&larr; Team</a></div>
+    {% for track in tracks %}
+        {% set current = team and team.track == track %}
+        {# TODO: the Beginner rule: a team with someone who's been before can't enter a beginners-only track #}
+        <section class="panel span-6 track" style="--c: {{ track.beginnersOnly ? 'var(--blue)' : 'var(--black)' }}; {{ track.beginnersOnly ? '' : '--on-c: var(--page)' }}"{% if current %} data-current{% endif %}>
+            <header class="panel-tab"><h2>{{ track.name }}</h2></header>
+            <div class="panel-body">
+                <p class="counts-inline"><b>{{ counts[track.id]|default(0) }}</b> teams</p>
+                <p class="meta">{{ track.description ?: 'Revealed at the opening ceremony.' }}</p>
+            </div>
+            <div class="panel-actions">
+                {% if current %}<span class="soft">{{ team.name }} is in this track.</span>
+                {% elseif leads %}<form method="post"><button class="button" type="submit" disabled>Enter {{ track.name }}</button></form>
+                {% else %}<span class="soft">Only the team leader can change the track.</span>{% endif %}
+            </div>
+        </section>
+    {% else %}
+        <section class="panel span-12" style="--c: var(--ink-soft)"><div class="panel-body"><p class="meta">No tracks yet.</p></div></section>
+    {% endfor %}
+    <div class="span-12">{{ include('_shell/todo.html.twig', { what: 'Switching tracks: the locked transaction with the Beginner check from the design doc.', where: 'TeamController::tracks' }) }}</div>
+</div>
+{% endblock %}

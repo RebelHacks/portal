@@ -1,114 +1,110 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Registration Terms | RebelHacks{% endblock %}
+{% set out = true %}
+
+{% block title %}Registration terms{% endblock %}
+{% block lead %}<p>By registering for RebelHacks, you agree to the following.</p>{% endblock %}
 
 {#
     TODO: this is a draft no organizer has approved yet. Get sign-off before the portal replaces
     the Google Form. Still open:
-    - Does sharing resumes with sponsors get its own opt-in checkbox?
     - 18 and older only, or can minors come with a parent-signed waiver?
     - How people sign UNLV's waiver, which Student Involvement has to confirm.
 #}
 {% block body %}
-    <main class="min-h-screen px-4 py-10">
-        <article class="mx-auto w-full max-w-2xl rounded-2xl bg-[#0f2c44] p-6 text-white shadow-2xl sm:p-8">
-            <h1 class="text-3xl font-bold">
-                Registration Terms
-            </h1>
+    <div class="grid narrow">
+        <article class="prose">
 
-            <p class="mt-6 text-gray-300">
-                By registering for RebelHacks, you agree to the following.
-            </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Who can register
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 You must be 18 or older and enrolled at a college or university.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Code of Conduct
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 You'll follow our
-                <a href="https://rebelhacks.com/code-of-conduct" class="text-cyan-400 underline">Code of Conduct</a>
+                <a href="https://rebelhacks.com/code-of-conduct">Code of Conduct</a>
                 at the event and in our online spaces.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Liability waiver
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 Before the event, you'll also sign UNLV's liability waiver.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Your project
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 Your team owns what it builds. RebelHacks claims no rights to it.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Prizes
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 Organizers decide prize eligibility, and their decisions are final.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Your information
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 We use your information to run RebelHacks and never sell it.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Your resume
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 We may share your resume, name, email and major with our sponsors
                 for recruiting. Organizers send them over. Sponsors don't get access
                 to the portal.
             </p>
-            <p class="mt-3 text-gray-300">
+            <p>
                 We delete resumes one year after the event. To have yours deleted
                 sooner, email us. We can't delete copies sponsors already have, and
                 deleted information can stay in our backups for up to 30 days.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Photos and video
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 We take photos and video at the event. We may use photos and video
                 of you to promote RebelHacks, for example on our website and social media.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Emails
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 We'll email you about this RebelHacks, like when teams open, the
                 schedule and check-in.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Changes
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 We may change the schedule, rules or venue, or cancel the event.
                 We'll email you if we do.
             </p>
 
-            <h2 class="mt-8 text-xl font-semibold">
+            <h2>
                 Questions
             </h2>
-            <p class="mt-2 text-gray-300">
+            <p>
                 Email us at
-                <a href="mailto:info@rebelhacks.com" class="text-cyan-400 underline">info@rebelhacks.com</a>.
+                <a href="mailto:info@rebelhacks.com">info@rebelhacks.com</a>.
             </p>
         </article>
-    </main>
+    </div>
 {% endblock %}

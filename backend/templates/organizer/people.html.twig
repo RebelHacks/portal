@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+{% set section = 'people' %}
+
+{% block title %}People{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Applications</h2></header>
+        <form method="get" class="panel-body">
+            <div class="buttons filters">
+                <input type="search" name="q" value="{{ q }}" placeholder="Name or email" style="flex:1">
+                <select disabled><option>Any status</option></select>
+                <input type="search" placeholder="School" style="max-width:10em" disabled>
+                <label class="check"><input type="checkbox" disabled> No team</label>
+                <button class="button button-plain" type="submit">Search</button>
+            </div>
+            {{ include('_shell/todo.html.twig', { what: 'Status, school and no-team filters.', where: 'OrganizerController::people' }) }}
+        </form>
+        {% if rows is empty %}
+            <div class="panel-body"><p class="meta">Nobody {{ q ? 'matches' : 'yet' }}.</p></div>
+        {% else %}
+        <table class="table">
+            <tr><th>Name</th><th>Email</th><th>School</th><th>Status</th><th class="right">Resume</th></tr>
+            {% for a in rows %}
+                <tr>
+                    <td class="strong"><a class="soft" href="{{ path('app_organizer_person', { id: a.id }) }}">{{ a.user.firstName }} {{ a.user.lastName }}</a></td>
+                    <td class="soft">{{ a.user.email }}</td>
+                    <td class="soft">{{ a.school }}</td>
+                    <td>{{ a.user.verified ? a.status.value|capitalize : 'Unverified' }}</td>
+                    <td class="right">{% if a.resume %}<a class="soft" href="#">PDF</a>{% else %}<span class="soft">—</span>{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% if total > perPage %}
+        <nav class="pager" aria-label="Pages">
+            <span class="soft">{{ (page - 1) * perPage + 1 }}–{{ min(page * perPage, total) }} of {{ total }}</span>
+            <a class="soft" href="{{ path('app_organizer_people', { page: page - 1, q: q }) }}"{% if page == 1 %} aria-disabled="true"{% endif %}>&larr; Previous</a>
+            <a class="soft" href="{{ path('app_organizer_people', { page: page + 1, q: q }) }}"{% if page * perPage >= total %} aria-disabled="true"{% endif %}>Next &rarr;</a>
+        </nav>
+        {% endif %}
+        {% endif %}
+        <div class="panel-actions"><button class="button button-plain" type="button" disabled>Export CSV</button><span class="soft">Exports are logged with your name.</span></div>
+    </section>
+</div>
+{% endblock %}

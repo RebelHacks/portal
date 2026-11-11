@@ -1,180 +1,80 @@
 {% extends 'base.html.twig' %}
 
-{% macro input(field, inputClass)  %}
-    <div>
-        {{ form_label(field, null, {
-            label_attr: {
-                class: 'block mb-2 text-sm font-medium'
-            }
-        })  }}
+{% set out = true %}
 
-        {{ form_widget(field, {
-            attr: {
-                class:inputClass
-            }
-        })  }}
-
-        <div class="mt-1 text-sm text-red-300">
-            {{ form_errors(field)  }}
-        </div>
+{# A labelled field with its errors under it. #}
+{% macro field(field, help = null) %}
+    <div class="field">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if help %}<span class="soft">{{ help }}</span>{% endif %}
+        <span class="error">{{ form_errors(field) }}</span>
     </div>
 {% endmacro %}
+{% import _self as f %}
 
-{% import _self as fields %}
-
-{% block title %}Register | RebelHacks{% endblock %}
+{% block title %}Register for RebelHacks{% endblock %}
 
 {% block body %}
-    <main class="min-h-screen px-4 py-10">
-        <div class="mx-auto w-full max-w-lg rounded-2xl bg-[#0f2c44] p-6 text-white shadow-2xl sm:p-8">
-            <div class="mb-8 text-center">
-                <h1 class="text-3xl font-bold">
-                    Create an Account
-                </h1>
+    {# One step for now. The two-step email-first flow (see the design doc) replaces this. #}
+    {{ form_start(registrationForm, { action: path('app_register') }) }}
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--red)">
+            <header class="panel-tab"><h2>Your account</h2></header>
+            <div class="panel-body">
+                {% for error in app.flashes('verify_email_error') %}
+                    <p class="notice error" style="margin-bottom: 14px">{{ error }}</p>
+                {% endfor %}
+                {{ form_errors(registrationForm) }}
 
-                <p class="mt-2 text-sm text-gray-300">
-                    Register for RebelHacks
-                </p>
+                <div class="buttons">
+                    <div style="flex: 1">{{ f.field(registrationForm.firstName) }}</div>
+                    <div style="flex: 1">{{ f.field(registrationForm.lastName) }}</div>
+                </div>
+                {{ f.field(registrationForm.email, 'A .edu address from any college.') }}
+                {{ f.field(registrationForm.plainPassword.first, 'At least 8 characters with a capital, a number and a symbol. No spaces.') }}
+                {{ f.field(registrationForm.plainPassword.second) }}
+                <span class="error">{{ form_errors(registrationForm.plainPassword) }}</span>
             </div>
+        </section>
 
-            {% for error in app.flashes('verify_email_error') %}
-                <div class="mb-4 rounded-lg bg-red-500/20 p-3 text-red-300">
-                    {{ error }}
-                </div>
-            {% endfor %}
+        <section class="panel" style="--c: var(--blue)">
+            <header class="panel-tab"><h2>About you</h2></header>
+            <div class="panel-body">
+                {{ f.field(registrationForm.school, 'Any college or university.') }}
+                {{ f.field(registrationForm.major) }}
 
-            {% set inputClass = 'w-full rounded-lg border-2 border-cyan-400 bg-[#0d1b2a] p-3 text-white outline-none transition focus:border-orange-400' %}
-
-            {{ form_start(registrationForm, {
-                action: path('app_register'),
-                attr: {
-                    class: 'space-y-8'
-                }
-            }) }}
-
-            {{ form_errors(registrationForm) }}
-
-            <section class="space-y-4">
-                <h2 class="mb-5 border-b border-slate-600 pb-3 text-xl font-semibold text-white">
-                    Account Information
-                </h2>
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {{ fields.input(registrationForm.firstName, inputClass) }}
-                    {{ fields.input(registrationForm.lastName, inputClass) }}
-                </div>
-
-                {{ fields.input(registrationForm.email, inputClass) }}
-
-                <div class="space-y-4">
-                    {{ fields.input(registrationForm.plainPassword.first, inputClass) }}
-                    {{ fields.input(registrationForm.plainPassword.second, inputClass) }}
-                </div>
-
-                <div class="text-sm text-red-300">
-                    {{ form_errors(registrationForm.plainPassword) }}
-                </div>
-                <p class="text-xs text-gray-300">
-                    Use at least 8 characters, including uppercase,
-                    lowercase, a number, and a special character.
-                    No whitespace.
-                </p>
-            </section>
-
-            <section class="mt-8 space-y-4 border-t border-slate-600 pt-6">
-                <h2 class="text-xl font-semibold text-white">
-                    Hackathon Information
-                </h2>
-
-                {{ fields.input(registrationForm.school, inputClass) }}
-
-                {{ fields.input(registrationForm.major, inputClass) }}
-
-                <fieldset>
-                    <legend class="mb-2 block text-sm font-medium">
-                        {{ registrationForm.attendedBefore.vars.label }}
-                    </legend>
-
-                    <div class="flex gap-6 text-sm">
+                <div class="field">
+                    <label>{{ registrationForm.attendedBefore.vars.label }}</label>
+                    <div class="radios">
                         {% for choice in registrationForm.attendedBefore %}
-                            <label class="flex items-center gap-2">
-                                {{ form_widget(choice, {
-                                    attr: {
-                                        class: 'h-4 w-4 accent-[#ff7f50]'
-                                    }
-                                }) }}
-                                {{ choice.vars.label }}
+                            <label class="radio">
+                                {{ form_widget(choice) }}
+                                <span><b>{{ choice.vars.label }}</b>
+                                    {%- if choice.vars.value == '0' %}<small>You can join the Beginner track.</small>{% else %}<small>Other hackathons don't count, only RebelHacks.</small>{% endif -%}
+                                </span>
                             </label>
                         {% endfor %}
                     </div>
-
-                    <div class="mt-1 text-sm text-red-300">
-                        {{ form_errors(registrationForm.attendedBefore) }}
-                    </div>
-                </fieldset>
+                    <span class="error">{{ form_errors(registrationForm.attendedBefore) }}</span>
+                </div>
 
                 {# Required once uploads go to S3. RegistrationController says how to turn it on.
-                <div>
-                    {{ form_label(registrationForm.resume, null, {
-                        label_attr: {
-                            class: 'block mb-2 text-sm font-medium'
-                        }
-                    }) }}
-
-                    {{ form_widget(registrationForm.resume, {
-                        attr: {
-                            accept: '.pdf, application/pdf',
-                            class: 'w-full rounded-lg border border-cyan-400 bg-[#0d1b2a] p-3 text-sm text-white file:mr-4 file:rounded-lg file:border-0 file:bg-cyan-400 file:px-4 file:py-2 file:font-semibold file:text-[#0d1b2a]'
-                        }
-                    }) }}
-
-                    <p class="mt-2 text-xs text-gray-300">
-                        Required. PDF only, maximum 10 MB.
-                    </p>
-
-                    <div class="text-sm text-red-300">
-                        {{ form_errors(registrationForm.resume) }}
-                    </div>
-                </div>
+                {{ f.field(registrationForm.resume, 'Required. PDF up to 10 MB. Sponsors get it for recruiting; deleted a year after the event.') }}
                 #}
-            </section>
 
-            <div>
-                <div class="flex items-start gap-3 text-sm">
-                    {{ form_widget(registrationForm.agreeTerms, {
-                        attr: {
-                            class: 'mt-1 h-4 w-4 accent-[#ff7f50]'
-                        }
-                    }) }}
-
+                <label class="check">
+                    {{ form_widget(registrationForm.agreeTerms) }}
                     {# opens in a new tab so the form keeps what they typed #}
-                    {{ form_label(registrationForm.agreeTerms, 'I agree to the <a href="' ~ path('app_terms') ~ '" target="_blank" class="text-cyan-400 underline">registration terms</a>', {
-                        label_html: true
-                    }) }}
-                </div>
-
-                <div class="mt-1 text-sm text-red-300">
-                    {{ form_errors(registrationForm.agreeTerms) }}
-                </div>
+                    <span>I agree to the <a href="{{ path('app_terms') }}" target="_blank">registration terms</a>.</span>
+                </label>
+                <span class="error">{{ form_errors(registrationForm.agreeTerms) }}</span>
             </div>
-
-            <button
-                type="submit"
-                class="w-full rounded-lg border-2 border-[#ff7f50] p-4 text-lg font-bold text-[#ff7f50] transition hover:bg-[#ff7f50] hover:text-[#0d1b2a]"
-            >
-                Create Account
-            </button>
-
-            {{ form_end(registrationForm) }}
-
-            <p class="mt-6 text-center text-sm">
-                Already have an account?
-
-                <a href="{{ path('app_login') }}"
-                    class="text-cyan-400 hover:underline">
-                    Log in
-                </a>
-            </p>
-        </div>
-    </main>
+            <div class="panel-actions">
+                <button class="button" type="submit">Create my account</button>
+                <a class="soft" href="{{ path('app_login') }}">Already have an account? Log in</a>
+            </div>
+        </section>
+    </div>
+    {{ form_end(registrationForm) }}
 {% endblock %}

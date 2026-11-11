@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+{% set section = 'submission' %}
+
+{% block title %}Submission{% endblock %}
+
+{% block body %}
+<div class="grid">
+    {% if not team %}
+        <section class="panel span-12" style="--c: var(--black); --on-c: var(--page)">
+            <div class="panel-body"><p class="meta">You need a team before you can submit. <a href="{{ path('app_team') }}">Start or join one</a> first.</p></div>
+        </section>
+    {% else %}
+    <form method="post" class="span-12 grid" style="grid-column: span 12">
+        <section class="panel span-7" style="--c: var(--black); --on-c: var(--page)">
+            <header class="panel-tab"><h2>Project</h2></header>
+            <div class="panel-body">
+                <div class="field"><label for="p-name">Project name</label><input id="p-name" name="projectName" type="text" maxlength="80" value="{{ submission ? submission.projectName }}"></div>
+                <div class="field"><label for="p-desc">What it does</label><textarea id="p-desc" name="description" rows="5" maxlength="1500">{{ submission ? submission.description }}</textarea><span class="soft">Judges read this before they come to your table.</span></div>
+                <div class="field"><label for="p-tech">Tech used</label><input id="p-tech" name="tech" type="text" maxlength="255" value="{{ submission ? submission.tech }}"><span class="soft">Comma-separated.</span></div>
+                <div class="field"><label for="p-tags">Tags</label><input id="p-tags" name="tags" type="text" maxlength="255" value="{{ submission ? submission.tags }}"><span class="soft">Comma-separated.</span></div>
+            </div>
+            <div class="panel-actions">
+                <button class="button" type="submit" disabled>Save</button>
+                {% if submission and submission.updatedBy %}<span class="soft">Saved by {{ submission.updatedBy.firstName }}, {{ submission.updatedAt|date('M j, g:i A') }}</span>{% endif %}
+            </div>
+        </section>
+        <section class="panel span-5" style="--c: var(--black); --on-c: var(--page)">
+            <header class="panel-tab"><h2>Links</h2></header>
+            <div class="panel-body">
+                <div class="field"><label for="p-gh">GitHub</label><input id="p-gh" name="githubUrl" type="url" placeholder="https://github.com/…" value="{{ submission ? submission.githubUrl }}"><span class="soft">Make the repo public so judges can read it.</span></div>
+                <div class="field"><label for="p-dp">Devpost</label><input id="p-dp" name="devpostUrl" type="url" placeholder="https://devpost.com/software/…" value="{{ submission ? submission.devpostUrl }}"><span class="soft">Required for judging. One per team.</span></div>
+                {{ include('_shell/todo.html.twig', { what: 'Saving: upsert the Submission row for the team, set updated_by and updated_at.', where: 'HackerController::submission' }) }}
+            </div>
+            <div class="panel-actions"><a class="soft" href="#">Open the RebelHacks Devpost &#8599;</a></div>
+        </section>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

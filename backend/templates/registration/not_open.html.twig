@@ -1,34 +1,24 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register | RebelHacks{% endblock %}
+{% set out = true %}
+
+{% block title %}{% if hackathon and now < hackathon.registrationOpensAt %}Registration opens soon{% else %}Registration is closed{% endif %}{% endblock %}
 
 {% block body %}
-    <main class="min-h-screen px-4 py-10">
-        <div class="mx-auto w-full max-w-lg rounded-2xl bg-[#0f2c44] p-6 text-center text-white shadow-2xl sm:p-8">
-            {% if hackathon and now < hackathon.registrationOpensAt %}
-                <h1 class="text-3xl font-bold">
-                    Registration opens soon
-                </h1>
-                <p class="mt-4 text-gray-300">
-                    Sign-ups for {{ hackathon.name }} open {{ hackathon.registrationOpensAt|date('l, F j \\a\\t g:i A') }}, Las Vegas time.
-                </p>
-            {% elseif hackathon %}
-                <h1 class="text-3xl font-bold">
-                    Registration is closed
-                </h1>
-                <p class="mt-4 text-gray-300">
-                    Sign-ups for {{ hackathon.name }} have closed.
-                </p>
-            {% else %}
-                <h1 class="text-3xl font-bold">
-                    Registration isn't open yet
-                </h1>
-            {% endif %}
-
-            <p class="mt-6 text-sm">
-                Already have an account?
-                <a href="{{ path('app_login') }}" class="text-cyan-400 hover:underline">Log in</a>
-            </p>
-        </div>
-    </main>
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--gold); --on-c: #141414">
+            <div class="panel-body">
+                {% if hackathon and now < hackathon.registrationOpensAt %}
+                    <p class="big-name">{{ hackathon.registrationOpensAt|date('l, F j \\a\\t g:i A') }}</p>
+                    <p class="meta">Las Vegas time. {{ hackathon.name }} is {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('j') }} at UNLV.</p>
+                {% elseif hackathon %}
+                    <p class="big-name">Sign-ups for {{ hackathon.name }} have closed.</p>
+                {% else %}
+                    <p class="big-name">Nothing to sign up for yet.</p>
+                    <p class="meta">Check rebelhacks.com for the next date.</p>
+                {% endif %}
+            </div>
+            <div class="panel-actions"><a class="soft" href="https://rebelhacks.com">&larr; rebelhacks.com</a></div>
+        </section>
+    </div>
 {% endblock %}

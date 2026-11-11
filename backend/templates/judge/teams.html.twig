@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% set section = 'my-teams' %}
+
+{% block title %}My teams{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Teams</h2></header>
+        <div class="panel-body">
+            <p class="meta">Nothing assigned yet.</p>
+            {{ include('_shell/todo.html.twig', { what: 'The panel\'s assignments: table, team, project, track, and a Score link per row. Needs the judging tables.', where: 'JudgeController::teams' }) }}
+        </div>
+    </section>
+</div>
+{% endblock %}

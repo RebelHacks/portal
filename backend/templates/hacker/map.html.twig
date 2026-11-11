@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+{% set section = 'map' %}
+
+{% block title %}Map{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_schedule') }}">&larr; Schedule</a></div>
+    <section class="panel span-12" style="--c: var(--red)">
+        <header class="panel-tab"><h2>AEB, first floor</h2></header>
+        <div class="panel-body">
+            {# Traced from the building's fire plan. Each room is a path with a data-room, so it can light up, take a label or hold a pin.
+               TODO: Jason's proper trace replaces this drawing; keep the structure (one path per room, data-room ids). #}
+            <div class="aeb-wrap">
+            <svg class="aeb" viewBox="0 0 1000 1700" role="img" aria-label="AEB first floor plan with RebelHacks rooms highlighted">
+              <defs>
+                <pattern id="seats" width="22" height="14" patternUnits="userSpaceOnUse"><rect x="2" y="3" width="16" height="7" rx="1.5" class="seat"/></pattern>
+              </defs>
+              <!-- outer walls, north wing then main block -->
+              <path class="shell" d="M445 70 H665 V130 H875 V1480 H650 V1560 H445 V1480 H60 V870 H20 V700 H60 V70 Z"/>
+
+              <!-- rooms: ours in red, support rooms grey -->
+              <g class="rooms">
+                <path data-room="100" class="room ours" d="M110 100 H345 V440 H110 Z"/>
+                <path data-room="130" class="room ours" d="M700 530 H860 V860 H700 Z"/>
+                <path data-room="140" class="room ours" d="M470 530 H690 V690 H470 Z"/>
+                <path data-room="145" class="room ours" d="M470 690 H690 V860 H470 Z"/>
+                <path data-room="150" class="room ours" d="M80 1130 H410 V1420 H80 Z"/>
+                <path data-room="160" class="room ours" d="M470 1130 H860 V1420 H470 Z"/>
+                <path data-room="161" class="room ours" d="M80 1420 H410 V1480 H80 Z"/>
+                <path data-room="103" class="room" d="M240 460 H345 V520 H240 Z"/>
+                <path data-room="105" class="room" d="M80 540 H230 V680 H80 Z"/>
+                <path data-room="106" class="room" d="M80 680 H230 V820 H80 Z"/>
+                <path data-room="112" class="room" d="M240 540 H345 V680 H240 Z"/>
+                <path data-room="113" class="room" d="M240 680 H345 V820 H240 Z"/>
+                <path data-room="125" class="room" d="M240 870 H345 V940 H240 Z"/>
+                <path data-room="121" class="room" d="M470 140 H560 V300 H470 Z"/>
+                <path data-room="122" class="room" d="M560 140 H690 V300 H560 Z"/>
+                <path data-room="124" class="room" d="M760 140 H860 V300 H760 Z"/>
+                <path data-room="118" class="room" d="M470 880 H560 V1000 H470 Z"/>
+                <path data-room="162" class="room" d="M470 1030 H560 V1110 H470 Z"/>
+                <path data-room="163" class="room" d="M560 1030 H660 V1110 H560 Z"/>
+                <path data-room="164" class="room" d="M660 1030 H760 V1110 H660 Z"/>
+                <path data-room="168" class="room" d="M470 1420 H600 V1480 H470 Z"/>
+                <path data-room="167" class="room" d="M600 1420 H690 V1480 H600 Z"/>
+                <path data-room="166" class="room" d="M690 1420 H780 V1480 H690 Z"/>
+                <path data-room="165" class="room" d="M780 1420 H860 V1480 H780 Z"/>
+              </g>
+              <!-- the Flexatorium's seating rows -->
+              <rect x="715" y="560" width="130" height="280" fill="url(#seats)"/>
+
+              <!-- corridors: the spine and the cross hall -->
+              <path class="hall" d="M420 100 H460 V1480 H420 Z"/>
+              <path class="hall" d="M60 960 H875 V1010 H60 Z"/>
+
+              <!-- exits -->
+              <g class="exits">
+                <g transform="translate(600 60)"><rect x="-26" y="-14" width="52" height="24" rx="3"/><text x="0" y="4">EXIT</text></g>
+                <g transform="translate(40 985)"><rect x="-26" y="-14" width="52" height="24" rx="3"/><text x="0" y="4">EXIT</text></g>
+                <g transform="translate(895 985)"><rect x="-26" y="-14" width="52" height="24" rx="3"/><text x="0" y="4">EXIT</text></g>
+                <g transform="translate(560 1600)"><rect x="-26" y="-14" width="52" height="24" rx="3"/><text x="0" y="4">EXIT</text></g>
+              </g>
+
+              <!-- labels -->
+              <g class="labels">
+                <text x="228" y="260" class="big">Collaboratorium</text><text x="228" y="284" class="num">100</text>
+                <text x="780" y="890" class="big">Flexatorium</text><text x="780" y="912" class="num">130</text>
+                <text x="580" y="600" class="big">Classroom</text><text x="580" y="622" class="num">140</text>
+                <text x="580" y="765" class="big">Classroom</text><text x="580" y="787" class="num">145</text>
+                <text x="245" y="265" class="small"></text>
+                <text x="245" y="1265" class="big">Flexible Classroom</text><text x="245" y="1289" class="num">150</text>
+                <text x="665" y="1265" class="big">Maker Space</text><text x="665" y="1289" class="num">160</text>
+                <text x="245" y="1455" class="small">Showcase 161</text>
+                <text x="292" y="495" class="small">Health 103</text>
+                <text x="155" y="615" class="small">Warming 105</text>
+                <text x="155" y="755" class="small">Storage 106</text>
+                <text x="292" y="615" class="small">Men 112</text>
+                <text x="292" y="755" class="small">Women 113</text>
+                <text x="292" y="910" class="small">Elev 125</text>
+                <text x="515" y="225" class="small">Elec 121</text>
+                <text x="625" y="225" class="small">Mech 122</text>
+                <text x="810" y="225" class="small">Emerg 124</text>
+                <text x="515" y="945" class="small">IDF 118</text>
+                <text x="515" y="1075" class="small">Mgr 162</text>
+                <text x="610" y="1075" class="small">Huddle 163</text>
+                <text x="710" y="1075" class="small">Copy 164</text>
+                <text x="535" y="1455" class="small">Tools 168</text>
+                <text x="645" y="1455" class="small">Eq 167</text>
+                <text x="735" y="1455" class="small">Eq 166</text>
+                <text x="820" y="1455" class="small">Eq 165</text>
+                <text x="440" y="760" class="small hall-label" transform="rotate(-90 440 760)">corridor 110</text>
+                <text x="470" y="990" class="small hall-label">corridor 116 &middot; 115</text>
+              </g>
+
+              <!-- TODO: pins from data. Your team's table, the judges' panels, food. -->
+              <g class="pins"></g>
+                <g class="pin judge" transform="translate(740 1200)"><circle r="9"/><text y="4">A</text></g>
+                <g class="pin judge" transform="translate(520 1240)"><circle r="9"/><text y="4">B</text></g>
+                <g class="pin food" transform="translate(155 520)"><circle r="9"/><text y="4">&#127869;</text></g>
+              </g>
+            </svg>
+            <div class="aeb-legend">
+              <span><i class="sw ours"></i>RebelHacks rooms</span>
+              <span><i class="sw pin-you"></i>Your team</span>
+              <span><i class="sw pin-judge"></i>Judges, by panel</span>
+              <span><i class="sw pin-food"></i>Food</span>
+            </div>
+            </div>
+            </div>
+        </div>
+        <div class="panel-actions"><a class="soft" href="{{ path('app_schedule') }}">Schedule</a><span class="soft">Check-in and the ceremonies are in the SEB Auditorium, a two-minute walk.</span></div>
+    </section>
+    <div class="span-12">{{ include('_shell/todo.html.twig', { what: "Jason's traced floor plan, with team tables and the judging area pinned once they're assigned.", where: 'templates/hacker/map.html.twig' }) }}</div>
+</div>
+{% endblock %}

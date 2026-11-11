@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+{% set section = 'settings' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-6" style="--c: var(--ink-soft)">
+        <header class="panel-tab"><h2>Profile</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <div class="field"><label for="st-first">First name</label><input id="st-first" type="text" value="{{ app.user.firstName }}"></div>
+                <div class="field"><label for="st-last">Last name</label><input id="st-last" type="text" value="{{ app.user.lastName }}"></div>
+                <div class="field"><label for="st-school">School</label><input id="st-school" type="text" value="{{ application ? application.school }}"></div>
+                <div class="field"><label for="st-major">Major</label><input id="st-major" type="text" value="{{ application ? application.major }}"></div>
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Save</button></div>
+        </form>
+    </section>
+
+    <section class="panel span-6" style="--c: var(--ink-soft)">
+        <header class="panel-tab"><h2>Password</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <div class="field"><label for="pw-old">Current password</label><input id="pw-old" type="password" autocomplete="current-password"></div>
+                <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password"><span class="soft">At least 8 characters with a capital, a number and a symbol.</span></div>
+                {{ include('_shell/todo.html.twig', { what: 'Check the current password, hash and save the new one, same rules as sign-up.', where: 'HackerController::settings' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Change password</button></div>
+        </form>
+    </section>
+
+    <section class="panel span-6" style="--c: var(--ink-soft)">
+        <header class="panel-tab"><h2>Resume</h2></header>
+        <div class="panel-body">
+            {% if application and application.resume %}
+                <p><b>{{ application.resume.originalName }}</b> <span class="soft">· {{ (application.resume.size / 1024)|round }} KB · uploaded {{ application.resume.uploadedAt|date('M j') }}</span></p>
+            {% else %}
+                <p class="meta">No resume on file yet.</p>
+            {% endif %}
+            <p class="meta">A resume is required. Sponsors receive it for recruiting, as the terms describe, and we delete it a year after the event.</p>
+            <div class="field"><label for="resume">{{ application and application.resume ? 'Replace' : 'Upload' }}</label><input id="resume" type="file" accept="application/pdf"><span class="soft">PDF, up to 10 MB.</span></div>
+            {{ include('_shell/todo.html.twig', { what: 'Upload to S3 through UploadStorage, replace the file row.', where: 'HackerController::settings' }) }}
+        </div>
+        <div class="panel-actions"><button class="button" type="button" disabled>Upload</button></div>
+    </section>
+
+    <section class="panel span-6" style="--c: var(--ink-soft)">
+        <header class="panel-tab"><h2>Finding a team</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <label class="check"><input type="checkbox"{% if application and application.lookingForTeam %} checked{% endif %}><span><b>Let team leaders find me.</b> <span class="soft">Shows your name, school and major on the looking-for-a-team list while you have no team.</span></span></label>
+                {{ include('_shell/todo.html.twig', { what: 'Saves application.looking_for_team.', where: 'HackerController::settings' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Save</button></div>
+        </form>
+    </section>
+
+    <section class="panel span-12" style="--c: var(--ink-soft)">
+        <header class="panel-tab"><h2>Your data</h2></header>
+        <div class="panel-body"><p class="meta">We delete resumes a year after the event. To delete your account and everything with it sooner, email <a href="mailto:info@rebelhacks.com">info@rebelhacks.com</a> from your university address.</p></div>
+    </section>
+
+</div>
+{% endblock %}

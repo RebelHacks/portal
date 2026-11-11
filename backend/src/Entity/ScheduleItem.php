@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
+use App\Repository\ScheduleItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 // One thing on a hackathon's schedule, like check-in or lunch.
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ScheduleItemRepository::class)]
 #[ORM\Index(name: 'idx_schedule_item_hackathon_starts_at', fields: ['hackathon', 'startsAt'])]
 class ScheduleItem
 {

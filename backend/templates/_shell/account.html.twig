@@ -1,0 +1,19 @@
+{# The account button, top right. Opens a menu with settings, the skin, and log out. #}
+{% set name = (app.user.firstName ~ ' ' ~ app.user.lastName)|trim %}
+<div class="account">
+    <button class="account-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu">
+        <span class="full">{{ name ?: app.user.email }}</span><span class="short">{{ app.user.firstName ?: 'Account' }}</span><span class="arrow" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="menu" id="account-menu" role="menu" aria-label="Account" hidden>
+        <div class="menu-who" role="presentation"><b>{{ name }}</b><span>{{ app.user.email }}</span></div>
+        <a class="menu-item" role="menuitem" href="{{ path('app_settings') }}">Settings</a>
+        <div class="menu-rule" role="separator"></div>
+        <div role="group" aria-label="Skin">
+            <button class="menu-item" type="button" role="menuitemradio" aria-checked="false" data-skin-choice="day">Day skin</button>
+            <button class="menu-item" type="button" role="menuitemradio" aria-checked="false" data-skin-choice="neon">Neon skin</button>
+            <button class="menu-item" type="button" role="menuitemradio" aria-checked="false" data-skin-choice="auto">Match my device</button>
+        </div>
+        <div class="menu-rule" role="separator"></div>
+        <a class="menu-item" role="menuitem" href="{{ logout_path() }}">Log out</a>
+    </div>
+</div>

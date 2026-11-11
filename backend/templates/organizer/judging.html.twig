@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% set section = 'judging' %}
+
+{% block title %}Judging{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-7" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>Judges</h2></header>
+        {% if judges is empty %}
+            <div class="panel-body"><p class="meta">No judges yet.</p></div>
+        {% else %}
+        <table class="table">
+            <tr><th>Name</th><th>Email</th><th class="right">Panel</th></tr>
+            {% for j in judges %}
+                <tr><td class="strong">{{ j.firstName }} {{ j.lastName }}</td><td class="soft">{{ j.email }}</td><td class="soft right">—</td></tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        <div class="panel-actions"><button class="button button-plain" type="button" disabled>Add a judge</button><button class="button button-plain" type="button" disabled>Assign teams to panels</button></div>
+    </section>
+    <section class="panel span-5" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>Results</h2></header>
+        <div class="panel-body">
+            <p class="meta">Averages per team appear here as scores come in. Export when judging closes.</p>
+            {{ include('_shell/todo.html.twig', { what: 'Panels, assignments, scores and the export. Needs the judging tables (held in the design doc).', where: 'OrganizerController::judging' }) }}
+        </div>
+        <div class="panel-actions"><button class="button button-plain" type="button" disabled>Export scores</button></div>
+    </section>
+</div>
+{% endblock %}

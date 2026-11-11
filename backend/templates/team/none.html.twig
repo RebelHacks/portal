@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}Team{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--red)">
+        <header class="panel-tab"><h2>Joining a team</h2></header>
+        <div class="panel-body">
+            <p class="meta">Start one and send people the invite link, or let a team leader invite you.</p>
+            <form method="post" id="looking">
+                <label class="check"><input type="checkbox"{% if application and application.lookingForTeam %} checked{% endif %}><span><b>Let team leaders find me.</b> <span class="soft">Shows your name, school and major on the looking-for-a-team list while you have no team.</span></span></label>
+                {{ include('_shell/todo.html.twig', { what: 'Saves application.looking_for_team, same as the Settings switch.', where: 'TeamController::team' }) }}
+            </form>
+        </div>
+        <div class="panel-actions"><a class="button" href="{{ path('app_team_new') }}">Start a team</a><button class="button button-plain" type="submit" form="looking" disabled>Save</button></div>
+    </section>
+
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Teams with open spots</h2></header>
+        <div class="panel-body"><p class="meta">To join one, ask someone on it for the invite link.</p></div>
+        {% if openTeams is empty %}
+            <div class="panel-body"><p class="meta">No teams yet.</p></div>
+        {% else %}
+        <table class="table">
+            <tr><th>Team</th><th>Track</th><th class="right">Size</th></tr>
+            {% for t in openTeams|filter(t => t.members|length < hackathon.maxTeamSize) %}
+                <tr><td class="strong">{{ t.name }}</td><td class="soft">{{ t.track ? t.track.name : 'none yet' }}</td><td class="mono right">{{ t.members|length }} / {{ hackathon.maxTeamSize }}</td></tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

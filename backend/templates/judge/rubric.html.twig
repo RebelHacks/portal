@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% set section = 'rubric' %}
+
+{% block title %}Rubric{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>Criteria</h2></header>
+        <table class="table">
+            <tr><th>Criterion</th><th>1</th><th>3</th><th>5</th></tr>
+            <tr><td class="strong">Technical difficulty</td><td class="soft">A tutorial, followed</td><td class="soft">Real integration work</td><td class="soft">Something hard, done well</td></tr>
+            <tr><td class="strong">Creativity</td><td class="soft">Seen it before</td><td class="soft">A fresh angle</td><td class="soft">Nobody expected this</td></tr>
+            <tr><td class="strong">Completeness</td><td class="soft">Slides only</td><td class="soft">Demo mostly works</td><td class="soft">Works end to end</td></tr>
+            <tr><td class="strong">Presentation</td><td class="soft">Hard to follow</td><td class="soft">Clear</td><td class="soft">Made you want to use it</td></tr>
+        </table>
+    </section>
+    <div class="span-12">{{ include('_shell/todo.html.twig', { what: 'These criteria are a draft until the organizers confirm them. Then they come from the criterion table.', where: 'judge/rubric.html.twig' }) }}</div>
+</div>
+{% endblock %}

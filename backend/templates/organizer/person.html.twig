@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+{% set section = 'people' %}
+{% set u = application.user %}
+
+{% block title %}{{ u.firstName }} {{ u.lastName }}{% endblock %}
+{% block lead %}<p>{{ u.email }} · {{ application.school }} · {{ application.major }} · registered {{ application.submittedAt|date('M j') }}</p>{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_organizer_people') }}">&larr; People</a></div>
+    <section class="panel span-7" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Application</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <div class="field">
+                    <label>Status</label>
+                    <div class="status-pick">
+                        {% for status in ['accepted', 'waitlisted', 'rejected'] %}
+                            <label><input type="radio" name="status" value="{{ status }}"{% if application.status.value == status %} checked{% endif %}>{{ status|capitalize }}</label>
+                        {% endfor %}
+                    </div>
+                    <span class="soft">Changing it emails them and is logged with your name.</span>
+                </div>
+                <ul class="rows">
+                    <li><span class="soft">Verified</span><span>{{ u.verified ? 'Yes' : 'Not yet' }}</span></li>
+                    <li><span class="soft">Been before</span><span>{{ application.attendedBefore ? 'Yes' : 'No (beginner)' }}</span></li>
+                    <li><span class="soft">Terms</span><span>Agreed {{ application.agreedToTermsAt|date('M j') }} · version {{ application.termsVersion }}</span></li>
+                    <li><span class="soft">Resume</span><span>{% if application.resume %}<a class="soft" href="#">{{ application.resume.originalName }}</a>{% else %}<span class="soft">none</span>{% endif %}</span></li>
+                    <li><span class="soft">Waiver</span><span>{{ application.waiverSignedAt ? 'Signed ' ~ application.waiverSignedAt|date('M j') : 'not yet' }}</span></li>
+                    <li><span class="soft">Checked in</span><span>{{ application.checkedInAt ? application.checkedInAt|date('M j, g:i A') : 'not yet' }}</span></li>
+                    <li><span class="soft">Team</span><span>{% if team %}<a class="soft" href="{{ path('app_organizer_team', { id: team.id }) }}">{{ team.name }}</a>{% else %}<span class="soft">none</span>{% endif %}</span></li>
+                </ul>
+                {{ include('_shell/todo.html.twig', { what: 'Saving a status change: email them, write an audit_log row.', where: 'OrganizerController::person' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Save</button><a class="soft" href="#">Email them a login link</a></div>
+        </form>
+    </section>
+    <section class="panel span-5" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>History</h2></header>
+        <div class="panel-body">
+            {% if history is empty %}<p class="meta">Nothing logged yet.</p>{% endif %}
+            {{ include('_shell/todo.html.twig', { what: 'This person\'s audit_log rows.', where: 'OrganizerController::person' }) }}
+        </div>
+    </section>
+    <section class="panel span-12" style="--c: var(--red)">
+        <header class="panel-tab"><h2>Delete this person</h2></header>
+        <div class="panel-body"><p class="meta">Deletes their account, application and resume. Someone on a team has to be removed from it first. This is logged.</p></div>
+        <div class="panel-actions"><button class="button button-plain" type="button" disabled>Delete&hellip;</button></div>
+    </section>
+</div>
+{% endblock %}
