@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}All teams{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_team') }}">&larr; Team</a></div>
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>By track</h2></header>
+        <div class="panel-body">
+            <div class="counts">
+                {% for track in tracks %}<div{% if mine and mine.track == track %} data-mine{% endif %}><b>{{ counts[track.id]|default(0) }}</b><span>{{ track.name }}</span>{% if mine and mine.track == track %}<small>your team</small>{% endif %}</div>{% endfor %}
+                <div><b>{{ counts[null]|default(0) }}</b><span>no track yet</span></div>
+            </div>
+        </div>
+        <div class="panel-actions"><a class="soft" href="{{ path('app_tracks') }}">Tracks</a><a class="soft" href="{{ path('app_team') }}">Your team</a></div>
+    </section>
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Every team</h2></header>
+        {% if teams is empty %}
+            <div class="panel-body"><p class="meta">No teams yet.</p></div>
+        {% else %}
+        <table class="table">
+            <tr><th>Team</th><th>Track</th><th class="right">Size</th></tr>
+            {% for t in teams %}
+                <tr{% if t == mine %} class="mine"{% endif %}><td class="strong">{{ t.name }}{% if t == mine %} <span class="soft">(you)</span>{% endif %}</td><td class="soft">{{ t.track ? t.track.name : 'none yet' }}</td><td class="mono right">{{ t.members|length }} / {{ hackathon.maxTeamSize }}</td></tr>
+            {% endfor %}
+        </table>
+        {% if total > 25 %}
+        <nav class="pager" aria-label="Pages">
+            <span class="soft">{{ (page - 1) * 25 + 1 }}–{{ min(page * 25, total) }} of {{ total }}</span>
+            <a class="soft" href="{{ path('app_teams', { page: page - 1 }) }}"{% if page == 1 %} aria-disabled="true"{% endif %}>&larr; Previous</a>
+            <a class="soft" href="{{ path('app_teams', { page: page + 1 }) }}"{% if page * 25 >= total %} aria-disabled="true"{% endif %}>Next &rarr;</a>
+        </nav>
+        {% endif %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

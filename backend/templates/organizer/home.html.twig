@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+{% set section = 'home' %}
+
+{% block title %}{{ hackathon ? hackathon.name : 'RebelHacks' }}{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--red)">
+        <header class="panel-tab"><h2>Right now</h2></header>
+        <div class="panel-body">
+            <div class="counts">
+                {% if hackathon %}<div><b>{{ date().diff(hackathon.startsAt).days }}</b><span>days to go</span></div>{% endif %}
+                <div><b>{{ counts.registered }}</b><span>registered</span></div>
+                <div><b>{{ counts.verified }}</b><span>verified</span></div>
+                <div><b>{{ counts.waitlisted }}</b><span>waitlisted{% if hackathon %} <small class="soft">(cap {{ hackathon.capacity }})</small>{% endif %}</span></div>
+                <div><b>{{ counts.teams }}</b><span>teams</span></div>
+                <div><b>{{ counts.noTeam }}</b><span>on no team</span></div>
+                <div><b>{{ counts.looking }}</b><span>looking</span></div>
+            </div>
+        </div>
+    </section>
+    <section class="panel span-6" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Needs a look</h2></header>
+        <div class="panel-body">
+            <ul class="rows">
+                <li><span>Teams with no track</span><span class="mono">{{ counts.noTrack }}</span></li>
+                <li><span>Beginner teams with a non-beginner</span><span class="mono">—</span></li>
+                <li><span>Verified, no resume</span><span class="mono">—</span></li>
+            </ul>
+            {{ include('_shell/todo.html.twig', { what: 'The two dashed counts.', where: 'OrganizerController::home' }) }}
+        </div>
+        <div class="panel-actions"><a class="soft" href="{{ path('app_organizer_teams') }}">Teams</a><a class="soft" href="{{ path('app_organizer_people') }}">People</a></div>
+    </section>
+    <section class="panel span-6" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Post an announcement</h2></header>
+        <form method="post" action="{{ path('app_organizer_announcements') }}">
+            <div class="panel-body">
+                <div class="field"><label for="ann">Message</label><textarea id="ann" name="body" rows="3" placeholder="Everyone registered sees it in the portal and gets an email."></textarea></div>
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Post and email</button><a class="soft" href="{{ path('app_organizer_announcements') }}">Past announcements</a></div>
+        </form>
+    </section>
+</div>
+{% endblock %}

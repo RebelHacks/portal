@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}Invites{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_team') }}">&larr; Team</a></div>
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>{{ team ? 'Sent by your team' : 'For you' }}</h2></header>
+        <div class="panel-body">
+            {% if invites is empty %}
+                <p class="meta">{% if team %}No invites sent yet.{% else %}No invites yet. Turn on "let team leaders find me" in <a href="{{ path('app_settings') }}">Settings</a> so leaders can see you.{% endif %}</p>
+            {% endif %}
+            {{ include('_shell/todo.html.twig', { what: 'Lists TeamInvite rows: sent ones with Cancel for leaders; received ones with Join and Decline. Joining declines the rest.', where: 'TeamController::invites' }) }}
+        </div>
+        {% if leads %}<div class="panel-actions"><a class="button" href="{{ path('app_team') }}">Invite more</a></div>{% endif %}
+    </section>
+</div>
+{% endblock %}

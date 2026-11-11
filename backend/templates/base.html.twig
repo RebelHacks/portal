@@ -1,19 +1,64 @@
+{# The shell every page sits in: ribbons, logo, sidebar, the sheet in the middle, the news column on the right. #}
+{# Logged-out pages set `out` to true and get just the ribbons and the sheet. #}
 <!DOCTYPE html>
-<html>
+<html lang="en"{% if out|default(false) %} data-out{% endif %}>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <title>{% block title %}RebelHacks{% endblock %}</title>
+        <link rel="icon" href="{{ asset('images/rebelhacks-logo.png') }}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Schibsted+Grotesk:wght@400..900&display=swap">
+        <script>{{ source('_shell/startup.js') }}</script>
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
         {% endblock %}
-
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <div class="hexfield" aria-hidden="true"></div>
+
+        <svg class="ribbons" aria-hidden="true">
+            <defs>
+                <filter id="glow" filterUnits="userSpaceOnUse" x="-100" y="-100" width="6000" height="6000">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur" />
+                    <feComponentTransfer in="blur" result="bright"><feFuncA type="linear" slope="2" /></feComponentTransfer>
+                    <feMerge><feMergeNode in="bright" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+                <symbol id="hex" viewBox="0 0 24 24"><path d="M21.5 12 16.75 20.23h-9.5L2.5 12l4.75-8.23h9.5Z" /></symbol>
+            </defs>
+            <g></g>
+        </svg>
+
+        <a class="logo" href="{{ app.user ? path('app_lobby') : path('app_login') }}"><img src="{{ asset('images/rebelhacks-logo.png') }}" alt="RebelHacks"></a>
+        <a class="back-to-site" href="https://rebelhacks.com">&larr; rebelhacks.com</a>
+
+        {% if app.user %}
+            {{ include('_shell/account.html.twig') }}
+            {{ include('_shell/nav.html.twig') }}
+        {% endif %}
+
+        {% if app.user %}
+            {% block pane %}{{ include('_shell/pane.html.twig') }}{% endblock %}
+        {% endif %}
+
+        <main class="frame">
+            <div class="workspace">
+                <div class="sheet">
+                    <header class="page-head">
+                        <h1>{% block heading %}{{ block('title') }}{% endblock %}</h1>
+                        {% block lead %}{% endblock %}
+                    </header>
+                    {% block body %}{% endblock %}
+                </div>
+            </div>
+        </main>
+
+        {% if app.user %}
+            {{ include('_shell/tabbar.html.twig') }}
+        {% endif %}
     </body>
 </html>

@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}{{ team.name }}{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-7" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Members</h2></header>
+        <div class="panel-body">
+            <ul class="rows">
+                {% for member in team.members %}
+                    {% set u = member.application.user %}
+                    <li>
+                        <span>{{ u.firstName }} {{ u.lastName }}</span>
+                        <span class="soft">
+                            {% if member == team.leader %}leader{% if leads %} (you){% endif %}
+                            {% elseif leads %}<a class="soft" href="#">Make leader</a> · <a class="soft" href="#">Remove</a>
+                            {% else %}member{% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+                {% set open = hackathon.maxTeamSize - team.members|length %}
+                {% if open > 0 %}<li class="open"><span>{{ open }} open {{ open == 1 ? 'spot' : 'spots' }}</span></li>{% endif %}
+            </ul>
+            {% if leads %}
+                <div class="field">
+                    <label for="invite-link">Invite link</label>
+                    <div class="buttons"><input id="invite-link" class="mono" value="{{ url('app_team_join', { code: team.inviteCode }) }}" readonly style="flex:1"><button class="button" type="button" data-copy="#invite-link">Copy</button></div>
+                    <span class="soft">Anyone registered can use this link. <a class="soft" href="#">Reset it</a> if it gets passed around.</span>
+                </div>
+                {{ include('_shell/todo.html.twig', { what: 'Make leader, Remove and Reset link.', where: 'TeamController' }) }}
+            {% endif %}
+        </div>
+        {% if leads %}
+            <div class="panel-actions"><a class="soft" href="#">Rename</a><a class="soft" href="#">Disband team</a></div>
+        {% else %}
+            <div class="panel-actions"><a class="soft" href="#">Leave team</a></div>
+        {% endif %}
+    </section>
+
+    <section class="panel span-5" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Track</h2></header>
+        <div class="panel-body">
+            <p class="big-name">{{ team.track ? team.track.name : 'None yet' }}</p>
+            <p class="meta">You can switch until teams lock.</p>
+        </div>
+        <div class="panel-actions"><a class="button" href="{{ path('app_tracks') }}">{{ leads ? 'Change track' : 'See the tracks' }}</a></div>
+    </section>
+
+    {% if leads %}
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Invite people looking for a team</h2></header>
+        <div class="panel-body">
+            <p class="meta">These are the people who turned on "let team leaders find me". Inviting someone emails them a link to join.</p>
+            {{ include('_shell/todo.html.twig', { what: 'The paged list of discoverable people, with the Beginner warning when inviting someone who has been before.', where: 'TeamController::team, $looking' }) }}
+        </div>
+        {% if looking is empty %}
+            <div class="panel-body"><p class="meta">Nobody is looking right now.</p></div>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

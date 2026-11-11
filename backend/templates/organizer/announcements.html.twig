@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+{% set section = 'announcements' %}
+
+{% block title %}Announcements{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Post one</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <div class="field"><label for="ann">Message</label><textarea id="ann" name="body" rows="3"></textarea></div>
+                {{ include('_shell/todo.html.twig', { what: 'Save the Announcement row, then email everyone registered.', where: 'OrganizerController::announcements' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Post and email</button></div>
+        </form>
+    </section>
+    <section class="panel span-12" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Posted</h2></header>
+        {% if announcements is empty %}
+            <div class="panel-body"><p class="meta">Nothing posted yet.</p></div>
+        {% else %}
+        <table class="table">
+            <tr><th>When</th><th>Message</th><th>By</th><th class="right"></th></tr>
+            {% for a in announcements %}
+                <tr><td class="mono">{{ a.publishedAt|date('M j') }}</td><td>{{ a.body }}</td><td class="soft">{{ a.author ? a.author.firstName }}</td><td class="right"><a class="soft" href="#">Delete</a></td></tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

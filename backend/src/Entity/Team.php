@@ -4,12 +4,13 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Repository\TeamRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 // The project's details are on Submission; the project itself is judged on Devpost.
 // Delete a team in code (members first, then the team). The database won't cascade it,
 // because the team and its leader point at each other.
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TeamRepository::class)]
 #[ORM\UniqueConstraint(name: 'uniq_team_hackathon_name', fields: ['hackathon', 'name'])]
 #[ORM\Index(name: 'idx_team_hackathon_track', fields: ['hackathon', 'track'])]
 class Team

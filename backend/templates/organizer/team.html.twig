@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% set section = 'teams' %}
+
+{% block title %}{{ team.name }}{% endblock %}
+{% block lead %}<p>{{ team.track ? team.track.name ~ ' track' : 'no track' }} · {{ team.members|length }} of {{ hackathon.maxTeamSize }} · started {{ team.createdAt|date('M j') }}</p>{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_organizer_teams') }}">&larr; Teams</a></div>
+    <section class="panel span-7" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Members</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <ul class="rows">
+                    {% for m in team.members %}
+                        <li>
+                            <span><a class="soft" href="{{ path('app_organizer_person', { id: m.application.id }) }}">{{ m.application.user.firstName }} {{ m.application.user.lastName }}</a></span>
+                            <span class="soft">{{ m == team.leader ? 'leader · ' }}{{ m.application.beginner ? 'beginner' : 'been before' }}{% if m != team.leader %} · <a class="soft" href="#">make leader</a> · <a class="soft" href="#">remove</a>{% endif %}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="field"><label for="ot-name">Name</label><input id="ot-name" name="name" type="text" value="{{ team.name }}" maxlength="48"></div>
+                {{ include('_shell/todo.html.twig', { what: 'Rename, make leader, remove, reset the invite link, disband. Each writes an audit_log row.', where: 'OrganizerController::team' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Save</button><a class="soft" href="#">Reset invite link</a><a class="soft" href="#">Disband</a></div>
+        </form>
+    </section>
+    <section class="panel span-5" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Track</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                <div class="radios">
+                    {% for track in tracks %}
+                        <label class="radio"><input type="radio" name="track" value="{{ track.id }}"{% if team.track == track %} checked{% endif %}><span><b>{{ track.name }}</b>{% if track.beginnersOnly %}<small>Only if everyone on the team is a beginner. There's no override.</small>{% endif %}</span></label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Save track</button></div>
+        </form>
+    </section>
+</div>
+{% endblock %}

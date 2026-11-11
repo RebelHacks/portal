@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+{% set section = 'teams' %}
+
+{% block title %}Teams{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-12" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>All teams</h2></header>
+        {% if teams is empty %}
+            <div class="panel-body"><p class="meta">No teams yet.</p></div>
+        {% else %}
+        <table class="table">
+            <tr><th>Team</th><th>Leader</th><th>Track</th><th class="right">Size</th><th class="right"></th></tr>
+            {% for t in teams %}
+                <tr>
+                    <td class="strong">{{ t.name }}</td>
+                    <td class="soft">{% if t.leader %}{{ t.leader.application.user.firstName }} {{ t.leader.application.user.lastName }}{% endif %}</td>
+                    <td class="soft">{{ t.track ? t.track.name : 'none' }}</td>
+                    <td class="mono right">{{ t.members|length }} / {{ hackathon.maxTeamSize }}</td>
+                    <td class="right"><a class="soft" href="{{ path('app_organizer_team', { id: t.id }) }}">Edit</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% if total > perPage %}
+        <nav class="pager" aria-label="Pages">
+            <span class="soft">{{ (page - 1) * perPage + 1 }}–{{ min(page * perPage, total) }} of {{ total }}</span>
+            <a class="soft" href="{{ path('app_organizer_teams', { page: page - 1 }) }}"{% if page == 1 %} aria-disabled="true"{% endif %}>&larr; Previous</a>
+            <a class="soft" href="{{ path('app_organizer_teams', { page: page + 1 }) }}"{% if page * perPage >= total %} aria-disabled="true"{% endif %}>Next &rarr;</a>
+        </nav>
+        {% endif %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
