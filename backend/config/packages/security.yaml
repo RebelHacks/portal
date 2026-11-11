@@ -41,7 +41,8 @@ security:
     # Only the first rule that matches is used. Anything not listed needs a login.
     # Paths end in \z, not $, because $ also matches before a trailing newline (%0A).
     access_control:
-        - { path: ^/\z, roles: PUBLIC_ACCESS } # the login page
+        - { path: ^/\z, roles: PUBLIC_ACCESS } # the front door
+        - { path: ^/login\z, roles: PUBLIC_ACCESS }
         - { path: ^/register\z, roles: PUBLIC_ACCESS }
         - { path: ^/verify/email\z, roles: PUBLIC_ACCESS }
         - { path: ^/logout\z, roles: PUBLIC_ACCESS }
