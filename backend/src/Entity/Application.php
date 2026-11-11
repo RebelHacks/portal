@@ -1,0 +1,237 @@
+<?php
+
+namespace App\Entity;
+
+use App\Enum\ApplicationStatus;
+use App\Repository\ApplicationRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+// One person applying to one hackathon.
+#[ORM\Entity(repositoryClass: ApplicationRepository::class)]
+#[ORM\UniqueConstraint(name: 'uniq_application_user_hackathon', fields: ['user', 'hackathon'])]
+#[ORM\Index(name: 'idx_application_hackathon_status', fields: ['hackathon', 'status'])]
+class Application
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Hackathon $hackathon = null;
+
+    #[ORM\Column(length: 16, enumType: ApplicationStatus::class)]
+    private ApplicationStatus $status = ApplicationStatus::Submitted;
+
+    #[ORM\Column(length: 128)]
+    private ?string $school = null;
+
+    #[ORM\Column(length: 128)]
+    private ?string $major = null;
+
+    // people who haven't been to RebelHacks before are beginners
+    #[ORM\Column]
+    private bool $attendedBefore = false;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?File $resume = null;
+
+    // empty until they answer "Want team leaders to find you?"
+    #[ORM\Column(nullable: true)]
+    private ?bool $lookingForTeam = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $agreedToTermsAt = null;
+
+    // which text they agreed to, since the terms (and the photo release in them) can change
+    #[ORM\Column(length: 32)]
+    private ?string $termsVersion = null;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $submittedAt;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $checkedInAt = null;
+
+    // UNLV's liability waiver. How it gets signed is still being settled with Student Involvement.
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $waiverSignedAt = null;
+
+    public function __construct()
+    {
+        $this->submittedAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getStatus(): ?ApplicationStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ApplicationStatus $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getSchool(): ?string
+    {
+        return $this->school;
+    }
+
+    public function setSchool(string $school): static
+    {
+        $this->school = $school;
+
+        return $this;
+    }
+
+    public function getMajor(): ?string
+    {
+        return $this->major;
+    }
+
+    public function setMajor(string $major): static
+    {
+        $this->major = $major;
+
+        return $this;
+    }
+
+    public function isAttendedBefore(): ?bool
+    {
+        return $this->attendedBefore;
+    }
+
+    // Only RebelHacks counts: someone who's been to other hackathons but not this one is still a beginner.
+    public function isBeginner(): bool
+    {
+        return !$this->attendedBefore;
+    }
+
+    public function setAttendedBefore(bool $attendedBefore): static
+    {
+        $this->attendedBefore = $attendedBefore;
+
+        return $this;
+    }
+
+    public function isLookingForTeam(): ?bool
+    {
+        return $this->lookingForTeam;
+    }
+
+    public function setLookingForTeam(?bool $lookingForTeam): static
+    {
+        $this->lookingForTeam = $lookingForTeam;
+
+        return $this;
+    }
+
+    public function getAgreedToTermsAt(): ?\DateTimeImmutable
+    {
+        return $this->agreedToTermsAt;
+    }
+
+    public function setAgreedToTermsAt(\DateTimeImmutable $agreedToTermsAt): static
+    {
+        $this->agreedToTermsAt = $agreedToTermsAt;
+
+        return $this;
+    }
+
+    public function getTermsVersion(): ?string
+    {
+        return $this->termsVersion;
+    }
+
+    public function setTermsVersion(string $termsVersion): static
+    {
+        $this->termsVersion = $termsVersion;
+
+        return $this;
+    }
+
+    public function getSubmittedAt(): ?\DateTimeImmutable
+    {
+        return $this->submittedAt;
+    }
+
+    public function setSubmittedAt(\DateTimeImmutable $submittedAt): static
+    {
+        $this->submittedAt = $submittedAt;
+
+        return $this;
+    }
+
+    public function getCheckedInAt(): ?\DateTimeImmutable
+    {
+        return $this->checkedInAt;
+    }
+
+    public function setCheckedInAt(?\DateTimeImmutable $checkedInAt): static
+    {
+        $this->checkedInAt = $checkedInAt;
+
+        return $this;
+    }
+
+    public function getWaiverSignedAt(): ?\DateTimeImmutable
+    {
+        return $this->waiverSignedAt;
+    }
+
+    public function setWaiverSignedAt(?\DateTimeImmutable $waiverSignedAt): static
+    {
+        $this->waiverSignedAt = $waiverSignedAt;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getHackathon(): ?Hackathon
+    {
+        return $this->hackathon;
+    }
+
+    public function setHackathon(?Hackathon $hackathon): static
+    {
+        $this->hackathon = $hackathon;
+
+        return $this;
+    }
+
+    public function getResume(): ?File
+    {
+        return $this->resume;
+    }
+
+    public function setResume(?File $resume): static
+    {
+        $this->resume = $resume;
+
+        return $this;
+    }
+}
