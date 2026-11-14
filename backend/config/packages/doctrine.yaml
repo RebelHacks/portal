@@ -8,6 +8,11 @@ doctrine:
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        # Set here so it doesn't depend on the server's defaults. The _ci collation makes
+        # comparisons ignore case, so Ava@ and ava@ count as the same email.
+        default_table_options:
+            charset: utf8mb4
+            collation: utf8mb4_unicode_ci
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true

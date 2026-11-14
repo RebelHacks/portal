@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -51,7 +52,9 @@ class RegistrationFormType extends AbstractType
                     new Assert\Regex(
                         pattern: '/@(?:[a-z0-9-]+\.)+edu$/i',
                         message: 'Please use a university email address ending in .edu.'
-                    )
+                    ),
+                    // the most user.email holds
+                    new Assert\Length(max: 180),
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [
@@ -70,31 +73,52 @@ class RegistrationFormType extends AbstractType
                     new Assert\NotBlank(),
                     new Assert\Length(min: 8, max:4096),
                     new Assert\Regex(
-                        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9\s])\S+$/',
+                        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S+$/',
                         message: 'Password must contain uppercase, lowercase, a number, and a special character, with no spaces.'
                     ),
                 ]
             ])
+            // The rest belongs to this year's application, not the account, so it isn't mapped to User.
+            ->add('school', TextType::class, [
+                'mapped' => false,
+                'attr' => ['placeholder' => 'e.g. University of Nevada, Las Vegas', 'autocomplete' => 'organization'],
+                'constraints' => [
+                    new Assert\NotBlank(),
+                    new Assert\Length(max: 128),
+                ]
+            ])
             ->add('major', TextType::class, [
+                'mapped' => false,
                 'attr' => ['placeholder' => 'e.g. Computer Science'],
                 'constraints' => [
                     new Assert\NotBlank(),
-                    new Assert\Length(max: 50),
+                    new Assert\Length(max: 128),
                 ]
             ])
-            ->add('resume', FileType::class, [
-                'label' => 'Resume (PDF)',
+            // Yes or No, not a checkbox: an unticked box can't tell "no" from "skipped".
+            ->add('attendedBefore', ChoiceType::class, [
                 'mapped' => false,
-                'required' => true,
+                'label' => 'Have you been to RebelHacks before?',
+                'choices' => ['Yes' => true, 'No' => false],
+                'expanded' => true,
                 'constraints' => [
-                    new Assert\NotNull(message: 'Please upload your resume.'),
-                    new Assert\File(
-                        maxSize: '10M',
-                        mimeTypes: ['application/pdf'],
-                        mimeTypesMessage: 'Please upload a PDF resume.'
-                    )
+                    new Assert\NotNull(message: 'Please answer yes or no.'),
                 ]
             ])
+            // Required once uploads go to S3. RegistrationController says how to turn it on.
+            // ->add('resume', FileType::class, [
+            //     'label' => 'Resume (PDF)',
+            //     'mapped' => false,
+            //     'required' => true,
+            //     'constraints' => [
+            //         new Assert\NotNull(message: 'Please upload your resume.'),
+            //         new Assert\File(
+            //             maxSize: '10M',
+            //             mimeTypes: ['application/pdf'],
+            //             mimeTypesMessage: 'Please upload a PDF resume.'
+            //         )
+            //     ]
+            // ])
             // Only checked at sign-up for now. The new schema stores when they agreed.
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,

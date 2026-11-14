@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+// An account. Everything about a specific RebelHacks lives in Application.
 // No UniqueEntity check: sign-up must not say an email is taken. The unique index still blocks duplicates.
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -17,14 +18,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    private ?Team $team = null;
-    
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
     /**
-     * @var list<string> The user roles
+     * @var list<string> only ROLE_JUDGE or ROLE_ADMIN; getRoles() adds ROLE_USER
      */
     #[ORM\Column]
     private array $roles = [];
@@ -36,24 +34,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column]
-    private bool $is_verified = false;
-
-    #[ORM\Column(length: 128, nullable: true)]
-    private ?string $track = null;
-
-    #[ORM\Column(length: 128, nullable: true)]
-    private ?string $state = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $major = null;
+    private bool $isVerified = false;
 
     #[ORM\Column(length: 128)]
-    private ?string $first_name = null;
+    private ?string $firstName = null;
 
     #[ORM\Column(length: 128)]
-    private ?string $last_name = null;
+    private ?string $lastName = null;
 
-   
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -67,7 +62,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        // stored one way, so lookups and exports never see two spellings of one address
+        $this->email = mb_strtolower(trim($email));
 
         return $this;
     }
@@ -91,7 +87,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        return array_values(array_unique($roles));
     }
 
     /**
@@ -99,8 +95,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function setRoles(array $roles): static
     {
-        $roles[] = 'ROLE_USER';
-        $this->roles = array_values(array_unique($roles));
+        // ROLE_USER is implied, so it isn't stored
+        $this->roles = array_values(array_unique(array_diff($roles, ['ROLE_USER'])));
 
         return $this;
     }
@@ -128,85 +124,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isVerified(): bool
     {
-        return $this->is_verified;
+        return $this->isVerified;
     }
 
-    public function setIsVerified(bool $is_verified): static
+    public function setIsVerified(bool $isVerified): static
     {
-        $this->is_verified = $is_verified;
-
-        return $this;
-    }
-
-    public function getTrack(): ?string
-    {
-        return $this->track;
-    }
-
-    public function setTrack(string $track): static
-    {
-        $this->track = $track;
-
-        return $this;
-    }
-
-    public function getState(): ?string
-    {
-        return $this->state;
-    }
-
-    public function setState(string $state): static
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    public function getMajor(): ?string
-    {
-        return $this->major;
-    }
-
-    public function setMajor(?string $major): static
-    {
-        $this->major = $major;
-
-        return $this;
-    }
-
-    public function getTeam(): ?Team
-    {
-        return $this->team;
-    }
-
-    public function setTeam(?Team $team): static
-    {
-        $this->team = $team;
+        $this->isVerified = $isVerified;
 
         return $this;
     }
 
     public function getFirstName(): ?string
     {
-        return $this->first_name;
+        return $this->firstName;
     }
 
-    public function setFirstName(string $first_name): static
+    public function setFirstName(string $firstName): static
     {
-        $this->first_name = $first_name;
+        $this->firstName = $firstName;
 
         return $this;
     }
 
     public function getLastName(): ?string
     {
-        return $this->last_name;
+        return $this->lastName;
     }
 
-    public function setLastName(string $last_name): static
+    public function setLastName(string $lastName): static
     {
-        $this->last_name = $last_name;
+        $this->lastName = $lastName;
 
         return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 }

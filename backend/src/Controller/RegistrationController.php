@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
-use App\Entity\File as UserFile;
+use App\Entity\Application;
 use App\Entity\User;
+use App\Enum\FileKind;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
+use App\Service\CurrentHackathon;
+use App\Service\UploadStorage;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,9 +33,22 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
         RateLimiterFactoryInterface $registrationLimiter,
+        CurrentHackathon $currentHackathon,
+        UploadStorage $uploads,
     ): Response {
         if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('app_lobby');
+        }
+
+        // An application belongs to a hackathon, and only while its registration is open.
+        $hackathon = $currentHackathon->get();
+        $now = new \DateTimeImmutable();
+
+        if ($hackathon === null || !$hackathon->isRegistrationOpen($now)) {
+            return $this->render('registration/not_open.html.twig', [
+                'hackathon' => $hackathon,
+                'now' => $now,
+            ]);
         }
 
         $user = new User();
@@ -54,14 +70,9 @@ class RegistrationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $password = $form->get('plainPassword')->getData();
-
             $user->setPassword(
-                $passwordHasher->hashPassword($user, $password)
+                $passwordHasher->hashPassword($user, $form->get('plainPassword')->getData())
             );
-
-            $user->setRoles(['ROLE_USER']);
-            $user->setState('Pending');
 
             // A taken email gets the same answer just as slowly (the hash above runs either way),
             // so sign-up can't be used to check who has an account.
@@ -69,70 +80,52 @@ class RegistrationController extends AbstractController
                 return $this->redirectAfterSignUp();
             }
 
-            /** @var UploadedFile|null $resume */
-            $resume = $form->get('resume')->getData();
-            $savedResumePath = null;
+            $application = (new Application())
+                ->setUser($user)
+                ->setHackathon($hackathon)
+                ->setSchool($form->get('school')->getData())
+                ->setMajor($form->get('major')->getData())
+                ->setAttendedBefore($form->get('attendedBefore')->getData())
+                // the form can't be submitted without ticking the terms box
+                ->setAgreedToTermsAt($now)
+                ->setTermsVersion(TermsController::VERSION);
 
+            $resume = null;
+
+            // The file first, then the rows. The disk isn't part of the transaction,
+            // so if saving the rows fails, the file is deleted.
             try {
+                // A resume is required (decided November 8, 2026), but the upload stays off until files go to
+                // S3 instead of the server. Turning it on: uncomment these lines, the resume field in
+                // RegistrationFormType and its block in register.html.twig.
+                // /** @var UploadedFile $upload */
+                // $upload = $form->get('resume')->getData();
+                // $resume = $uploads->save($upload, $user, FileKind::Resume);
+                // $application->setResume($resume);
+                // $em->persist($resume);
+
                 $em->persist($user);
+                $em->persist($application);
+                $em->flush();
+            } catch (\Throwable $exception) {
+                if ($resume !== null) {
+                    $uploads->delete($resume);
+                }
 
-                if ($resume instanceof UploadedFile) {
-                    $uploadDir = $this->getParameter('kernel.project_dir')
-                        . '/var/uploads/resumes'; 
-
-                    if (
-                        !is_dir($uploadDir)
-                        && !mkdir($uploadDir, 0700, true)
-                        && !is_dir($uploadDir)
-                    ) {
-                        throw new \RuntimeException(
-                            'Could not create resume directory.'
-                        );
-                    }
-
-                    $fileName = bin2hex(random_bytes(16)) . '.pdf';
-
-                    $resume->move($uploadDir, $fileName);
-                    $savedResumePath = $uploadDir . '/' . $fileName;
-
-                    $fileEntity = new UserFile();
-                    $fileEntity->setUser($user);
-                    $fileEntity->setType('resume');
-                    $fileEntity->setFilepath(
-                        'var/uploads/resumes/' . $fileName
-                    );
-
-                    $em->persist($fileEntity);
+                // the same email signed up at the same moment
+                if (!$exception instanceof UniqueConstraintViolationException) {
+                    throw $exception;
+                }
             }
 
-            $em->flush();
-
-        } catch (\Throwable $exception) {
-            // Clean up the uploaded file if database saving fails.
-            if (
-                $savedResumePath !== null
-                && is_file($savedResumePath)
-            ) {
-                unlink($savedResumePath);
-            }
-
-            // the same email signed up at the same moment
-            if (!$exception instanceof UniqueConstraintViolationException) {
-                throw $exception;
-            }
+            // No sign-in here: landing in the lobby would show the email was new.
+            return $this->redirectAfterSignUp();
         }
 
-        // No sign-in here: landing in the lobby would show the email was new.
-        return $this->redirectAfterSignUp();
-    }
-
-    return $this->render(
-        'registration/register.html.twig',
-        [
+        return $this->render('registration/register.html.twig', [
             'registrationForm' => $form->createView(),
-        ]
-    );}
-
+        ]);
+    }
 
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request): Response

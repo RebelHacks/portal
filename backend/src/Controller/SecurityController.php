@@ -9,7 +9,15 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
-    #[Route(path: '/', name: 'app_login')]
+    // The front door: signed in, the lobby; otherwise the login form. The waiting room before
+    // registration opens can take this over.
+    #[Route(path: '/', name: 'app_home')]
+    public function home(): Response
+    {
+        return $this->redirectToRoute($this->isGranted('IS_AUTHENTICATED_FULLY') ? 'app_lobby' : 'app_login');
+    }
+
+    #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
