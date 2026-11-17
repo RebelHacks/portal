@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% set out = true %}
+{% set opensAt = hackathon ? hackathon.registrationOpensAt : null %}
+
+{% block title %}{% if opensAt %}Registration opens {{ opensAt|date('F j') }}{% else %}Registration isn't open yet{% endif %}{% endblock %}
+
+{% block body %}
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--gold); --on-c: #141414">
+            <div class="panel-body">
+                {% if opensAt %}
+                    {# shell.js counts this down and reloads the page at zero, which leads to sign-up #}
+                    <p class="countdown" data-countdown="{{ opensAt.timestamp - date().timestamp }}">{{ opensAt|date('F j') }}</p>
+                    <p class="meta">{{ opensAt|date('l, F j \\a\\t g:i A') }}. {{ hackathon.name }} is {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('j') }} at UNLV.</p>
+                {% else %}
+                    <p class="meta">Check rebelhacks.com for the date.</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+{% endblock %}

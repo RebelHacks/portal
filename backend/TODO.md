@@ -4,7 +4,6 @@ Each of these has a dashed "Not built yet" box on its page. Delete the box when 
 
 ## Sign-up and login
 
-- [ ] Countdown at `/` before registration opens
 - [ ] Login links, which also cover forgotten passwords (`/login/link`)
 
 ## Team

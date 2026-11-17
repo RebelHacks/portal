@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% set out = true %}
+
+{% block title %}Registration is closed{% endblock %}
+
+{% block body %}
+    <div class="grid narrow">
+        <p class="meta center">Already registered? <a href="{{ path('app_login') }}">Log in</a></p>
+    </div>
+{% endblock %}

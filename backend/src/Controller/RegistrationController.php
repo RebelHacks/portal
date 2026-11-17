@@ -233,19 +233,20 @@ class RegistrationController extends AbstractController
     }
 
     // An application belongs to a hackathon, and only while its registration is open.
+    // Before it opens, the front door has the waiting room. After it closes, this says so.
     private function notOpen(): ?Response
     {
         $hackathon = $this->currentHackathon->get();
         $now = new \DateTimeImmutable();
 
-        if ($hackathon !== null && $hackathon->isRegistrationOpen($now)) {
+        if ($hackathon === null || $now < $hackathon->getRegistrationOpensAt()) {
+            return $this->redirectToRoute('app_home');
+        }
+        if ($hackathon->isRegistrationOpen($now)) {
             return null;
         }
 
-        return $this->render('registration/not_open.html.twig', [
-            'hackathon' => $hackathon,
-            'now' => $now,
-        ]);
+        return $this->render('registration/closed.html.twig', ['hackathon' => $hackathon]);
     }
 
     private function alreadyRegistered(Request $request): Response
