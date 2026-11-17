@@ -45,10 +45,7 @@ class RegistrationController extends AbstractController
         $now = new \DateTimeImmutable();
 
         if ($hackathon === null || !$hackathon->isRegistrationOpen($now)) {
-            return $this->render('registration/not_open.html.twig', [
-                'hackathon' => $hackathon,
-                'now' => $now,
-            ]);
+            return $this->redirectToRoute('app_home');
         }
 
         $user = new User();
