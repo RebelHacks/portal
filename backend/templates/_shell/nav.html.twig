@@ -1,0 +1,49 @@
+{#
+    The sidebar. What's in it depends on the role: hackers, judges and organizers each get their own.
+    An item is "current" when the page's `section` variable matches its key.
+#}
+{% set section = section|default('home') %}
+{% macro item(key, label, href, section, toggle = false) %}
+    <a class="nav-item" href="{{ href }}"{% if section == key %} aria-current="page"{% endif %}>
+        <svg><use href="#hex" /></svg>{{ label }}
+        {%- if toggle %}<button class="nav-toggle" type="button" aria-label="Show {{ label }} pages" aria-expanded="false">&#9662;</button>{% endif %}
+    </a>
+{% endmacro %}
+{% import _self as nav %}
+
+<nav class="nav" aria-label="Portal">
+{% if is_granted('ROLE_ADMIN') %}
+    <div class="nav-group" style="--c: var(--red)">{{ nav.item('home', 'Home', path('app_organizer'), section) }}</div>
+    <div class="nav-group" style="--c: var(--blue)">
+        {{ nav.item('people', 'People', path('app_organizer_people'), section) }}
+        {{ nav.item('teams', 'Teams', path('app_organizer_teams'), section) }}
+    </div>
+    <div class="nav-group" style="--c: var(--gold); --on-c: #141414">
+        {{ nav.item('checkin', 'Check-in', path('app_organizer_checkin'), section) }}
+        {{ nav.item('announcements', 'Announcements', path('app_organizer_announcements'), section) }}
+    </div>
+    <div class="nav-group" style="--c: var(--black)">{{ nav.item('judging', 'Judging', path('app_organizer_judging'), section) }}</div>
+    <div class="nav-group" style="--c: var(--ink-soft)">{{ nav.item('map', 'Map', path('app_map'), section) }}</div>
+{% elseif is_granted('ROLE_JUDGE') %}
+    <div class="nav-group" style="--c: var(--red)">{{ nav.item('home', 'Home', path('app_judge'), section) }}</div>
+    <div class="nav-group" style="--c: var(--gold); --on-c: #141414">{{ nav.item('my-teams', 'My teams', path('app_judge_teams'), section) }}</div>
+    <div class="nav-group" style="--c: var(--black)">{{ nav.item('rubric', 'Rubric', path('app_judge_rubric'), section) }}</div>
+    <div class="nav-group" style="--c: var(--ink-soft)">{{ nav.item('map', 'Map', path('app_map'), section) }}</div>
+{% else %}
+    <div class="nav-group" style="--c: var(--red)">{{ nav.item('home', 'Home', path('app_lobby'), section) }}</div>
+    <div class="nav-group" style="--c: var(--blue)" data-group>
+        {{ nav.item('team', 'Team', path('app_team'), section, true) }}
+        <div class="nav-sub">
+            <a href="{{ path('app_team') }}"{% if app.request.attributes.get('_route') == 'app_team' %} aria-current="page"{% endif %}>my team</a>
+            <a href="{{ path('app_team_invites') }}"{% if app.request.attributes.get('_route') == 'app_team_invites' %} aria-current="page"{% endif %}>invites</a>
+            <a href="{{ path('app_tracks') }}"{% if app.request.attributes.get('_route') == 'app_tracks' %} aria-current="page"{% endif %}>tracks</a>
+            <a href="{{ path('app_teams') }}"{% if app.request.attributes.get('_route') == 'app_teams' %} aria-current="page"{% endif %}>all teams</a>
+        </div>
+    </div>
+    <div class="nav-group" style="--c: var(--gold); --on-c: #141414">
+        {{ nav.item('schedule', 'Schedule', path('app_schedule'), section) }}
+        {{ nav.item('map', 'Map', path('app_map'), section) }}
+    </div>
+    <div class="nav-group" style="--c: var(--black)">{{ nav.item('submission', 'Submission', path('app_submission'), section) }}</div>
+{% endif %}
+</nav>

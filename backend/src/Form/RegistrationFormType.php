@@ -23,21 +23,21 @@ class RegistrationFormType extends AbstractType
     ): void {
         $builder
             ->add('firstName', TextType::class, [
-                'attr' => ['placeholder' => 'Enter your first name', 'autocomplete' => 'given-name'],
+                'attr' => ['autocomplete' => 'given-name'],
                 'constraints'=> [
                     new Assert\NotBlank(),
                     new Assert\Length(max: 128),
                 ],
             ])
             ->add('lastName', TextType::class, [
-                'attr' => ['placeholder' => 'Enter your last name', 'autocomplete' => 'family-name'],
+                'attr' => ['autocomplete' => 'family-name'],
                 'constraints'=> [
                     new Assert\NotBlank(),
                     new Assert\Length(max: 128),
                 ],
             ])
             ->add('email', EmailType::class, [
-                'label' => 'University Email',
+                'label' => 'University email',
                 'attr' => [
                     'autocomplete' => 'email',
                     'placeholder' => 'student@unlv.nevada.edu',
@@ -63,11 +63,11 @@ class RegistrationFormType extends AbstractType
                 'invalid_message' => 'Passwords do not match.',
                 'first_options' => [
                     'label' => 'Password',
-                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => 'Create a password'],
+                    'attr' => ['autocomplete' => 'new-password'],
                 ],
                 'second_options' => [
-                    'label' => 'Confirm Password',
-                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => 'Confirm your password'],
+                    'label' => 'Confirm password',
+                    'attr' => ['autocomplete' => 'new-password'],
                 ],
                 'constraints' => [
                     new Assert\NotBlank(),

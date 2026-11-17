@@ -20,8 +20,8 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
+                # Back to the page they asked for (an invite link, usually); the lobby otherwise.
                 default_target_path: app_lobby
-                always_use_default_target_path: true
             # slows password guessing; the limits are in rate_limiter.yaml
             login_throttling:
                 limiter: app.login_rate_limiter
@@ -47,6 +47,8 @@ security:
         - { path: ^/verify/email\z, roles: PUBLIC_ACCESS }
         - { path: ^/logout\z, roles: PUBLIC_ACCESS }
         - { path: ^/terms\z, roles: PUBLIC_ACCESS }
+        - { path: ^/organizer, roles: ROLE_ADMIN }
+        - { path: ^/judge, roles: ROLE_JUDGE }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

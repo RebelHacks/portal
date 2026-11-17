@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% set section = 'my-teams' %}
+
+{% block title %}{{ team.name }}{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_judge_teams') }}">&larr; My teams</a></div>
+    <section class="panel span-7" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Score</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                {# one row per criterion; the criteria come from the database once judging is decided #}
+                {% for name, hint in { 'Technical difficulty': 'How hard was this to build in 24 hours?', 'Creativity': 'Is the idea or the approach new?', 'Completeness': 'Does the demo work end to end?', 'Presentation': 'Could they explain it?' } %}
+                <div class="score-row">
+                    <div><b>{{ name }}</b><small>{{ hint }}</small></div>
+                    <div class="scale">{% for n in 1..5 %}<label><input type="radio" name="s{{ loop.parent.loop.index }}" value="{{ n }}">{{ n }}</label>{% endfor %}</div>
+                </div>
+                {% endfor %}
+                <div class="field" style="margin-top:14px"><label for="j-notes">Notes <span class="soft">(only organizers see these)</span></label><textarea id="j-notes" rows="3"></textarea></div>
+                {{ include('_shell/todo.html.twig', { what: 'Criteria from the criterion table; saving writes one score row per criterion for this judge and assignment.', where: 'JudgeController::score' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Save and next table</button><a class="soft" href="{{ path('app_judge_teams') }}">Back to the list</a></div>
+        </form>
+    </section>
+    <section class="panel span-5" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>Their submission</h2></header>
+        <div class="panel-body"><p class="meta">The team's write-up (name, what it does, tech, team) shows here, with Devpost and GitHub links.</p></div>
+    </section>
+</div>
+{% endblock %}

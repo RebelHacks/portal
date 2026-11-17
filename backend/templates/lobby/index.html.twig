@@ -1,24 +1,61 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Lobby | RebelHacks{% endblock %}
+{% set section = 'home' %}
+
+{% block title %}{{ hackathon ? hackathon.name : 'RebelHacks' }}{% endblock %}
 
 {% block body %}
-    <main class="lobby-container">
-        <section class="w-full max-w-lg rounded-2xl bg-[#0f2c44] p-6 text-center text-white shadow-2xl sm:p-8">
-            <h1 class="text-3xl font-bold">{% if name %}Welcome, {{ name }}!{% else %}Welcome!{% endif %}</h1>
-            <p class="mt-4 text-lg">Thank you for registering for RebelHacks!</p>
-            <p class="mt-2 text-gray-300">You will receive an email with more information.</p>
-
-            <dl class="mt-8 space-y-4">
-                <div>
-                    <dt class="text-sm font-medium text-gray-300">Major</dt>
-                    <dd class="text-lg">{{ major }}</dd>
-                </div>
-            </dl>
-
-            <a href="{{ logout_path() }}" class="mt-8 inline-block rounded-lg border-2 border-[#ff7f50] px-6 py-3 font-bold text-[#ff7f50] transition hover:bg-[#ff7f50] hover:text-[#0d1b2a]">
-                Log out
-            </a>
+    <div class="grid">
+        <section class="panel span-7" style="--c: var(--blue)">
+            <header class="panel-tab"><h2>Your team</h2></header>
+            <div class="panel-body">
+                {% if team %}
+                    <p class="big-name">{{ team.name }}</p>
+                    <p class="meta">{{ team.track ? team.track.name ~ ' track' : 'No track yet' }} · {{ team.members|length }} of {{ hackathon.maxTeamSize }}{% if leads %} · you lead this team{% endif %}</p>
+                    <ul class="rows">
+                        {% for m in team.members %}<li><span>{{ m.application.user.firstName }} {{ m.application.user.lastName }}</span><span class="soft">{{ m == team.leader ? 'leader' : 'member' }}</span></li>{% endfor %}
+                        {% set open = hackathon.maxTeamSize - team.members|length %}
+                        {% if open > 0 %}<li class="open"><span>{{ open }} open {{ open == 1 ? 'spot' : 'spots' }}</span></li>{% endif %}
+                    </ul>
+                {% else %}
+                    <p class="big-name">Not on a team yet</p>
+                    <p class="meta">Start one and invite friends with a link, or let team leaders find you.</p>
+                {% endif %}
+            </div>
+            <div class="panel-actions">
+                {% if team %}<a class="button" href="{{ path('app_team') }}">{{ leads ? 'Invite someone' : 'Team page' }}</a>
+                {% else %}<a class="button" href="{{ path('app_team_new') }}">Start a team</a><a class="soft" href="{{ path('app_teams') }}">Browse teams</a>{% endif %}
+            </div>
         </section>
-    </main>
+
+        <section class="panel span-5" style="--c: var(--red)">
+            <header class="panel-tab"><h2>Right now</h2></header>
+            <div class="panel-body">
+                {% if application and application.status.value == 'waitlisted' %}
+                    <p class="big-name">Waiting for a spot</p>
+                    <p class="meta">Spots open as people drop out, in waitlist order. We'll email you if one does.</p>
+                {% elseif team %}
+                    <p class="big-name">Fill your team</p>
+                    <p class="meta">Teams can have up to {{ hackathon.maxTeamSize }} people. Send your invite link, or invite someone from the looking-for-a-team list.</p>
+                {% else %}
+                    <p class="big-name">Find a team</p>
+                    <p class="meta">Teams can have up to {{ hackathon.maxTeamSize }} people. Start one, or turn on "let team leaders find me" in <a href="{{ path('app_settings') }}">Settings</a> so a leader can invite you.</p>
+                {% endif %}
+            </div>
+            <div class="panel-actions"><a class="soft" href="{{ path('app_team') }}">{{ team ? 'See who\'s looking for a team' : 'Team page' }}</a></div>
+        </section>
+
+        <section class="panel span-12" style="--c: var(--gold); --on-c: #141414">
+            <header class="panel-tab"><h2>Before the day</h2></header>
+            <div class="panel-body">
+                <ul class="todo-list">
+                    <li data-done>Register and verify your email</li>
+                    <li{% if application and application.resume %} data-done{% endif %}><a href="{{ path('app_settings') }}">Upload a resume</a></li>
+                    <li{% if application and application.waiverSignedAt %} data-done{% endif %}>Sign UNLV's liability waiver <span class="soft">· details coming by email</span></li>
+                    <li>Bring a laptop, charger and student ID</li>
+                    <li>Check the <a href="{{ path('app_map') }}">map</a> for where to park and check in</li>
+                </ul>
+            </div>
+        </section>
+    </div>
 {% endblock %}

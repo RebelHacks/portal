@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}Start a team{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="span-12 back"><a class="soft" href="{{ path('app_team') }}">&larr; Team</a></div>
+    <section class="panel span-7" style="--c: var(--blue)">
+        <header class="panel-tab"><h2>Your team</h2></header>
+        <form method="post">
+            <div class="panel-body">
+                {# TODO: settle the 48-character limit with the team card design; Team::$name has the same TODO #}
+                <div class="field"><label for="team-name">Team name</label><input id="team-name" name="name" type="text" maxlength="48"><span class="soft">Up to 48 characters. The Code of Conduct applies.</span></div>
+                <div class="field"><label>Track</label><span class="soft">You pick a track on the Tracks page once the team exists.</span></div>
+                {{ include('_shell/todo.html.twig', { what: 'Creates the team and its leader row in one transaction, then redirects to the team page.', where: 'TeamController::new' }) }}
+            </div>
+            <div class="panel-actions"><button class="button" type="submit" disabled>Create team</button><span class="soft">You'll lead the team, and can hand that to another member later.</span></div>
+        </form>
+    </section>
+</div>
+{% endblock %}

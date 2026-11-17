@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+{% set section = 'checkin' %}
+
+{% block title %}Check-in{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-7" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Find someone</h2></header>
+        <form method="get">
+            <div class="panel-body">
+                <div class="field"><label for="ci">Name or email</label><input id="ci" name="q" type="search" value="{{ q }}" autofocus></div>
+                {% if q and matches is empty %}<p class="meta">Nobody matches "{{ q }}".</p>{% endif %}
+                <ul class="rows">
+                    {% for a in matches %}
+                        <li>
+                            <span><b>{{ a.user.firstName }} {{ a.user.lastName }}</b><br><span class="soft">{{ a.user.email }}{% if a.waiverSignedAt %} · waiver signed{% else %} · <b>no waiver</b>{% endif %}</span></span>
+                            {% if a.checkedInAt %}<span class="soft">checked in {{ a.checkedInAt|date('g:i A') }}</span>{% else %}<button class="button" type="button" disabled>Check in</button>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                {{ include('_shell/todo.html.twig', { what: 'The Check in button: sets checked_in_at and writes an audit_log row.', where: 'OrganizerController::checkIn' }) }}
+            </div>
+        </form>
+    </section>
+    <section class="panel span-5" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>At the door</h2></header>
+        <div class="panel-body">
+            <div class="counts"><div><b>{{ checkedIn }}</b><span>checked in</span></div></div>
+        </div>
+        <div class="panel-body"><p class="meta">Anyone who hasn't registered can do it on their phone; they show up here once they verify their email.</p></div>
+    </section>
+</div>
+{% endblock %}

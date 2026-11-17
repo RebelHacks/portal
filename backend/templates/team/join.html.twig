@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+{% set section = 'team' %}
+
+{% block title %}Join {{ team.name }}?{% endblock %}
+
+{% block body %}
+<div class="grid narrow">
+    <section class="panel" style="--c: var(--blue)">
+        <div class="panel-body">
+            <p class="big-name">{{ team.name }}</p>
+            <p class="meta">{{ team.track ? team.track.name ~ ' track' : 'No track yet' }} · {{ team.members|length }} of {{ hackathon.maxTeamSize }}</p>
+            <ul class="rows">
+                {% for member in team.members %}
+                    <li><span>{{ member.application.user.firstName }} {{ member.application.user.lastName }}</span><span class="soft">{{ member == team.leader ? 'leader' : 'member' }}</span></li>
+                {% endfor %}
+            </ul>
+            <p class="meta">Joining declines any other invites you have. You can leave before teams lock.</p>
+            {{ include('_shell/todo.html.twig', { what: 'The join: size check under a team lock, the Beginner gate (a non-beginner can\'t join a beginners-only team through the link), decline other invites.', where: 'TeamController::join' }) }}
+        </div>
+        <form method="post" class="panel-actions"><button class="button" type="submit" disabled>Join</button><a class="soft" href="{{ path('app_lobby') }}">No thanks</a></form>
+    </section>
+</div>
+{% endblock %}

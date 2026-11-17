@@ -1,0 +1,37 @@
+{#
+    The news column, right of the ribbon: what's up next, and announcements.
+    `hackathon` comes from the page. The next item and the announcements are looked up here through
+    the `pane` Twig variables set in App\Twig\PaneExtension.
+#}
+<aside class="pane" aria-label="Up next and announcements">
+    <section class="panel" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Up next</h2></header>
+        <div class="panel-body">
+            {% set next = pane_next() %}
+            {% if next %}
+                <p class="next-title">{{ next.title }}</p>
+                {% set days = date().diff(next.startsAt).days %}
+                <p class="countdown">{{ days }} <small>{{ days == 1 ? 'day' : 'days' }}</small></p>
+                <p class="next-when">{{ next.startsAt|date('D, M j · g:i A') }}</p>
+                {% if next.location %}<p class="next-place">{{ next.location }}</p>{% endif %}
+            {% else %}
+                <p class="meta">Nothing scheduled yet.</p>
+            {% endif %}
+        </div>
+    </section>
+    <section class="panel" style="--c: var(--red)">
+        <header class="panel-tab"><h2>Announcements</h2></header>
+        <div class="panel-body">
+            {% set news = pane_announcements() %}
+            {% if news is empty %}
+                <p class="meta">Nothing yet. Organizers post here, and you get an email.</p>
+            {% else %}
+                <ul class="news">
+                    {% for a in news %}
+                        <li><time>{{ a.publishedAt|date('M j')|upper }}</time><p>{{ a.body }}</p></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </section>
+</aside>

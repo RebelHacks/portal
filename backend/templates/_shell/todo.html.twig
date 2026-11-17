@@ -1,0 +1,6 @@
+{#
+    A stubbed action: the layout is final, the behavior isn't built. Shows what it will do and where
+    the work is, so nobody mistakes it for finished. Remove the include when the real thing lands.
+    Usage: {{ include('_shell/todo.html.twig', { what: 'Saves the team name', where: 'TeamController::rename' }) }}
+#}
+<p class="notice todo" style="--c: var(--gold)"><b>Not built yet.</b> {{ what }}{% if where|default(false) %} <span class="mono soft">({{ where }})</span>{% endif %}</p>

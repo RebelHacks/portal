@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+{% set section = 'home' %}
+
+{% block title %}Judging{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <section class="panel span-7" style="--c: var(--gold); --on-c: #141414">
+        <header class="panel-tab"><h2>Your panel</h2></header>
+        <div class="panel-body">
+            <p class="big-name">Not assigned yet</p>
+            <p class="meta">{% if hackathon %}Judging is {{ hackathon.endsAt|date('l, F j') }} on the first floor of AEB. {% endif %}Organizers assign panels the week of the event. Your teams will be listed here in table order.</p>
+            {{ include('_shell/todo.html.twig', { what: 'Your panel, its teams and how many you have scored. Needs the judging tables.', where: 'JudgeController::home' }) }}
+        </div>
+        <div class="panel-actions"><a class="button" href="{{ path('app_judge_teams') }}">My teams</a><a class="soft" href="{{ path('app_judge_rubric') }}">Read the rubric</a></div>
+    </section>
+    <section class="panel span-5" style="--c: var(--black); --on-c: var(--page)">
+        <header class="panel-tab"><h2>How it works</h2></header>
+        <div class="panel-body">
+            <ol class="rows" style="list-style: decimal inside">
+                <li><span><b>Walk to the table.</b> <span class="soft">The map shows where each table is.</span></span></li>
+                <li><span><b>Watch the demo, ask questions.</b> <span class="soft">Open their Devpost and GitHub from the team page.</span></span></li>
+                <li><span><b>Score before you leave the table.</b> <span class="soft">You can change a score until judging closes.</span></span></li>
+            </ol>
+        </div>
+    </section>
+</div>
+{% endblock %}
