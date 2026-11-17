@@ -1,0 +1,19 @@
+# Where uploaded resumes are kept. UPLOAD_STORAGE picks one:
+#   uploads.local  a folder on this machine (the default, for your own computer)
+#   uploads.s3     the private S3 bucket (servers)
+flysystem:
+    storages:
+        uploads.local:
+            adapter: 'local'
+            options:
+                directory: '%app.upload_dir%'
+                lazy_root_creation: true
+        uploads.s3:
+            adapter: 'asyncaws'
+            options:
+                client: 'AsyncAws\S3\S3Client'
+                bucket: '%env(S3_BUCKET)%'
+        uploads.storage:
+            adapter: 'lazy'
+            options:
+                source: '%env(UPLOAD_STORAGE)%'

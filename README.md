@@ -248,8 +248,18 @@ These are the settings in `backend/.env`. Keep that file out of Git.
 | `APP_SECRET` | Paste the random value printed by the PHP command in step 2 |
 | `DEFAULT_URI` | Address Symfony uses when generating links from terminal commands |
 | `DATABASE_URL` | Connection details for your MariaDB database |
-| `MAILER_DSN=null://null` | Turns off email delivery |
-| `UPLOAD_DIR` | Optional, and unused while resume uploads are off. Where uploaded resumes are saved. Leave it out locally to use `backend/var/uploads`. On a server, set it to a folder outside the project, so deploys don't wipe it. |
+| `MAILER_DSN=null://null` | Turns off email delivery. Sign-up sends a link by email, so see "Reading sign-up emails" below |
+| `MAILER_FROM` | Optional. Who account emails come from. Defaults to `RebelHacks <info@rebelhacks.com>` |
+| `UPLOAD_DIR` | Optional. The folder uploaded resumes are saved in on your own computer. Leave it out to use `backend/var/uploads`. Servers use S3 instead (below). |
+
+### Reading sign-up emails
+
+Sign-up has two steps: you enter an email address, and the link sent to it opens the rest of the form. Nothing is
+delivered with `MAILER_DSN=null://null`, so to get the link on your own computer, do one of these:
+
+- Run [Mailpit](https://mailpit.axllent.org/), set `MAILER_DSN=smtp://127.0.0.1:1025`, and read the email at
+  `http://127.0.0.1:8025`.
+- Or open `/_profiler`, pick the `POST` to `/register`, and look at its E-mails panel.
 
 ## Running on a server
 
@@ -258,6 +268,7 @@ The settings above are for your own computer. On a server other people can reach
 - Set `APP_ENV=prod` and `APP_DEBUG=0`. In development mode, anyone can open Symfony's debug pages, and they show every secret.
 - Generate a new `APP_SECRET`. Never reuse your local one.
 - If the server sits behind a proxy or load balancer, set Symfony's trusted proxies. Otherwise every visitor looks like the same address and shares one sign-up and login limit.
+- Keep resumes in the private S3 bucket, not on the server: set `UPLOAD_STORAGE=uploads.s3`, `S3_BUCKET` and `S3_REGION`. The portal uses the server's IAM role, or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` if they're set. Give staging its own bucket.
 - Run `php bin/console app:sweep-files` once a day, for example from cron. Deleting an account deletes its file rows, and this removes the stored files they leave behind. `--dry-run` lists them without deleting.
 
 ## Quick Links

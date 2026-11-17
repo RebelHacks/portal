@@ -13,25 +13,26 @@
 {% endmacro %}
 {% import _self as f %}
 
-{% block title %}Register for RebelHacks{% endblock %}
+{% block title %}Finish registering{% endblock %}
 
 {% block body %}
-    {# One step for now. The two-step email-first flow (see the design doc) replaces this. #}
-    {{ form_start(registrationForm, { action: path('app_register') }) }}
+    {# Step 2. The address was proved by the emailed link, so it's shown, not asked for. #}
+    {{ form_start(registrationForm, { action: path('app_register_finish') }) }}
     <div class="grid narrow">
         <section class="panel" style="--c: var(--red)">
             <header class="panel-tab"><h2>Your account</h2></header>
             <div class="panel-body">
-                {% for error in app.flashes('verify_email_error') %}
-                    <p class="notice error" style="margin-bottom: 14px">{{ error }}</p>
-                {% endfor %}
                 {{ form_errors(registrationForm) }}
+
+                <div class="field">
+                    <label>University email</label>
+                    <span class="mono">{{ email }}</span>
+                </div>
 
                 <div class="buttons">
                     <div style="flex: 1">{{ f.field(registrationForm.firstName) }}</div>
                     <div style="flex: 1">{{ f.field(registrationForm.lastName) }}</div>
                 </div>
-                {{ f.field(registrationForm.email, 'A .edu address from any college.') }}
                 {{ f.field(registrationForm.plainPassword.first, 'At least 8 characters with a capital, a number and a symbol. No spaces.') }}
                 {{ f.field(registrationForm.plainPassword.second) }}
                 <span class="error">{{ form_errors(registrationForm.plainPassword) }}</span>
@@ -59,9 +60,7 @@
                     <span class="error">{{ form_errors(registrationForm.attendedBefore) }}</span>
                 </div>
 
-                {# Required once uploads go to S3. RegistrationController says how to turn it on.
-                {{ f.field(registrationForm.resume, 'Required. PDF up to 10 MB. Sponsors get it for recruiting; deleted a year after the event.') }}
-                #}
+                {{ f.field(registrationForm.resume, 'PDF, up to 10 MB. Sponsors receive it for recruiting, and we delete it a year after the event.') }}
 
                 <label class="check">
                     {{ form_widget(registrationForm.agreeTerms) }}
@@ -72,7 +71,6 @@
             </div>
             <div class="panel-actions">
                 <button class="button" type="submit">Create my account</button>
-                <a class="soft" href="{{ path('app_login') }}">Already have an account? Log in</a>
             </div>
         </section>
     </div>

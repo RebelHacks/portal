@@ -6,7 +6,6 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
@@ -15,6 +14,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
+// Step 2 of sign-up, reached from the emailed link. The address comes from that link, so it isn't a field here.
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(
@@ -34,27 +34,6 @@ class RegistrationFormType extends AbstractType
                 'constraints'=> [
                     new Assert\NotBlank(),
                     new Assert\Length(max: 128),
-                ],
-            ])
-            ->add('email', EmailType::class, [
-                'label' => 'University email',
-                'attr' => [
-                    'autocomplete' => 'email',
-                    'placeholder' => 'student@unlv.nevada.edu',
-                ],
-                'constraints'=> [
-                    new Assert\NotBlank(
-                        message: 'Please enter your university email.'
-                    ),
-                    new Assert\Email(
-                        message: 'Please enter a valid email address.'
-                    ),
-                    new Assert\Regex(
-                        pattern: '/@(?:[a-z0-9-]+\.)+edu$/i',
-                        message: 'Please use a university email address ending in .edu.'
-                    ),
-                    // the most user.email holds
-                    new Assert\Length(max: 180),
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [
@@ -105,20 +84,20 @@ class RegistrationFormType extends AbstractType
                     new Assert\NotNull(message: 'Please answer yes or no.'),
                 ]
             ])
-            // Required once uploads go to S3. RegistrationController says how to turn it on.
-            // ->add('resume', FileType::class, [
-            //     'label' => 'Resume (PDF)',
-            //     'mapped' => false,
-            //     'required' => true,
-            //     'constraints' => [
-            //         new Assert\NotNull(message: 'Please upload your resume.'),
-            //         new Assert\File(
-            //             maxSize: '10M',
-            //             mimeTypes: ['application/pdf'],
-            //             mimeTypesMessage: 'Please upload a PDF resume.'
-            //         )
-            //     ]
-            // ])
+            ->add('resume', FileType::class, [
+                'label' => 'Resume',
+                'mapped' => false,
+                'required' => true,
+                'attr' => ['accept' => 'application/pdf'],
+                'constraints' => [
+                    new Assert\NotNull(message: 'Please upload your resume.'),
+                    new Assert\File(
+                        maxSize: '10M',
+                        mimeTypes: ['application/pdf'],
+                        mimeTypesMessage: 'Please upload a PDF resume.'
+                    )
+                ]
+            ])
             // Only checked at sign-up for now. The new schema stores when they agreed.
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,

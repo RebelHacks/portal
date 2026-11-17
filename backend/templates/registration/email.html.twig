@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% set out = true %}
+
+{% block title %}Register for RebelHacks{% endblock %}
+
+{% block body %}
+    {# Step 1: only the address. The emailed link leads to finish.html.twig. #}
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--red)">
+            {{ form_start(form, { action: path('app_register') }) }}
+            <div class="panel-body">
+                {% for message in app.flashes('error') %}
+                    <p class="notice error" style="margin-bottom: 14px">{{ message }}</p>
+                {% endfor %}
+                {{ form_errors(form) }}
+
+                <div class="field">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email) }}
+                    <span class="soft">A .edu address from any college. We'll email you a link to continue.</span>
+                    <span class="error">{{ form_errors(form.email) }}</span>
+                </div>
+            </div>
+            <div class="panel-actions">
+                <button class="button" type="submit">Email me the link</button>
+            </div>
+            {{ form_end(form) }}
+        </section>
+
+        <p class="meta center">Already have an account? <a href="{{ path('app_login') }}">Log in</a></p>
+    </div>
+{% endblock %}

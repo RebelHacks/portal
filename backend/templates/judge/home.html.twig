@@ -9,7 +9,7 @@
         <header class="panel-tab"><h2>Your panel</h2></header>
         <div class="panel-body">
             <p class="big-name">Not assigned yet</p>
-            <p class="meta">{% if hackathon %}Judging is {{ hackathon.endsAt|date('l, F j') }} on the first floor of AEB. {% endif %}Organizers assign panels the week of the event. Your teams will be listed here in table order.</p>
+            <p class="meta">{% if hackathon %}Judging is {{ hackathon.endsAt|date('l, F j') }} on the first floor of AEB. {% endif %}Panels of judges are going to be assigned the week of the event, and the ordering . Your teams will be listed here in table order.</p>
             {{ include('_shell/todo.html.twig', { what: 'Your panel, its teams and how many you have scored. Needs the judging tables.', where: 'JudgeController::home' }) }}
         </div>
         <div class="panel-actions"><a class="button" href="{{ path('app_judge_teams') }}">My teams</a><a class="soft" href="{{ path('app_judge_rubric') }}">Read the rubric</a></div>

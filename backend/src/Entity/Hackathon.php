@@ -33,7 +33,7 @@ class Hackathon
     #[ORM\Column]
     private int $maxTeamSize = 5;
 
-    // How many applications can be accepted. Anyone verified after that is waitlisted.
+    // How many applications can be accepted. Anyone who signs up after that is waitlisted.
     #[ORM\Column]
     private ?int $capacity = null;
 

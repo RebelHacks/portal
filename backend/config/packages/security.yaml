@@ -43,8 +43,8 @@ security:
     access_control:
         - { path: ^/\z, roles: PUBLIC_ACCESS } # the front door
         - { path: ^/login\z, roles: PUBLIC_ACCESS }
-        - { path: ^/register\z, roles: PUBLIC_ACCESS }
-        - { path: ^/verify/email\z, roles: PUBLIC_ACCESS }
+        # sign-up: the email step, the link from the email, and the rest of the form
+        - { path: ^/register(/(sent|verify|finish))?\z, roles: PUBLIC_ACCESS }
         - { path: ^/logout\z, roles: PUBLIC_ACCESS }
         - { path: ^/terms\z, roles: PUBLIC_ACCESS }
         - { path: ^/organizer, roles: ROLE_ADMIN }

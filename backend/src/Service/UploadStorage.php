@@ -5,29 +5,26 @@ namespace App\Service;
 use App\Entity\File;
 use App\Entity\User;
 use App\Enum\FileKind;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use League\Flysystem\FilesystemOperator;
+use League\Flysystem\StorageAttributes;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-// Saves uploads outside public/ under a random name. The name the browser sent is only kept in the database.
+// Saves uploads under a random name, in a local folder or the private S3 bucket (flysystem.yaml
+// says which). The name the browser sent is only kept in the database.
 class UploadStorage
 {
-    // What save() names files. Anything else in the folder isn't ours, so the cleanup leaves it alone.
+    // What save() names files. Anything else in storage isn't ours, so the cleanup leaves it alone.
     private const STORED_NAME = '/^[0-9a-f]{32}\.[a-z0-9]+$/';
 
     public function __construct(
-        #[Autowire('%app.upload_dir%')]
-        private string $uploadDir,
+        // the "uploads.storage" entry in flysystem.yaml
+        private FilesystemOperator $uploadsStorage,
     ) {
     }
 
-    // Moves the upload into place and returns its row, not yet persisted.
+    // Stores the upload and returns its row, not yet persisted.
     public function save(UploadedFile $upload, User $owner, FileKind $kind): File
     {
-        if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0700, true) && !is_dir($this->uploadDir)) {
-            throw new \RuntimeException('Could not create the upload folder.');
-        }
-
-        // read these before moving, while the temporary file still exists
         $file = (new File())
             ->setOwner($owner)
             ->setKind($kind)
@@ -36,19 +33,27 @@ class UploadStorage
             ->setMimeType((string) $upload->getMimeType())
             ->setSize((int) $upload->getSize());
 
-        $upload->move($this->uploadDir, $file->getStoredName());
+        $stream = fopen($upload->getPathname(), 'r');
+
+        try {
+            // private: readable only by the portal, on disk and in the bucket
+            $this->uploadsStorage->writeStream($file->getStoredName(), $stream, [
+                'visibility' => 'private',
+                'directory_visibility' => 'private',
+            ]);
+        } finally {
+            if (\is_resource($stream)) {
+                fclose($stream);
+            }
+        }
 
         return $file;
     }
 
-    // For when saving the row fails after the file was moved.
+    // For when saving the row fails after the file was stored.
     public function delete(File $file): void
     {
-        $path = $this->uploadDir . '/' . $file->getStoredName();
-
-        if (is_file($path)) {
-            unlink($path);
-        }
+        $this->uploadsStorage->delete($file->getStoredName());
     }
 
     // Deletes stored files older than $cutoff whose names aren't in $keep, and returns their names.
@@ -56,21 +61,18 @@ class UploadStorage
     /** @param array<string, true> $keep @return list<string> */
     public function sweep(array $keep, \DateTimeImmutable $cutoff, bool $dryRun): array
     {
-        if (!is_dir($this->uploadDir)) {
-            return [];
-        }
-
         $deleted = [];
 
-        foreach (new \FilesystemIterator($this->uploadDir) as $entry) {
-            $name = $entry->getFilename();
+        /** @var StorageAttributes $entry */
+        foreach ($this->uploadsStorage->listContents('') as $entry) {
+            $name = $entry->path();
 
-            if (!$entry->isFile() || !preg_match(self::STORED_NAME, $name) || isset($keep[$name]) || $entry->getMTime() > $cutoff->getTimestamp()) {
+            if (!$entry->isFile() || !preg_match(self::STORED_NAME, $name) || isset($keep[$name]) || $entry->lastModified() > $cutoff->getTimestamp()) {
                 continue;
             }
 
             if (!$dryRun) {
-                unlink($entry->getPathname());
+                $this->uploadsStorage->delete($name);
             }
             $deleted[] = $name;
         }
