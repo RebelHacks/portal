@@ -259,7 +259,7 @@ delivered with `MAILER_DSN=null://null`, so to get the link on your own computer
 
 - Run [Mailpit](https://mailpit.axllent.org/), set `MAILER_DSN=smtp://127.0.0.1:1025`, and read the email at
   `http://127.0.0.1:8025`.
-- Or open `/_profiler`, pick the `POST` to `/register`, and look at its E-mails panel.
+- Or open `/_profiler/` (with the trailing slash), pick the `POST` to `/register`, and look at its E-mails panel.
 
 ## Running on a server
 
