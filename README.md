@@ -250,6 +250,7 @@ These are the settings in `backend/.env`. Keep that file out of Git.
 | `DATABASE_URL` | Connection details for your MariaDB database |
 | `MAILER_DSN=null://null` | Turns off email delivery. Sign-up sends a link by email, so see "Reading sign-up emails" below |
 | `MAILER_FROM` | Optional. Who account emails come from. Defaults to `RebelHacks <info@rebelhacks.com>` |
+| `HACKER_PAGES_OPEN` | Optional. On your own computer hackers get every page. Set it to `0` to see what a server shows before those pages open: one "you're registered" page |
 | `UPLOAD_DIR` | Optional. The folder uploaded resumes are saved in on your own computer. Leave it out to use `backend/var/uploads`. Servers use S3 instead (below). |
 
 ### Reading sign-up emails
@@ -261,14 +262,18 @@ delivered with `MAILER_DSN=null://null`, so to get the link on your own computer
   `http://127.0.0.1:8025`.
 - Or open `/_profiler/` (with the trailing slash), pick the `POST` to `/register`, and look at its E-mails panel.
 
+"Forgot your password?" on the login page emails a login link the same way. Its `POST` is to `/login/link`. Logging in with that link leads to a page for setting a new password.
+
 ## Running on a server
 
 The settings above are for your own computer. On a server other people can reach:
 
 - Set `APP_ENV=prod` and `APP_DEBUG=0`. In development mode, anyone can open Symfony's debug pages, and they show every secret.
 - Generate a new `APP_SECRET`. Never reuse your local one.
+- The portal only answers to `rebelhacks.com` and names under it, because emailed links are built from the address a request came in on. A server on any other name sets `SYMFONY_TRUSTED_HOSTS` to a pattern for that name, or every page returns a 400.
 - If the server sits behind a proxy or load balancer, set Symfony's trusted proxies. Otherwise every visitor looks like the same address and shares one sign-up and login limit.
 - Keep resumes in the private S3 bucket, not on the server: set `UPLOAD_STORAGE=uploads.s3`, `S3_BUCKET` and `S3_REGION`. The portal uses the server's IAM role, or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` if they're set. Give staging its own bucket.
+- Hackers only see a "you're registered" page after logging in. Team, schedule, map, submission and settings open to them when you set `HACKER_PAGES_OPEN=1`. Organizers and judges see everything either way.
 - Run `php bin/console app:sweep-files` once a day, for example from cron. Deleting an account deletes its file rows, and this removes the stored files they leave behind. `--dry-run` lists them without deleting.
 
 ## Quick Links

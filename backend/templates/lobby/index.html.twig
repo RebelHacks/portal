@@ -5,6 +5,9 @@
 {% block title %}{{ hackathon ? hackathon.name : 'RebelHacks' }}{% endblock %}
 
 {% block body %}
+    {% for message in app.flashes('success') %}
+        <p class="notice">{{ message }}</p>
+    {% endfor %}
     <div class="grid">
         <section class="panel span-7" style="--c: var(--blue)">
             <header class="panel-tab"><h2>Your team</h2></header>

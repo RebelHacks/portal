@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% set out = true %}
+
+{% block title %}Forgot your password?{% endblock %}
+
+{% block body %}
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--red)">
+            {{ form_start(form, { action: path('app_login_link') }) }}
+            <div class="panel-body">
+                {% for message in app.flashes('error') %}
+                    <p class="notice error" style="margin-bottom: 14px">{{ message }}</p>
+                {% endfor %}
+                {{ form_errors(form) }}
+
+                <div class="field">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email) }}
+                    <span class="soft">We'll email you a link that logs you in without a password.</span>
+                    <span class="error">{{ form_errors(form.email) }}</span>
+                </div>
+            </div>
+            <div class="panel-actions">
+                <button class="button" type="submit">Email me the link</button>
+                <a class="soft" href="{{ path('app_login') }}">Back to log in</a>
+            </div>
+            {{ form_end(form) }}
+        </section>
+    </div>
+{% endblock %}

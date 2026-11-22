@@ -14,7 +14,7 @@
                         <p class="notice error" style="margin-bottom: 14px">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
                     {% endif %}
                     {% for message in app.flashes('success') %}
-                        <p class="notice" style="margin-bottom: 14px">{{ message }}</p>
+                        <p class="notice" style="--c: var(--success); margin-bottom: 14px">{{ message }}</p>
                     {% endfor %}
 
                     <div class="field">
@@ -29,8 +29,7 @@
                 </div>
                 <div class="panel-actions">
                     <button class="button" type="submit">Log in</button>
-                    {# TODO: login links (the design doc's /login/link) #}
-                    <a class="soft" href="#">Forgot your password?</a>
+                    <a class="soft" href="{{ path('app_login_link') }}">Forgot your password?</a>
                 </div>
             </form>
         </section>

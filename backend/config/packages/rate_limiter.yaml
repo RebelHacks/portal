@@ -11,6 +11,14 @@ framework:
             limit: 5
             interval: '1 hour'
         # wrong passwords for one account
+        login_link:
+            policy: sliding_window
+            limit: 500
+            interval: '1 hour'
+        login_link_email:
+            policy: sliding_window
+            limit: 3
+            interval: '15 minutes'
         login_account:
             policy: sliding_window
             limit: 5

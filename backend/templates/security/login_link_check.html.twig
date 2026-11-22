@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% set out = true %}
+
+{% block title %}Log in{% endblock %}
+
+{% block body %}
+    {# The emailed link lands here. Logging in takes the button, so a mail scanner that opens the link doesn't use it up. #}
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--red)">
+            <form method="post" action="{{ path('app_login_link_check') }}">
+                <div class="panel-body">
+                    <p>Log in as <b>{{ user }}</b>.</p>
+                    <input type="hidden" name="user" value="{{ user }}">
+                    <input type="hidden" name="expires" value="{{ expires }}">
+                    <input type="hidden" name="hash" value="{{ hash }}">
+                </div>
+                <div class="panel-actions">
+                    <button class="button" type="submit" autofocus>Log in</button>
+                </div>
+            </form>
+        </section>
+    </div>
+{% endblock %}

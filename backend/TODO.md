@@ -4,7 +4,8 @@ Each of these has a dashed "Not built yet" box on its page. Delete the box when 
 
 ## Sign-up and login
 
-- [ ] Login links, which also cover forgotten passwords (`/login/link`)
+- [ ] Stay logged in for 30 days after using a login link
+- [ ] Add a judge, who then gets in with a login link
 
 ## Team
 

@@ -11,6 +11,9 @@ parameters:
     env(UPLOAD_STORAGE): 'uploads.local'
     env(S3_BUCKET): ''
     env(S3_REGION): ''
+    # Hackers only see that they're registered until HACKER_PAGES_OPEN=1 (see ClosedPagesSubscriber).
+    env(HACKER_PAGES_OPEN): '0'
+    app.hacker_pages_open: '%env(bool:HACKER_PAGES_OPEN)%'
 
 services:
     # default configuration for services in *this* file
@@ -43,3 +46,8 @@ services:
             $globalFactory: '@limiter.login_address'
             $localFactory: '@limiter.login_account'
             $secret: '%kernel.secret%'
+
+when@dev:
+    parameters:
+        # open on your own computer, so the pages can be worked on
+        env(HACKER_PAGES_OPEN): '1'
