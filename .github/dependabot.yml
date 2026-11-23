@@ -1,0 +1,18 @@
+# Dependabot watches the PHP packages in backend/.
+# Security fixes come as pull requests right away, once "Dependabot security updates" is on in the repo settings.
+# Ordinary updates come once a month, as set below.
+version: 2
+updates:
+  - package-ecosystem: "composer"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+    # skip releases newer than two weeks, so a bad one has time to be caught and pulled
+    cooldown:
+      default-days: 14
+    # one pull request for the small bumps; each major version gets its own
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
