@@ -217,7 +217,13 @@ class RegistrationController extends AbstractController
                 $upload = $form->get('resume')->getData();
                 $resume = $uploads->save($upload, $user, FileKind::Resume);
             } catch (UploadFailed $exception) {
-                $logger->error('Resume upload failed at sign-up.', ['exception' => $exception]);
+                // Without Monolog, Symfony's fallback logger prints only the message, so the cause goes in it.
+                $cause = $exception->getPrevious() ?? $exception;
+                $logger->error('Resume upload failed at sign-up: {class}: {reason}', [
+                    'exception' => $exception,
+                    'class' => $cause::class,
+                    'reason' => mb_substr($cause->getMessage(), 0, 1000),
+                ]);
                 $form->get('resume')->addError(new FormError(
                     'We couldn\'t save your resume. Please try again in a few minutes.'
                 ));
