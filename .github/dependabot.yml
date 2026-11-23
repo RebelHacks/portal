@@ -16,3 +16,7 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
     open-pull-requests-limit: 5
+    # Symfony's packages move to a new major version together, by hand. One at a time breaks the install.
+    ignore:
+      - dependency-name: "symfony/*"
+        update-types: ["version-update:semver-major"]
