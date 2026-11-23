@@ -35,7 +35,7 @@ services:
 
     # The S3 client finds its own credentials: the server's IAM role, or AWS_ACCESS_KEY_ID and
     # AWS_SECRET_ACCESS_KEY if they're set. Only built when UPLOAD_STORAGE is uploads.s3.
-    AsyncAws\S3\S3Client:
+    Aws\S3\S3Client:
         arguments:
             - region: '%env(S3_REGION)%'
 
