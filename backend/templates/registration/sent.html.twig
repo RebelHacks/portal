@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% set out = true %}
+
+{% block title %}Check your inbox{% endblock %}
+
+{% block body %}
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--red)">
+            <div class="panel-body">
+                <p>We sent a link to <b>{{ email }}</b>. Open it to finish registering. It works for 24 hours.</p>
+                <p class="meta">Nothing after a few minutes? Check your spam folder, or <a href="{{ path('app_register') }}">send it again</a>.</p>
+            </div>
+        </section>
+    </div>
+{% endblock %}

@@ -4,10 +4,16 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    # Uploads live outside public/. On a server, set UPLOAD_DIR to a folder outside the project,
-    # so deploys don't wipe it.
+    # Uploads go to a local folder unless UPLOAD_STORAGE is uploads.s3 (see UploadStorage).
+    # The folder is outside public/, so nothing in it can be opened by URL.
     app.default_upload_dir: '%kernel.project_dir%/var/uploads'
     app.upload_dir: '%env(default:app.default_upload_dir:UPLOAD_DIR)%'
+    env(UPLOAD_STORAGE): 'uploads.local'
+    env(S3_BUCKET): ''
+    env(S3_REGION): ''
+    # Hackers only see that they're registered until HACKER_PAGES_OPEN=1 (see ClosedPagesSubscriber).
+    env(HACKER_PAGES_OPEN): '0'
+    app.hacker_pages_open: '%env(bool:HACKER_PAGES_OPEN)%'
 
 services:
     # default configuration for services in *this* file
@@ -27,6 +33,12 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    # The S3 client finds its own credentials: the server's IAM role, or AWS_ACCESS_KEY_ID and
+    # AWS_SECRET_ACCESS_KEY if they're set. Only built when UPLOAD_STORAGE is uploads.s3.
+    Aws\S3\S3Client:
+        arguments:
+            - region: '%env(S3_REGION)%'
+
     # login throttling with separate limits per account and per IP address (see rate_limiter.yaml)
     app.login_rate_limiter:
         class: Symfony\Component\Security\Http\RateLimiter\DefaultLoginRateLimiter
@@ -34,3 +46,8 @@ services:
             $globalFactory: '@limiter.login_address'
             $localFactory: '@limiter.login_account'
             $secret: '%kernel.secret%'
+
+when@dev:
+    parameters:
+        # open on your own computer, so the pages can be worked on
+        env(HACKER_PAGES_OPEN): '1'

@@ -22,7 +22,6 @@
                     <span class="soft">Changing it emails them and is logged with your name.</span>
                 </div>
                 <ul class="rows">
-                    <li><span class="soft">Verified</span><span>{{ u.verified ? 'Yes' : 'Not yet' }}</span></li>
                     <li><span class="soft">Been before</span><span>{{ application.attendedBefore ? 'Yes' : 'No (beginner)' }}</span></li>
                     <li><span class="soft">Terms</span><span>Agreed {{ application.agreedToTermsAt|date('M j') }} · version {{ application.termsVersion }}</span></li>
                     <li><span class="soft">Resume</span><span>{% if application.resume %}<a class="soft" href="#">{{ application.resume.originalName }}</a>{% else %}<span class="soft">none</span>{% endif %}</span></li>

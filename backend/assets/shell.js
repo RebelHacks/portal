@@ -135,3 +135,21 @@ for (const t of document.querySelectorAll('.nav-toggle')) {
     t.setAttribute('aria-expanded', String('open' in g.dataset));
   });
 }
+
+// ---------- countdown: data-countdown is the seconds left when the page was made ----------
+// It counts from that, not from this device's clock, so a wrong clock can't open sign-up early.
+// At zero the page reloads and the server decides what comes next.
+const clock = document.querySelector('[data-countdown]');
+if (clock) {
+  const loaded = Date.now();
+  const two = (n) => String(n).padStart(2, '0');
+  const tick = () => {
+    const left = Math.ceil(Number(clock.dataset.countdown) - (Date.now() - loaded) / 1000);
+    if (left <= 0) { clearInterval(timer); location.reload(); return; }
+    const days = Math.floor(left / 86400);
+    const time = `${two(Math.floor(left / 3600) % 24)}:${two(Math.floor(left / 60) % 60)}:${two(left % 60)}`;
+    clock.textContent = days > 0 ? `${days} ${days === 1 ? 'day' : 'days'} ${time}` : time;
+  };
+  const timer = setInterval(tick, 1000);
+  tick();
+}

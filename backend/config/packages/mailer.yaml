@@ -1,3 +1,9 @@
+parameters:
+    # who account emails come from, unless MAILER_FROM says otherwise
+    env(MAILER_FROM): 'RebelHacks <info@rebelhacks.com>'
+
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+        headers:
+            From: '%env(MAILER_FROM)%'

@@ -6,6 +6,7 @@ use App\Controller\TermsController;
 use App\Entity\Application;
 use App\Entity\Hackathon;
 use App\Entity\User;
+use App\Enum\ApplicationStatus;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -94,7 +95,9 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
             ->setMajor($major)
             ->setAttendedBefore($attendedBefore)
             ->setAgreedToTermsAt(new \DateTimeImmutable())
-            ->setTermsVersion(TermsController::VERSION);
+            ->setTermsVersion(TermsController::VERSION)
+            // sample people have a spot, the way a real sign-up under capacity does
+            ->setStatus(ApplicationStatus::Accepted);
         $manager->persist($application);
 
         return $application;

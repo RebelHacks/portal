@@ -1,26 +1,25 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}RebelHacks | Coming Soon{% endblock %}
+{% set out = true %}
+{% set opensAt = hackathon ? hackathon.registrationOpensAt : null %}
+
+{% block title %}{% if opensAt %}Registration opens {{ opensAt|date('F j') }}{% else %}Registration isn't open yet{% endif %}{% endblock %}
 
 {% block body %}
-<main class="flex min-h-screen items-center justify-center px-6 py-12 text-white">
-    <section class="w-full max-w-2xl text-center">
-        <h1 class="mb-4 text-5xl font-extrabold text-orange-400 sm:text-7xl">
-            RebelHacks
-        </h1>
-
-        <h2 class="mb-6 text-2xl font-semibold text-cyan-400 sm:text-3xl">
-            Registration Opens November 23, 2026
-        </h2>
-
-        <p class="mb-4 text-lg text-gray-300">
-            We're getting everything ready for RebelHacks 2027!
-            Registration isn't open just yet.
-        </p>
-
-        <p class="text-gray-400">
-            Check back soon to join us.
-        </p>
-    </section>
-</main>
+    <div class="grid narrow">
+        <section class="panel" style="--c: var(--gold); --on-c: #141414">
+            <div class="panel-body">
+                {% if opensAt %}
+                    {# shell.js counts down and reloads when the server should open registration. #}
+                    <p class="countdown" data-countdown="{{ opensAt.timestamp - date().timestamp }}">{{ opensAt|date('F j') }}</p>
+                    <p class="meta">
+                        Registration opens {{ opensAt|date('l, F j') }} at {{ opensAt|date('g:i A') }}.
+                        {{ hackathon.name }} takes place {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('F j, Y') }} at UNLV.
+                    </p>
+                {% else %}
+                    <p class="meta">Check rebelhacks.com for the registration opening date.</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
 {% endblock %}

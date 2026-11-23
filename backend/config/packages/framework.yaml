@@ -1,6 +1,14 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
+parameters:
+    # no limit on your own computer
+    env(SYMFONY_TRUSTED_HOSTS): ''
+
 framework:
     secret: '%env(APP_SECRET)%'
+
+    # Emailed links are built from the address a request came in on, so requests under
+    # any name that isn't ours are refused.
+    trusted_hosts: '%env(SYMFONY_TRUSTED_HOSTS)%'
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
@@ -13,3 +21,8 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+when@prod:
+    parameters:
+        # rebelhacks.com and anything under it. A server on another name sets SYMFONY_TRUSTED_HOSTS.
+        env(SYMFONY_TRUSTED_HOSTS): '^([a-z0-9-]+\.)*rebelhacks\.com$'

@@ -3,6 +3,8 @@ twig:
     # Times are saved in UTC (see Kernel.php). The |date filter shows them in Las Vegas time.
     date:
         timezone: 'America/Los_Angeles'
+    globals:
+        hacker_pages_open: '%app.hacker_pages_open%'
 
 when@test:
     twig:

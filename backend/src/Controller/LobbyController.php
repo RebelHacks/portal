@@ -7,14 +7,20 @@ use App\Repository\ApplicationRepository;
 use App\Service\CurrentHackathon;
 use App\Service\Me;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 class LobbyController extends AbstractController
 {
     #[Route('/lobby', name: 'app_lobby', methods: ['GET'])]
-    public function index(CurrentHackathon $currentHackathon, ApplicationRepository $applications, Me $me): Response
-    {
+    public function index(
+        CurrentHackathon $currentHackathon,
+        ApplicationRepository $applications,
+        Me $me,
+        #[Autowire('%app.hacker_pages_open%')]
+        bool $hackerPagesOpen,
+    ): Response {
         // Visitors without a session never get here: access_control sends them to log in.
         /** @var User $user */
         $user = $this->getUser();
@@ -36,6 +42,13 @@ class LobbyController extends AbstractController
         $hackathon = $currentHackathon->get();
         $application = $hackathon !== null ? $applications->findForUserAtHackathon($user, $hackathon) : null;
         $major = trim((string) $application?->getMajor());
+
+        if (!$hackerPagesOpen) {
+            return $this->render('lobby/registered.html.twig', [
+                'hackathon' => $hackathon,
+                'application' => $application,
+            ]);
+        }
 
         return $this->render('lobby/index.html.twig', [
             'name' => $name,

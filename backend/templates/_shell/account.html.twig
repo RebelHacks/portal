@@ -6,8 +6,10 @@
     </button>
     <div class="menu" id="account-menu" role="menu" aria-label="Account" hidden>
         <div class="menu-who" role="presentation"><b>{{ name }}</b><span>{{ app.user.email }}</span></div>
-        <a class="menu-item" role="menuitem" href="{{ path('app_settings') }}">Settings</a>
-        <div class="menu-rule" role="separator"></div>
+        {% if not shut %}
+            <a class="menu-item" role="menuitem" href="{{ path('app_settings') }}">Settings</a>
+            <div class="menu-rule" role="separator"></div>
+        {% endif %}
         <div role="group" aria-label="Skin">
             <button class="menu-item" type="button" role="menuitemradio" aria-checked="false" data-skin-choice="day">Day skin</button>
             <button class="menu-item" type="button" role="menuitemradio" aria-checked="false" data-skin-choice="neon">Neon skin</button>

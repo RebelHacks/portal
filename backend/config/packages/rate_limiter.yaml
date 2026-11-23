@@ -5,7 +5,20 @@ framework:
             policy: sliding_window
             limit: 500
             interval: '1 hour'
+        # sign-up links sent to one address, so nobody can flood someone else's inbox
+        registration_email:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
         # wrong passwords for one account
+        login_link:
+            policy: sliding_window
+            limit: 500
+            interval: '1 hour'
+        login_link_email:
+            policy: sliding_window
+            limit: 3
+            interval: '15 minutes'
         login_account:
             policy: sliding_window
             limit: 5

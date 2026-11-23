@@ -223,8 +223,5 @@
             "version": "0.14",
             "ref": "b8af60cec7149fd0cde0ec9d89ccb32335c4d9bd"
         }
-    },
-    "symfonycasts/verify-email-bundle": {
-        "version": "v1.18.0"
     }
 }

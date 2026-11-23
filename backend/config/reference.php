@@ -1266,9 +1266,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     }>,
  *     role_hierarchy?: array<string, Param|string|list<scalar|Param|null>>,
  * }
- * @psalm-type SymfonycastsVerifyEmailConfig = array{
- *     lifetime?: int|Param, // The length of time in seconds that a signed URI is valid for after it is created. // Default: 3600
- * }
  * @psalm-type TwigConfig = array{
  *     form_themes?: list<scalar|Param|null>,
  *     globals?: array<string, array{ // Default: []
@@ -1329,7 +1326,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     doctrine?: DoctrineConfig,
  *     doctrine_migrations?: DoctrineMigrationsConfig,
  *     security?: SecurityConfig,
- *     symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *     twig?: TwigConfig,
  *     symfonycasts_tailwind?: SymfonycastsTailwindConfig,
  *     "when@dev"?: array{
@@ -1341,7 +1337,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         maker?: MakerConfig,
  *         security?: SecurityConfig,
- *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         twig?: TwigConfig,
  *         web_profiler?: WebProfilerConfig,
  *         symfonycasts_tailwind?: SymfonycastsTailwindConfig,
@@ -1354,7 +1349,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         security?: SecurityConfig,
- *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         twig?: TwigConfig,
  *         symfonycasts_tailwind?: SymfonycastsTailwindConfig,
  *     },
@@ -1366,7 +1360,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         security?: SecurityConfig,
- *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         twig?: TwigConfig,
  *         web_profiler?: WebProfilerConfig,
  *         symfonycasts_tailwind?: SymfonycastsTailwindConfig,

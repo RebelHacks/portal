@@ -27,7 +27,7 @@
                     <td class="strong"><a class="soft" href="{{ path('app_organizer_person', { id: a.id }) }}">{{ a.user.firstName }} {{ a.user.lastName }}</a></td>
                     <td class="soft">{{ a.user.email }}</td>
                     <td class="soft">{{ a.school }}</td>
-                    <td>{{ a.user.verified ? a.status.value|capitalize : 'Unverified' }}</td>
+                    <td>{{ a.status.value|capitalize }}</td>
                     <td class="right">{% if a.resume %}<a class="soft" href="#">PDF</a>{% else %}<span class="soft">—</span>{% endif %}</td>
                 </tr>
             {% endfor %}

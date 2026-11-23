@@ -33,12 +33,12 @@ class OrganizerController extends AbstractController
     public function home(ApplicationRepository $applications, TeamRepository $teams): Response
     {
         $hackathon = $this->currentHackathon->get();
-        $counts = ['registered' => 0, 'verified' => 0, 'waitlisted' => 0, 'teams' => 0, 'noTeam' => 0, 'looking' => 0, 'noTrack' => 0];
+        $counts = ['registered' => 0, 'accepted' => 0, 'waitlisted' => 0, 'teams' => 0, 'noTeam' => 0, 'looking' => 0, 'noTrack' => 0];
 
         if ($hackathon !== null) {
             $qb = fn () => $this->em->createQueryBuilder()->select('COUNT(a.id)')->from(Application::class, 'a')->andWhere('a.hackathon = :h')->setParameter('h', $hackathon);
             $counts['registered'] = (int) $qb()->getQuery()->getSingleScalarResult();
-            $counts['verified'] = (int) $qb()->join('a.user', 'u')->andWhere('u.isVerified = true')->getQuery()->getSingleScalarResult();
+            $counts['accepted'] = (int) $qb()->andWhere('a.status = :s')->setParameter('s', ApplicationStatus::Accepted)->getQuery()->getSingleScalarResult();
             $counts['waitlisted'] = (int) $qb()->andWhere('a.status = :s')->setParameter('s', ApplicationStatus::Waitlisted)->getQuery()->getSingleScalarResult();
             $counts['looking'] = (int) $qb()->andWhere('a.lookingForTeam = true')->getQuery()->getSingleScalarResult();
             $counts['teams'] = $teams->countAtHackathon($hackathon);
