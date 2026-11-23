@@ -2,7 +2,6 @@
 
 {% set out = true %}
 
-{# A labelled field with its errors under it. #}
 {% macro field(field, help = null) %}
     <div class="field">
         {{ form_label(field) }}
@@ -16,7 +15,7 @@
 {% block title %}Finish registering{% endblock %}
 
 {% block body %}
-    {# Step 2. The address was proved by the emailed link, so it's shown, not asked for. #}
+    {# Step 2: all of the fields shown as verified come from the signed link. #}
     {{ form_start(registrationForm, { action: path('app_register_finish') }) }}
     <div class="grid narrow">
         <section class="panel" style="--c: var(--red)">
@@ -28,11 +27,11 @@
                     <label>University email</label>
                     <span class="mono">{{ email }}</span>
                 </div>
-
-                <div class="buttons">
-                    <div style="flex: 1">{{ f.field(registrationForm.firstName) }}</div>
-                    <div style="flex: 1">{{ f.field(registrationForm.lastName) }}</div>
+                <div class="field">
+                    <label>Name</label>
+                    <span>{{ firstName }} {{ lastName }}</span>
                 </div>
+
                 {{ f.field(registrationForm.plainPassword.first, 'At least 8 characters with a capital, a number and a symbol. No spaces.') }}
                 {{ f.field(registrationForm.plainPassword.second) }}
                 <span class="error">{{ form_errors(registrationForm.plainPassword) }}</span>
@@ -42,8 +41,13 @@
         <section class="panel" style="--c: var(--blue)">
             <header class="panel-tab"><h2>About you</h2></header>
             <div class="panel-body">
-                {{ f.field(registrationForm.school, 'Any college or university.') }}
+                {{ f.field(registrationForm.school, 'Start typing to search. If your school is not suggested, enter its full name.') }}
+                {{ include('registration/_school_suggestions.html.twig') }}
+
                 {{ f.field(registrationForm.major) }}
+                <div data-other-field-for="{{ registrationForm.major.vars.id }}">
+                    {{ f.field(registrationForm.otherMajor) }}
+                </div>
 
                 <div class="field">
                     <label>{{ registrationForm.attendedBefore.vars.label }}</label>
@@ -64,8 +68,7 @@
 
                 <label class="check">
                     {{ form_widget(registrationForm.agreeTerms) }}
-                    {# opens in a new tab so the form keeps what they typed #}
-                    <span>I agree to the <a href="{{ path('app_terms') }}" target="_blank">registration terms</a>.</span>
+                    <span>I agree to the <a href="{{ path('app_terms') }}" target="_blank" rel="noopener noreferrer">registration terms</a>.</span>
                 </label>
                 <span class="error">{{ form_errors(registrationForm.agreeTerms) }}</span>
             </div>
@@ -75,4 +78,23 @@
         </section>
     </div>
     {{ form_end(registrationForm) }}
+
+    {# Progressive enhancement: without JS, both text boxes remain available. #}
+    <script>
+        for (const container of document.querySelectorAll('[data-other-field-for]')) {
+            const select = document.getElementById(container.dataset.otherFieldFor);
+            const input = container.querySelector('input');
+            if (!select || !input) continue;
+
+            const update = () => {
+                const selectedOther = select.value === 'Other';
+                container.hidden = !selectedOther;
+                input.required = selectedOther;
+                if (!selectedOther) input.value = '';
+            };
+
+            select.addEventListener('change', update);
+            update();
+        }
+    </script>
 {% endblock %}

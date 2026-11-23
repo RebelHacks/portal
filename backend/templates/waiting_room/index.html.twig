@@ -10,11 +10,14 @@
         <section class="panel" style="--c: var(--gold); --on-c: #141414">
             <div class="panel-body">
                 {% if opensAt %}
-                    {# shell.js counts this down and reloads the page at zero, which leads to sign-up #}
+                    {# shell.js counts down and reloads when the server should open registration. #}
                     <p class="countdown" data-countdown="{{ opensAt.timestamp - date().timestamp }}">{{ opensAt|date('F j') }}</p>
-                    <p class="meta">{{ opensAt|date('l, F j \\a\\t g:i A') }}. {{ hackathon.name }} is {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('j') }} at UNLV.</p>
+                    <p class="meta">
+                        Registration opens {{ opensAt|date('l, F j') }} at {{ opensAt|date('g:i A') }}.
+                        {{ hackathon.name }} takes place {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('F j, Y') }} at UNLV.
+                    </p>
                 {% else %}
-                    <p class="meta">Check rebelhacks.com for the date.</p>
+                    <p class="meta">Check rebelhacks.com for the registration opening date.</p>
                 {% endif %}
             </div>
         </section>

@@ -28,14 +28,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
-// Sign-up in two steps. Step 1 takes an email address and sends it a signed link. Step 2, reached
-// only from that link, takes everything else and creates the account. Nothing is saved before
-// step 2, so there are no unverified accounts.
+// Step 1 collects names and email, then sends a signed link. Step 2 creates
+// the verified account and application. No unverified user row is stored.
 class RegistrationController extends AbstractController
 {
-    // The address a link proved. Step 2 reads the address from here, never from the form.
-    private const VERIFIED_EMAIL = 'registration.verified_email';
-    // The address step 1 just emailed, shown back on the "check your inbox" page.
+    private const VERIFIED_DETAILS = 'registration.verified_details';
     private const SENT_TO = 'registration.sent_to';
 
     public function __construct(
@@ -73,16 +70,16 @@ class RegistrationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $email = mb_strtolower($form->get('email')->getData());
+            $email = mb_strtolower(trim((string) $form->get('email')->getData()));
+            $firstName = trim((string) $form->get('firstName')->getData());
+            $lastName = trim((string) $form->get('lastName')->getData());
 
             try {
-                // Past the limit for one address nothing is sent, and the page says the same thing.
+                // Keep the same response for an existing account and for rate-limited addresses.
                 if ($registrationEmailLimiter->create($email)->consume()->isAccepted()) {
-                    // A taken address gets an email too, and the same page. Sign-up can't be used
-                    // to check who has an account.
                     $mailer->send(
                         $this->users->findOneBy(['email' => $email]) === null
-                            ? $this->linkEmail($email, $link)
+                            ? $this->linkEmail($email, $firstName, $lastName, $link)
                             : $this->alreadyRegisteredEmail($email)
                     );
                 }
@@ -115,7 +112,8 @@ class RegistrationController extends AbstractController
         return $this->render('registration/sent.html.twig', ['email' => $email]);
     }
 
-    // The link in the email. Opening it saves nothing, so a mail scanner that follows links does no harm.
+    // The mail link does not create an account. It only verifies the signature
+    // and copies the data into this browser's session before redirecting.
     #[Route('/register/verify', name: 'app_register_verify', methods: ['GET'])]
     public function verify(Request $request, RegistrationLink $link): Response
     {
@@ -123,17 +121,17 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_lobby');
         }
 
-        $email = $link->emailFrom($request);
+        $details = $link->detailsFrom($request);
 
-        if ($email === null) {
-            $this->addFlash('error', 'That link has expired or isn\'t complete. Enter your email for a new one.');
+        if ($details === null) {
+            $this->addFlash('error', 'That link has expired or isn\'t complete. Please start registration again.');
 
             return $this->redirectToRoute('app_register');
         }
 
-        // Remember the address and go to a clean URL, so the link doesn't stay in the address bar or history.
-        $request->getSession()->set(self::VERIFIED_EMAIL, $email);
+        $request->getSession()->set(self::VERIFIED_DETAILS, $details);
 
+        // Remove the signed query parameters from the browser address bar.
         return $this->redirectToRoute('app_register_finish');
     }
 
@@ -151,27 +149,56 @@ class RegistrationController extends AbstractController
         }
 
         $session = $request->getSession();
-        $email = $session->get(self::VERIFIED_EMAIL);
+        $details = $session->get(self::VERIFIED_DETAILS);
 
-        if (!\is_string($email)) {
+        if (
+            !\is_array($details)
+            || !\is_string($details['email'] ?? null)
+            || !\is_string($details['firstName'] ?? null)
+            || !\is_string($details['lastName'] ?? null)
+        ) {
+            $session->remove(self::VERIFIED_DETAILS);
+
             return $this->redirectToRoute('app_register');
         }
+
+        $email = $details['email'];
+        $firstName = $details['firstName'];
+        $lastName = $details['lastName'];
+
         if ($notOpen = $this->notOpen()) {
             return $notOpen;
         }
-        // A link makes one account. Using it again ends here.
         if ($this->users->findOneBy(['email' => $email]) !== null) {
             return $this->alreadyRegistered($request);
         }
 
+        // These values cannot be overwritten by the second form's POST body.
         $user = (new User())
             ->setEmail($email)
+            ->setFirstName($firstName)
+            ->setLastName($lastName)
             ->setIsVerified(true);
 
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
+        // A custom major requires a value even if JavaScript is disabled.
+        if ($form->isSubmitted()) {
+            if (
+                $form->get('major')->getData() === 'Other'
+                && trim((string) $form->get('otherMajor')->getData()) === ''
+            ) {
+                $form->get('otherMajor')->addError(new FormError('Please enter your major.'));
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            $school = trim((string) $form->get('school')->getData());
+            $major = $form->get('major')->getData() === 'Other'
+                ? trim((string) $form->get('otherMajor')->getData())
+                : $form->get('major')->getData();
+
             $user->setPassword(
                 $passwordHasher->hashPassword($user, $form->get('plainPassword')->getData())
             );
@@ -179,15 +206,12 @@ class RegistrationController extends AbstractController
             $application = (new Application())
                 ->setUser($user)
                 ->setHackathon($this->currentHackathon->get())
-                ->setSchool($form->get('school')->getData())
-                ->setMajor($form->get('major')->getData())
+                ->setSchool($school)
+                ->setMajor($major)
                 ->setAttendedBefore($form->get('attendedBefore')->getData())
-                // the form can't be submitted without ticking the terms box
                 ->setAgreedToTermsAt(new \DateTimeImmutable())
                 ->setTermsVersion(TermsController::VERSION);
 
-            // The file first, then the rows. Storage isn't part of the transaction,
-            // so if saving the rows fails, the file is deleted.
             try {
                 /** @var UploadedFile $upload */
                 $upload = $form->get('resume')->getData();
@@ -201,6 +225,8 @@ class RegistrationController extends AbstractController
                 return $this->render('registration/finish.html.twig', [
                     'registrationForm' => $form,
                     'email' => $email,
+                    'firstName' => $firstName,
+                    'lastName' => $lastName,
                 ]);
             }
 
@@ -211,7 +237,6 @@ class RegistrationController extends AbstractController
             } catch (\Throwable $exception) {
                 $uploads->delete($resume);
 
-                // the same link finished in two tabs at the same moment
                 if (!$exception instanceof UniqueConstraintViolationException) {
                     throw $exception;
                 }
@@ -219,21 +244,20 @@ class RegistrationController extends AbstractController
                 return $this->alreadyRegistered($request);
             }
 
-            $session->remove(self::VERIFIED_EMAIL);
+            $session->remove(self::VERIFIED_DETAILS);
             $session->remove(self::SENT_TO);
 
-            // The link proved the inbox is theirs and they just chose the password, so sign them in.
             return $security->login($user, 'form_login', 'main') ?? $this->redirectToRoute('app_lobby');
         }
 
         return $this->render('registration/finish.html.twig', [
             'registrationForm' => $form,
             'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
         ]);
     }
 
-    // An application belongs to a hackathon, and only while its registration is open.
-    // Before it opens, the front door has the waiting room. After it closes, this says so.
     private function notOpen(): ?Response
     {
         $hackathon = $this->currentHackathon->get();
@@ -251,21 +275,25 @@ class RegistrationController extends AbstractController
 
     private function alreadyRegistered(Request $request): Response
     {
-        $request->getSession()->remove(self::VERIFIED_EMAIL);
+        $request->getSession()->remove(self::VERIFIED_DETAILS);
         $this->addFlash('success', 'You already have an account. Log in.');
 
         return $this->redirectToRoute('app_login');
     }
 
-    private function linkEmail(string $email, RegistrationLink $link): TemplatedEmail
-    {
+    private function linkEmail(
+        string $email,
+        string $firstName,
+        string $lastName,
+        RegistrationLink $link,
+    ): TemplatedEmail {
         return (new TemplatedEmail())
             ->to($email)
             ->subject('Finish registering for RebelHacks')
             ->htmlTemplate('emails/registration_link.html.twig')
             ->textTemplate('emails/registration_link.txt.twig')
             ->context([
-                'url' => $link->for($email),
+                'url' => $link->for($email, $firstName, $lastName),
                 'lifetime' => RegistrationLink::LIFETIME,
                 'hackathon' => $this->currentHackathon->get(),
             ]);
