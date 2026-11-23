@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
 /*
   The portal's look. Tokens come from the website (frontend/app/globals.css), so both match.
