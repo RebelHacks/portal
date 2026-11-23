@@ -33,7 +33,6 @@
         </svg>
 
         <a class="logo" href="{{ app.user ? path('app_lobby') : path('app_login') }}"><img src="{{ asset('images/rebelhacks-logo.png') }}" alt="RebelHacks"></a>
-        <a class="back-to-site" href="https://rebelhacks.com">&larr; rebelhacks.com</a>
 
         {% if app.user %}
             {{ include('_shell/account.html.twig') }}
