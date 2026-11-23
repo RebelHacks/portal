@@ -113,8 +113,6 @@ button { font: inherit; color: inherit; }
 /* ---------- shell: logo, back link, account, sidebar ---------- */
 .logo { position: fixed; top: 10px; left: 22px; width: 190px; z-index: 2; }
 .logo img { display: block; width: 100%; height: auto; }
-.back-to-site { position: fixed; left: 28px; top: 162px; z-index: 2; font-size: 14px; color: var(--ink-soft); text-decoration: none; }
-.back-to-site:hover { color: var(--ink); text-decoration: underline; }
 
 .account { position: fixed; top: 12px; right: 22px; z-index: 3; }
 .account-button {
@@ -470,11 +468,11 @@ button { font: inherit; color: inherit; }
   .account-button { padding: 5px 9px 5px 10px; font-size: 14px; }
   .account-button .full { display: none; }
   .account-button .short { display: inline; }
-  .nav, .back-to-site { display: none; }
+  .nav { display: none; }
   .frame { position: relative; z-index: 1; inset: auto; border-radius: 0; overflow: visible; padding: 0 0 calc(var(--tabbar) + 24px); }
   .hexfield { position: fixed; }
   .workspace { overflow: visible; padding: 18px 14px 24px; }
-  .sheet { padding: 0; background: none; border: 0; box-shadow: none; }
+  .sheet, [data-skin="neon"] .sheet { padding: 0; background: none; border: 0; box-shadow: none; }
   .sheet .panel { box-shadow: var(--shadow); }
   .page-head h1 { font-size: 34px; }
   /* the news column becomes two strips above the page, one line each */
