@@ -4,7 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    # Uploads go to a local folder unless UPLOAD_STORAGE is uploads.s3 (see UploadStorage).
+    # Uploads go to a local folder unless UPLOAD_STORAGE says S3 (see flysystem.yaml).
     # The folder is outside public/, so nothing in it can be opened by URL.
     app.default_upload_dir: '%kernel.project_dir%/var/uploads'
     app.upload_dir: '%env(default:app.default_upload_dir:UPLOAD_DIR)%'
