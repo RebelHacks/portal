@@ -11,9 +11,9 @@ use App\Repository\UserRepository;
 use App\Service\CurrentHackathon;
 use App\Service\Registrar;
 use App\Service\RegistrationLink;
+use App\Service\UploadFailed;
 use App\Service\UploadStorage;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -216,7 +216,7 @@ class RegistrationController extends AbstractController
                 /** @var UploadedFile $upload */
                 $upload = $form->get('resume')->getData();
                 $resume = $uploads->save($upload, $user, FileKind::Resume);
-            } catch (FilesystemException $exception) {
+            } catch (UploadFailed $exception) {
                 $logger->error('Resume upload failed at sign-up.', ['exception' => $exception]);
                 $form->get('resume')->addError(new FormError(
                     'We couldn\'t save your resume. Please try again in a few minutes.'
