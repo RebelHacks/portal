@@ -5,7 +5,7 @@
 {% block title %}Register for RebelHacks{% endblock %}
 
 {% block body %}
-    {# Step 1: only the address. The emailed link leads to finish.html.twig. #}
+    {# Step 1: the signed email link will carry all three validated fields. #}
     <div class="grid narrow">
         <section class="panel" style="--c: var(--red)">
             {{ form_start(form, { action: path('app_register') }) }}
@@ -15,10 +15,23 @@
                 {% endfor %}
                 {{ form_errors(form) }}
 
+                <div class="buttons">
+                    <div style="flex: 1; min-width: 150px" class="field">
+                        {{ form_label(form.firstName) }}
+                        {{ form_widget(form.firstName) }}
+                        <span class="error">{{ form_errors(form.firstName) }}</span>
+                    </div>
+                    <div style="flex: 1; min-width: 150px" class="field">
+                        {{ form_label(form.lastName) }}
+                        {{ form_widget(form.lastName) }}
+                        <span class="error">{{ form_errors(form.lastName) }}</span>
+                    </div>
+                </div>
+
                 <div class="field">
                     {{ form_label(form.email) }}
                     {{ form_widget(form.email) }}
-                    <span class="soft">A .edu address from any college. We'll email you a link to continue.</span>
+                    <span class="soft">Use a .edu email address from any college. We'll send you a link to continue.</span>
                     <span class="error">{{ form_errors(form.email) }}</span>
                 </div>
             </div>
