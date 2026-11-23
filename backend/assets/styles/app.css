@@ -201,9 +201,13 @@ button { font: inherit; color: inherit; }
 
 /* logged out: no sidebar, no pane; one narrow column */
 [data-out] .nav, [data-out] .pane, [data-out] .tabbar { display: none !important; }
+/* with no news column, the right side matches the left, so the sheet sits mid-window */
+:root[data-out] { --right: var(--xV); }
 .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
-.grid.narrow { grid-template-columns: minmax(0, 1fr); max-width: 560px; width: 100%; margin-inline: auto; }
+.grid.narrow { grid-template-columns: minmax(0, 1fr); width: 560px; max-width: 100%; margin-inline: auto; }
 .grid.narrow .panel { grid-column: 1; }
+/* a one-column page gets a sheet no wider than that column */
+.sheet:has(> .grid.narrow) { width: fit-content; max-width: min(100%, var(--sheet)); min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .span-12 { grid-column: span 12; }
 .span-7 { grid-column: span 7; }
 .span-6 { grid-column: span 6; }
