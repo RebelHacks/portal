@@ -41,10 +41,8 @@
         <section class="panel" style="--c: var(--blue)">
             <header class="panel-tab"><h2>About you</h2></header>
             <div class="panel-body">
-                {{ f.field(registrationForm.school, 'Select your school. If it is not listed, select Other.') }}
-                <div data-other-field-for="{{ registrationForm.school.vars.id }}">
-                    {{ f.field(registrationForm.otherSchool) }}
-                </div>
+                {{ f.field(registrationForm.school, 'Start typing to search. If your school is not suggested, enter its full name.') }}
+                {{ include('registration/_school_suggestions.html.twig') }}
 
                 {{ f.field(registrationForm.major) }}
                 <div data-other-field-for="{{ registrationForm.major.vars.id }}">

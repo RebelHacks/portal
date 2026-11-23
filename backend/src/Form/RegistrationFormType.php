@@ -20,30 +20,22 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('plainPassword', NewPasswordType::class)
             // School and major belong to this year's Application, not the User account.
-            ->add('school', ChoiceType::class, [
+            // Free text ensures any institution can register. The HTML datalist
+            // suggests common schools, but suggestions are NOT an allow-list.
+            ->add('school', TextType::class, [
                 'mapped' => false,
-                'label' => 'School',
-                'placeholder' => 'Select your school',
-                'choices' => [
-                    'University of Nevada, Las Vegas (UNLV)' => 'University of Nevada, Las Vegas',
-                    'University of Nevada, Reno (UNR)' => 'University of Nevada, Reno',
-                    'College of Southern Nevada (CSN)' => 'College of Southern Nevada',
-                    'Nevada State University' => 'Nevada State University',
-                    'Truckee Meadows Community College' => 'Truckee Meadows Community College',
-                    'Great Basin College' => 'Great Basin College',
-                    'Western Nevada College' => 'Western Nevada College',
-                    'Other / Not listed' => 'Other',
+                'label' => 'School / university',
+                'trim' => true,
+                'attr' => [
+                    'list' => 'school-suggestions',
+                    'placeholder' => 'Search or enter your school',
+                    'maxlength' => 128,
+                    'autocomplete' => 'off',
                 ],
                 'constraints' => [
-                    new Assert\NotBlank(message: 'Please select your school.'),
+                    new Assert\NotBlank(message: 'Please enter your school.'),
+                    new Assert\Length(max: 128),
                 ],
-            ])
-            ->add('otherSchool', TextType::class, [
-                'mapped' => false,
-                'required' => false,
-                'label' => 'Enter your school',
-                'attr' => ['maxlength' => 128, 'autocomplete' => 'organization'],
-                'constraints' => [new Assert\Length(max: 128)],
             ])
             ->add('major', ChoiceType::class, [
                 'mapped' => false,

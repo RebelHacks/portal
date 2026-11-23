@@ -183,14 +183,8 @@ class RegistrationController extends AbstractController
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
-        // An "Other" choice requires a real value, even if the browser has no JavaScript.
+        // A custom major requires a value even if JavaScript is disabled.
         if ($form->isSubmitted()) {
-            if (
-                $form->get('school')->getData() === 'Other'
-                && trim((string) $form->get('otherSchool')->getData()) === ''
-            ) {
-                $form->get('otherSchool')->addError(new FormError('Please enter your school.'));
-            }
             if (
                 $form->get('major')->getData() === 'Other'
                 && trim((string) $form->get('otherMajor')->getData()) === ''
@@ -200,9 +194,7 @@ class RegistrationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $school = $form->get('school')->getData() === 'Other'
-                ? trim((string) $form->get('otherSchool')->getData())
-                : $form->get('school')->getData();
+            $school = trim((string) $form->get('school')->getData());
             $major = $form->get('major')->getData() === 'Other'
                 ? trim((string) $form->get('otherMajor')->getData())
                 : $form->get('major')->getData();
