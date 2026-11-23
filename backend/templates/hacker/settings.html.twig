@@ -1,60 +1,85 @@
 {% extends 'base.html.twig' %}
 {% set section = 'settings' %}
+{% import '_shell/field.html.twig' as f %}
 
 {% block title %}Settings{% endblock %}
 
 {% block body %}
 <div class="grid">
+    {# While the hacker pages are shut there is no sidebar, so this is the way back. #}
+    {% if shut %}
+        <div class="span-12 back"><a class="soft" href="{{ path('app_lobby') }}">&larr; Back</a></div>
+    {% endif %}
+    {% for message in app.flashes('success') %}
+        <p class="notice span-12">{{ message }}</p>
+    {% endfor %}
+
     <section class="panel span-6" style="--c: var(--ink-soft)">
         <header class="panel-tab"><h2>Profile</h2></header>
-        <form method="post">
+        {{ form_start(profile, { action: path('app_settings') }) }}
             <div class="panel-body">
-                <div class="field"><label for="st-first">First name</label><input id="st-first" type="text" value="{{ app.user.firstName }}"></div>
-                <div class="field"><label for="st-last">Last name</label><input id="st-last" type="text" value="{{ app.user.lastName }}"></div>
-                <div class="field"><label for="st-school">School</label><input id="st-school" type="text" value="{{ application ? application.school }}"></div>
-                <div class="field"><label for="st-major">Major</label><input id="st-major" type="text" value="{{ application ? application.major }}"></div>
+                {{ form_errors(profile) }}
+                {{ f.field(profile.firstName) }}
+                {{ f.field(profile.lastName) }}
+                {% if profile.school is defined %}
+                    {{ f.field(profile.school, 'Start typing to search. If your school is not suggested, enter its full name.') }}
+                    {{ include('registration/_school_suggestions.html.twig') }}
+                    {{ f.field(profile.major) }}
+                    <div data-other-field-for="{{ profile.major.vars.id }}">
+                        {{ f.field(profile.otherMajor) }}
+                    </div>
+                {% endif %}
             </div>
-            <div class="panel-actions"><button class="button" type="submit" disabled>Save</button></div>
-        </form>
+            <div class="panel-actions"><button class="button" type="submit">Save</button></div>
+        {{ form_end(profile) }}
     </section>
 
     <section class="panel span-6" style="--c: var(--ink-soft)">
         <header class="panel-tab"><h2>Password</h2></header>
-        <form method="post">
+        {{ form_start(password, { action: path('app_settings') }) }}
             <div class="panel-body">
-                <div class="field"><label for="pw-old">Current password</label><input id="pw-old" type="password" autocomplete="current-password"></div>
-                <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password"><span class="soft">At least 8 characters with a capital, a number and a symbol.</span></div>
-                {{ include('_shell/todo.html.twig', { what: 'Check the current password, hash and save the new one, same rules as sign-up.', where: 'HackerController::settings' }) }}
+                {% for error in password.vars.errors %}
+                    <p class="notice error" style="margin-bottom: 14px">{{ error.message }}</p>
+                {% endfor %}
+                {{ f.field(password.currentPassword) }}
+                {{ f.field(password.plainPassword.first, 'At least 8 characters with a capital, a number and a symbol. No spaces.') }}
+                {{ f.field(password.plainPassword.second) }}
+                <span class="error">{{ form_errors(password.plainPassword) }}</span>
+                <p class="meta">Changing it logs you out on your other devices.</p>
             </div>
-            <div class="panel-actions"><button class="button" type="submit" disabled>Change password</button></div>
-        </form>
+            <div class="panel-actions"><button class="button" type="submit">Change password</button></div>
+        {{ form_end(password) }}
     </section>
 
-    <section class="panel span-6" style="--c: var(--ink-soft)">
-        <header class="panel-tab"><h2>Resume</h2></header>
-        <div class="panel-body">
-            {% if application and application.resume %}
-                <p><b>{{ application.resume.originalName }}</b> <span class="soft">· {{ (application.resume.size / 1024)|round }} KB · uploaded {{ application.resume.uploadedAt|date('M j') }}</span></p>
-            {% else %}
-                <p class="meta">No resume on file yet.</p>
-            {% endif %}
-            <p class="meta">A resume is required. Sponsors receive it for recruiting, as the terms describe, and we delete it a year after the event.</p>
-            <div class="field"><label for="resume">{{ application and application.resume ? 'Replace' : 'Upload' }}</label><input id="resume" type="file" accept="application/pdf"><span class="soft">PDF, up to 10 MB.</span></div>
-            {{ include('_shell/todo.html.twig', { what: 'Upload to S3 through UploadStorage, replace the file row.', where: 'HackerController::settings' }) }}
-        </div>
-        <div class="panel-actions"><button class="button" type="button" disabled>Upload</button></div>
-    </section>
+    {% if resume %}
+        <section class="panel span-6" style="--c: var(--ink-soft)">
+            <header class="panel-tab"><h2>Resume</h2></header>
+            {{ form_start(resume, { action: path('app_settings') }) }}
+                <div class="panel-body">
+                    {% if application.resume %}
+                        <p><b>{{ application.resume.originalName }}</b> <span class="soft">· {{ (application.resume.size / 1024)|round }} KB · uploaded {{ application.resume.uploadedAt|date('M j') }}</span></p>
+                    {% else %}
+                        <p class="meta">No resume on file.</p>
+                    {% endif %}
+                    <p class="meta">Sponsors receive it for recruiting, as the terms describe, and we delete it a year after the event.</p>
+                    {{ f.field(resume.resume, application.resume ? 'Up to 10 MB. It replaces the one on file.' : 'Up to 10 MB.') }}
+                </div>
+                <div class="panel-actions"><button class="button" type="submit">{{ application.resume ? 'Replace' : 'Upload' }}</button></div>
+            {{ form_end(resume) }}
+        </section>
+    {% endif %}
 
-    <section class="panel span-6" style="--c: var(--ink-soft)">
-        <header class="panel-tab"><h2>Finding a team</h2></header>
-        <form method="post">
-            <div class="panel-body">
-                <label class="check"><input type="checkbox"{% if application and application.lookingForTeam %} checked{% endif %}><span><b>Let team leaders find me.</b> <span class="soft">Shows your name, school and major on the looking-for-a-team list while you have no team.</span></span></label>
-                {{ include('_shell/todo.html.twig', { what: 'Saves application.looking_for_team.', where: 'HackerController::settings' }) }}
-            </div>
-            <div class="panel-actions"><button class="button" type="submit" disabled>Save</button></div>
-        </form>
-    </section>
+    {% if team %}
+        <section class="panel span-6" style="--c: var(--ink-soft)">
+            <header class="panel-tab"><h2>Finding a team</h2></header>
+            {{ form_start(team, { action: path('app_settings') }) }}
+                <div class="panel-body">
+                    <label class="check">{{ form_widget(team.lookingForTeam) }}<span><b>Let team leaders find me.</b> <span class="soft">Shows your name, school and major on the looking-for-a-team list while you have no team.</span></span></label>
+                </div>
+                <div class="panel-actions"><button class="button" type="submit">Save</button></div>
+            {{ form_end(team) }}
+        </section>
+    {% endif %}
 
     <section class="panel span-12" style="--c: var(--ink-soft)">
         <header class="panel-tab"><h2>Your data</h2></header>

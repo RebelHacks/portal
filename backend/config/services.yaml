@@ -11,7 +11,7 @@ parameters:
     env(UPLOAD_STORAGE): 'uploads.local'
     env(S3_BUCKET): ''
     env(S3_REGION): ''
-    # Hackers only see that they're registered until HACKER_PAGES_OPEN=1 (see ClosedPagesSubscriber).
+    # Hackers only get the "you're registered" page and Settings until HACKER_PAGES_OPEN=1 (see ClosedPagesSubscriber).
     env(HACKER_PAGES_OPEN): '0'
     app.hacker_pages_open: '%env(bool:HACKER_PAGES_OPEN)%'
 

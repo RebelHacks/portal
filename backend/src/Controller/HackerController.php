@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-// The rest of a hacker's pages: schedule, map, submission, settings.
+// The rest of a hacker's pages: schedule, map, submission. Settings has its own controller.
 class HackerController extends AbstractController
 {
     public function __construct(
@@ -53,16 +53,6 @@ class HackerController extends AbstractController
             'hackathon' => $this->currentHackathon->get(),
             'team' => $team,
             'submission' => $submission,
-        ]);
-    }
-
-    // TODO: each form here saves: profile, password (re-hash), discoverability, resume replace.
-    #[Route('/settings', name: 'app_settings', methods: ['GET', 'POST'])]
-    public function settings(Request $request): Response
-    {
-        return $this->render('hacker/settings.html.twig', [
-            'hackathon' => $this->currentHackathon->get(),
-            'application' => $this->me->application(),
         ]);
     }
 }

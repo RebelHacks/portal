@@ -136,6 +136,22 @@ for (const t of document.querySelectorAll('.nav-toggle')) {
   });
 }
 
+// ---------- "Other" in a list: its text box shows only while Other is picked ----------
+// Without this script both stay on the page, and the server still checks them.
+for (const box of document.querySelectorAll('[data-other-field-for]')) {
+  const select = document.getElementById(box.dataset.otherFieldFor);
+  const input = box.querySelector('input');
+  if (!select || !input) continue;
+  const update = () => {
+    const other = select.value === 'Other';
+    box.hidden = !other;
+    input.required = other;
+    if (!other) input.value = '';
+  };
+  select.addEventListener('change', update);
+  update();
+}
+
 // ---------- countdown: data-countdown is the seconds left when the page was made ----------
 // It counts from that, not from this device's clock, so a wrong clock can't open sign-up early.
 // At zero the page reloads and the server decides what comes next.

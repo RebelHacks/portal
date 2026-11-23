@@ -186,7 +186,7 @@ class RegistrationController extends AbstractController
         // A custom major requires a value even if JavaScript is disabled.
         if ($form->isSubmitted()) {
             if (
-                $form->get('major')->getData() === 'Other'
+                $form->get('major')->getData() === RegistrationFormType::OTHER_MAJOR
                 && trim((string) $form->get('otherMajor')->getData()) === ''
             ) {
                 $form->get('otherMajor')->addError(new FormError('Please enter your major.'));
@@ -195,7 +195,7 @@ class RegistrationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $school = trim((string) $form->get('school')->getData());
-            $major = $form->get('major')->getData() === 'Other'
+            $major = $form->get('major')->getData() === RegistrationFormType::OTHER_MAJOR
                 ? trim((string) $form->get('otherMajor')->getData())
                 : $form->get('major')->getData();
 

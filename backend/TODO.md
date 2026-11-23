@@ -16,14 +16,14 @@ Each of these has a dashed "Not built yet" box on its page. Delete the box when 
 - [ ] Leader actions: make leader, remove, rename, reset the link, disband
 - [ ] Leave a team
 - [ ] Pick or switch track (`/team/tracks`)
-- [ ] The "let team leaders find me" switch, on Team and in Settings
+- [ ] The "let team leaders find me" switch on Team (the one in Settings works)
 
 Joining, inviting and switching track all have to respect the Beginner track's rule and the team size limit.
 
 ## Hacker pages
 
 - [ ] Save the submission write-up (`/submission`)
-- [ ] Settings: profile, password, resume upload (`/settings`)
+- [x] Settings: profile, password, resume upload (`/settings`)
 - [ ] Map: the floor plan, with team tables and judging marked (`/map`)
 
 ## Organizer pages

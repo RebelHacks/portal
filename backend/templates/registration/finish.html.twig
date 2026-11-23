@@ -2,15 +2,7 @@
 
 {% set out = true %}
 
-{% macro field(field, help = null) %}
-    <div class="field">
-        {{ form_label(field) }}
-        {{ form_widget(field) }}
-        {% if help %}<span class="soft">{{ help }}</span>{% endif %}
-        <span class="error">{{ form_errors(field) }}</span>
-    </div>
-{% endmacro %}
-{% import _self as f %}
+{% import '_shell/field.html.twig' as f %}
 
 {% block title %}Finish registering{% endblock %}
 
@@ -78,23 +70,4 @@
         </section>
     </div>
     {{ form_end(registrationForm) }}
-
-    {# Progressive enhancement: without JS, both text boxes remain available. #}
-    <script>
-        for (const container of document.querySelectorAll('[data-other-field-for]')) {
-            const select = document.getElementById(container.dataset.otherFieldFor);
-            const input = container.querySelector('input');
-            if (!select || !input) continue;
-
-            const update = () => {
-                const selectedOther = select.value === 'Other';
-                container.hidden = !selectedOther;
-                input.required = selectedOther;
-                if (!selectedOther) input.value = '';
-            };
-
-            select.addEventListener('change', update);
-            update();
-        }
-    </script>
 {% endblock %}

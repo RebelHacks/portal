@@ -23,6 +23,11 @@ framework:
             policy: sliding_window
             limit: 5
             interval: '5 minutes'
+        # tries at the current password in Settings, per account
+        password_change:
+            policy: sliding_window
+            limit: 5
+            interval: '15 minutes'
         # wrong passwords for any account
         login_address:
             policy: sliding_window

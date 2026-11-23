@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{# The lobby while the hacker pages are shut (HACKER_PAGES_OPEN): where their registration stands, and nothing to click. #}
+{# The lobby while the hacker pages are shut (HACKER_PAGES_OPEN): where their registration stands, and the way to Settings. #}
 
 {% block title %}{{ hackathon ? hackathon.name : 'RebelHacks' }}{% endblock %}
 
@@ -20,6 +20,9 @@
                 {% else %}
                     <p class="big-name">You're registered</p>
                     <p class="meta">{{ hackathon.name }} is {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('j') }} at UNLV. Teams, the schedule and project submission will open here before the event.</p>
+                {% endif %}
+                {% if application is not null %}
+                    <p class="meta">Your name, school, major and resume can be changed in <a href="{{ path('app_settings') }}">Settings</a>.</p>
                 {% endif %}
             </div>
         </section>

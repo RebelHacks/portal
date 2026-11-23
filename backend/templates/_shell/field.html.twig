@@ -1,0 +1,12 @@
+{#
+    A labelled form field with its help text and errors under it.
+    Usage: {% import '_shell/field.html.twig' as f %} then {{ f.field(form.school, 'Any college.') }}
+#}
+{% macro field(field, help = null) %}
+    <div class="field">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if help %}<span class="soft">{{ help }}</span>{% endif %}
+        <span class="error">{{ form_errors(field) }}</span>
+    </div>
+{% endmacro %}

@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-// Until HACKER_PAGES_OPEN is on, a hacker's portal is the lobby and nothing else.
+// Until HACKER_PAGES_OPEN is on, a hacker's portal is the lobby and their settings.
 // Every other page sends them back to it. Organizers and judges are not affected.
 class ClosedPagesSubscriber implements EventSubscriberInterface
 {
@@ -27,6 +27,7 @@ class ClosedPagesSubscriber implements EventSubscriberInterface
         'app_register_sent',
         'app_register_verify',
         'app_register_finish',
+        'app_settings',
         'app_terms',
     ];
 
