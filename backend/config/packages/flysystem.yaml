@@ -9,9 +9,9 @@ flysystem:
                 directory: '%app.upload_dir%'
                 lazy_root_creation: true
         uploads.s3:
-            adapter: 'aws'
+            adapter: 'asyncaws'
             options:
-                client: 'Aws\S3\S3Client'
+                client: 'AsyncAws\S3\S3Client'
                 bucket: '%env(S3_BUCKET)%'
         uploads.storage:
             adapter: 'lazy'
