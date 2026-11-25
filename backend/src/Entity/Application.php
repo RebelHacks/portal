@@ -26,7 +26,7 @@ class Application
     private ?Hackathon $hackathon = null;
 
     #[ORM\Column(length: 16, enumType: ApplicationStatus::class)]
-    private ApplicationStatus $status = ApplicationStatus::Submitted;
+    private ApplicationStatus $status = ApplicationStatus::Pending;
 
     #[ORM\Column(length: 128)]
     private ?string $school = null;

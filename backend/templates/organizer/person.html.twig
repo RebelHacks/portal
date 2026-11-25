@@ -15,7 +15,7 @@
                 <div class="field">
                     <label>Status</label>
                     <div class="status-pick">
-                        {% for status in ['accepted', 'waitlisted', 'rejected'] %}
+                        {% for status in ['pending', 'accepted', 'waitlisted', 'rejected'] %}
                             <label><input type="radio" name="status" value="{{ status }}"{% if application.status.value == status %} checked{% endif %}>{{ status|capitalize }}</label>
                         {% endfor %}
                     </div>

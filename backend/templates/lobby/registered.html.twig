@@ -14,6 +14,13 @@
                 {% if application is null %}
                     <p class="big-name">Not registered</p>
                     <p class="meta">This account has no registration for {{ hackathon ? hackathon.name : 'this RebelHacks' }}.</p>
+                {% elseif application.status.value == 'pending' %}
+                    <p class="big-name">Application pending</p>
+                    <p class="meta">
+                        Your application has been submitted successfully.
+                        Please wait for the RebelHacks organizers
+                        to review and approve your application.
+                    </p>
                 {% elseif application.status.value == 'waitlisted' %}
                     <p class="big-name">You're on the waitlist</p>
                     <p class="meta">Spots will open as people drop out, in the order your application got sent in. We'll email {{ app.user.email }} the moment a spot opens up for you!</p>
