@@ -73,7 +73,18 @@
                 <span class="error">{{ form_errors(registrationForm.agreeTerms) }}</span>
             </div>
             <div class="panel-actions">
-                <button class="button" type="submit">Create my account</button>
+                <button class="button" type="submit">
+                    Create my account
+                </button>
+
+                <p class="meta" style="margin: 0; flex: 1;">
+                    By registering your account, you agree to the following
+                    <a href="{{ path('app_terms') }}"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                        terms and conditions
+                    </a>.
+                </p>
             </div>
         </section>
     </div>
