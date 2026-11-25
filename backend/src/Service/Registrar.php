@@ -35,8 +35,8 @@ class Registrar
                 'hackathon' => $hackathon,
                 'status' => ApplicationStatus::Waitlisted,
             ]);
-            $hasRoom = $accepted < $hackathon->getCapacity() && $waiting === 0;
-            $application->setStatus($hasRoom ? ApplicationStatus::Accepted : ApplicationStatus::Waitlisted);
+
+            $application->setStatus(ApplicationStatus::Submitted);
 
             $this->em->persist($user);
             if ($application->getResume() !== null) {
