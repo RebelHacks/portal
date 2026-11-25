@@ -17,9 +17,14 @@
                 {% elseif application.status.value == 'waitlisted' %}
                     <p class="big-name">You're on the waitlist</p>
                     <p class="meta">Spots open as people drop out, in waitlist order. We'll email {{ app.user.email }} if one does.</p>
-                {% else %}
+                {% elseif application.status.value == 'registered' %}
                     <p class="big-name">You're registered</p>
                     <p class="meta">{{ hackathon.name }} is {{ hackathon.startsAt|date('F j') }}–{{ hackathon.endsAt|date('j') }} at UNLV. Teams, the schedule and project submission will open here before the event.</p>
+                {% elseif application.status.value == 'submitted' %}
+                    <p class="big-name">Your application has been submitted</p>
+                    <p class="meta">Please wait while the RebelHacks team reviews your application. You will receive an email on your application status in 1-2 weeks</p>
+                {% else %}
+                    <p class="big-name">Your application is {{ application.status.value }}</p>
                 {% endif %}
             </div>
         </section>
