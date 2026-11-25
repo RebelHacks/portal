@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\ApplicationRepository;
+use App\Enum\ApplicationStatus;
 use App\Service\CurrentHackathon;
 use App\Service\Me;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -43,7 +44,10 @@ class LobbyController extends AbstractController
         $application = $hackathon !== null ? $applications->findForUserAtHackathon($user, $hackathon) : null;
         $major = trim((string) $application?->getMajor());
 
-        if (!$hackerPagesOpen) {
+        if (
+            !$hackerPagesOpen
+            || $application?->getStatus() !== ApplicationStatus::Accepted
+        ) {
             return $this->render('lobby/registered.html.twig', [
                 'hackathon' => $hackathon,
                 'application' => $application,

@@ -1,7 +1,11 @@
 {# The shell every page sits in: ribbons, logo, sidebar, the sheet in the middle, the news column on the right. #}
 {# Logged-out pages set `out` to true and get just the ribbons and the sheet. #}
 {# So do hackers while their pages are shut (HACKER_PAGES_OPEN), plus the account button to log out. #}
-{% set shut = app.user and not hacker_pages_open and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_JUDGE') %}
+{% set shut = app.user
+    and (not hacker_pages_open or hide_portal_nav|default(false))
+    and not is_granted('ROLE_ADMIN')
+    and not is_granted('ROLE_JUDGE')
+%}
 <!DOCTYPE html>
 <html lang="en"{% if out|default(false) or shut %} data-out{% endif %}>
     <head>
