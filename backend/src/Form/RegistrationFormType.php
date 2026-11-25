@@ -97,7 +97,13 @@ class RegistrationFormType extends AbstractType
                 'constraints' => [
                     new Assert\IsTrue(message: 'Please agree to the registration terms.'),
                 ],
-            ]);
+            ])
+            ->add('is_newsletter_subscriber', CheckboxType::class, [
+                'mapped' => true,
+                'required' => false
+            ])
+
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
