@@ -71,6 +71,10 @@
                     <span>I agree to the <a href="{{ path('app_terms') }}" target="_blank" rel="noopener noreferrer">registration terms</a>.</span>
                 </label>
                 <span class="error">{{ form_errors(registrationForm.agreeTerms) }}</span>
+                <label class="check">
+                    {{ form_widget(registrationForm.is_newsletter_subscriber) }}
+                    <span>Send me updates about RebelHacks events, deadlines, and announcements. You can unsubscribe anytime. (optional)</span>
+                </label>
             </div>
             <div class="panel-actions">
                 <button class="button" type="submit">

@@ -45,6 +45,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column]
+    private ?bool $is_newsletter_subscriber = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -161,5 +164,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function isNewsletterSubscriber(): ?bool
+    {
+        return $this->is_newsletter_subscriber;
+    }
+
+    public function setIsNewsletterSubscriber(bool $is_newsletter_subscriber): static
+    {
+        $this->is_newsletter_subscriber = $is_newsletter_subscriber;
+
+        return $this;
     }
 }
